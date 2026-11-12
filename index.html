@@ -168,8 +168,10 @@ p{margin:0 0 10px}
 .bar2{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin:8px 0 4px}
 .bar2>i{display:block;height:100%;background:var(--ok)}
 .code{font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:700;font-size:26px;letter-spacing:.12em;padding:8px 12px;background:var(--surface2);border-radius:4px;display:inline-block;user-select:all}
+.mapwrap{height:min(60vh,380px);border:1px solid var(--line);border-radius:6px;overflow:hidden;position:relative;z-index:0;isolation:isolate}
 .linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;font:500 15px 'Barlow',sans-serif;cursor:pointer;padding:8px 0}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 </head>
 <body>
 <header class="top" id="top">
@@ -181,6 +183,7 @@ p{margin:0 0 10px}
 <div id="toastHost"></div>
 <div id="modalHost"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
 <script>
 /* =========================================================
@@ -1849,6 +1852,7 @@ function render(){
     main.innerHTML = tab==='stube' ? renderStube() : tab==='raum' ? renderRaum() : tab==='dienst' ? renderDienst() : tab==='ausb' ? renderAusb() : tab==='truppe' ? renderTruppe() : renderLaufbahn();
   }
   renderNav(); renderRes(); live();
+  if(typeof afterRender === "function") afterRender();
 }
 
 function live(){
@@ -2057,6 +2061,15 @@ const ACT = {
     sb.rpc('kompanie_verlassen').then(({error}) => { if(error) toast(error.message); else { toast('Du hast die Kompanie verlassen.'); loadTruppe(); } });
   },
   rl(id){ ONLINE.rlTab = id; loadRangliste(); },
+  versetzen(key, ok){
+    const [bl, ort] = String(key).split('/');
+    if(!STANDORTE[bl] || !STANDORTE[bl].includes(ort)) return;
+    const cost = S.standort ? 5*G.rank().sold : 0;
+    if(S.money < cost){ toast('Zu wenig Geld für den Umzug.'); return; }
+    if(!ok) return ask('Versetzung nach '+ort+(cost ? ' für '+eur(cost) : '')+' beantragen?', ()=>ACT.versetzen(key, true), 'Versetzen');
+    S.money -= cost; S.standort = {bl, ort}; save();
+    cloudPush(true).then(loadOnline).then(loadKarte).then(() => { styleMarkers(); toast('Versetzung genehmigt: '+ort); render(); });
+  },
   ask_yes(){ const f = askFn; askFn = null; ACT.close(); if(f) f(); },
 };
 
@@ -2176,6 +2189,7 @@ async function loadOnline(){
 async function loadTruppe(){
   if(!sb || !USER) return;
   await loadOnline();
+  await loadKarte();
   await loadKompanie();
   await abholen();
   if(tab==='truppe') render();
@@ -2270,7 +2284,7 @@ function renderCreate(){
 }
 
 function renderTruppe(){
-  let h = '';
+  let h = '<h2>Standortkarte</h2><div id="mapslot"></div>' + renderKarteInfo();
   // Kaserne
   const key = standortKey();
   h += '<h2>Kaserne '+(S.standort ? esc(S.standort.ort) : '')+'</h2>';
@@ -2406,6 +2420,82 @@ setInterval(() => { if(USER && S && ONLINE.kp) abholen(); }, 60000);
 // Regelmäßig und beim Verlassen der Seite speichern
 setInterval(() => { cloudPush(false); }, 15000);
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') cloudPush(true); });
+
+
+/* =========================================================
+   STANDORTKARTE
+   Koordinaten aus den Postleitzahlen der öffentlichen Standortliste.
+   ========================================================= */
+// Achtung: L ist im Spiel schon die Lehrgangsliste, Leaflet daher immer über window.L
+const STANDORT_KOORD = {"Baden-Württemberg/Bruchsal":[49.1064,8.5934],"Baden-Württemberg/Calw":[48.7216,8.7177],"Baden-Württemberg/Donaueschingen":[47.954,8.5087],"Baden-Württemberg/Dornstadt":[48.4845,9.8946],"Baden-Württemberg/Hardheim":[49.6004,9.469],"Baden-Württemberg/Karlsruhe":[49.0488,8.4096],"Baden-Württemberg/Laupheim":[48.2261,9.8555],"Baden-Württemberg/Mannheim":[49.4678,8.5066],"Baden-Württemberg/Müllheim":[47.8165,7.637],"Baden-Württemberg/Neckarzimmern":[49.3239,9.1472],"Baden-Württemberg/Niederstetten":[49.3995,9.9194],"Baden-Württemberg/Pforzheim":[48.8566,8.7404],"Baden-Württemberg/Pfullendorf":[47.9363,9.2506],"Baden-Württemberg/Setzingen":[48.5061,10.1093],"Baden-Württemberg/Stetten am kalten Markt":[48.1313,9.0627],"Baden-Württemberg/Stuttgart":[48.8097,9.2415],"Baden-Württemberg/Todtnau":[47.8295,7.9446],"Baden-Württemberg/Ulm":[48.4366,9.981],"Baden-Württemberg/Ummendorf":[48.0648,9.8284],"Baden-Württemberg/Walldürn":[49.622,9.3308],"Bayern/Altenstadt":[47.8281,10.8716],"Bayern/Amberg":[49.4422,11.8378],"Bayern/Bad Reichenhall":[47.7273,12.8417],"Bayern/Bischofswiesen":[47.6339,12.9587],"Bayern/Bogen":[48.9201,12.6814],"Bayern/Cham":[49.2082,12.6742],"Bayern/Dillingen an der Donau":[48.5698,10.5235],"Bayern/Donauwörth":[48.7294,10.7681],"Bayern/Erding":[48.3103,11.9258],"Bayern/Feldkirchen":[48.8301,12.5242],"Bayern/Freyung":[48.8394,13.5576],"Bayern/Füssen":[47.5736,10.6654],"Bayern/Garching":[48.2399,11.6306],"Bayern/Garmisch-Partenkirchen":[47.4821,11.103],"Bayern/Grafenwöhr":[49.6848,11.7888],"Bayern/Greding":[49.0627,11.3265],"Bayern/Hammelburg":[50.1141,9.8742],"Bayern/Hof":[50.3165,11.8687],"Bayern/Ingolstadt":[48.7506,11.4579],"Bayern/Kaufbeuren":[47.8763,10.6261],"Bayern/Kleinaitingen":[48.2383,10.8574],"Bayern/Kümmersbruck":[49.4199,11.8875],"Bayern/Landsberg am Lech":[48.0253,10.8507],"Bayern/Manching":[48.7182,11.5084],"Bayern/Mittenwald":[47.4413,11.2641],"Bayern/München":[48.2202,11.5762],"Bayern/Murnau am Staffelsee":[47.682,11.195],"Bayern/Neubiberg":[48.0803,11.6404],"Bayern/Neuburg an der Donau":[48.7293,11.1925],"Bayern/Nürnberg":[49.4269,11.0904],"Bayern/Oberviechtach":[49.4592,12.454],"Bayern/Pfreimd":[49.494,12.1819],"Bayern/Pöcking":[47.9664,11.3001],"Bayern/Regen":[48.9615,13.129],"Bayern/Roding":[49.1948,12.5159],"Bayern/Roth":[49.2175,11.1054],"Bayern/Schneizlreuth":[47.6901,12.8018],"Bayern/Sonthofen":[47.5093,10.2861],"Bayern/Untermeitingen":[48.1608,10.807],"Bayern/Veitshöchheim":[49.8381,9.8913],"Bayern/Volkach":[49.8653,10.2314],"Bayern/Waldkirchen":[48.7291,13.6009],"Bayern/Weiden in der Oberpfalz":[49.6744,12.1489],"Bayern/Wildflecken":[50.3767,9.9131],"Berlin/Berlin":[52.5583,13.3098],"Brandenburg/Beelitz":[52.2287,12.9276],"Brandenburg/Beeskow":[52.1511,14.149],"Brandenburg/Brück":[52.2004,12.7927],"Brandenburg/Doberlug-Kirchhain":[51.6472,13.4957],"Brandenburg/Frankfurt (Oder)":[52.3499,14.472],"Brandenburg/Märkische Heide":[51.9129,14.1238],"Brandenburg/Potsdam":[52.4282,13.0303],"Brandenburg/Prenzlau":[53.3194,13.8725],"Brandenburg/Schönefeld":[52.3691,13.5016],"Brandenburg/Schönewalde":[51.7208,13.2298],"Brandenburg/Schwielowsee":[52.3054,12.9183],"Brandenburg/Storkow (Mark)":[52.2441,13.918],"Brandenburg/Strausberg":[52.5601,13.9088],"Bremen/Bremen":[53.0594,8.8044],"Bremen/Bremerhaven":[53.5399,8.5905],"Hamburg/Hamburg":[53.5765,9.823],"Hessen/Frankenberg (Eder)":[51.0801,8.7824],"Hessen/Frankfurt am Main":[50.1101,8.6822],"Hessen/Fritzlar":[51.1382,9.255],"Hessen/Homberg (Efze)":[51.0297,9.4257],"Hessen/Kassel":[51.3111,9.4033],"Hessen/Pfungstadt":[49.7934,8.583],"Hessen/Rosbach vor der Höhe":[50.2807,8.7071],"Hessen/Schwarzenborn":[50.9114,9.4473],"Hessen/Stadtallendorf":[50.8413,9.02],"Hessen/Wiesbaden":[50.0727,8.257],"Mecklenburg-Vorpommern/Bad Sülze":[54.1105,12.6558],"Mecklenburg-Vorpommern/Golchen":[53.7608,13.2951],"Mecklenburg-Vorpommern/Hagenow":[53.4019,11.2496],"Mecklenburg-Vorpommern/Kramerhof":[54.3712,13.0232],"Mecklenburg-Vorpommern/Laage":[53.9081,12.3444],"Mecklenburg-Vorpommern/Neubrandenburg":[53.5329,13.2623],"Mecklenburg-Vorpommern/Rostock":[54.1718,12.0911],"Mecklenburg-Vorpommern/Sanitz":[54.0774,12.3755],"Mecklenburg-Vorpommern/Schwerin":[53.6581,11.4342],"Mecklenburg-Vorpommern/Torgelow":[53.6223,14.0136],"Mecklenburg-Vorpommern/Trollenhagen":[53.604,13.2899],"Mecklenburg-Vorpommern/Utzedel":[53.8366,13.0117],"Mecklenburg-Vorpommern/Viereck":[53.5026,13.9995],"Mecklenburg-Vorpommern/Waren (Müritz)":[53.5146,12.7305],"Niedersachsen/Aurich":[53.5211,7.5388],"Niedersachsen/Bremervörde":[53.4981,9.1135],"Niedersachsen/Bückeburg":[52.2816,9.0441],"Niedersachsen/Celle":[52.6106,10.0259],"Niedersachsen/Delmenhorst":[53.0291,8.6387],"Niedersachsen/Diepholz":[52.6006,8.3613],"Niedersachsen/Faßberg":[52.8874,10.2021],"Niedersachsen/Hannover":[52.4156,9.7814],"Niedersachsen/Holzminden":[51.7848,9.5162],"Niedersachsen/Leer (Ostfriesland)":[53.2552,7.4514],"Niedersachsen/Lohheide":[52.7763,9.9837],"Niedersachsen/Lüneburg":[53.2467,10.4429],"Niedersachsen/Meppen":[52.7162,7.2641],"Niedersachsen/Munster":[52.9906,10.0809],"Niedersachsen/Neustadt am Rübenberge":[52.5621,9.4404],"Niedersachsen/Nienburg (Weser)":[52.6381,9.2084],"Niedersachsen/Nordhorn":[52.4352,7.1209],"Niedersachsen/Oldenburg (Oldenburg)":[53.1016,8.2192],"Niedersachsen/Osterholz-Scharmbeck":[53.2648,8.7422],"Niedersachsen/Quakenbrück":[52.6764,7.9649],"Niedersachsen/Rotenburg (Wümme)":[53.0852,9.3869],"Niedersachsen/Saterland":[53.0768,7.7022],"Niedersachsen/Schortens":[53.5477,7.9673],"Niedersachsen/Seedorf":[53.268,9.2726],"Niedersachsen/Walsrode":[52.8794,9.5212],"Niedersachsen/Weener":[53.1442,7.3215],"Niedersachsen/Westerstede":[53.2783,7.9322],"Niedersachsen/Wilhelmshaven":[53.5324,8.1262],"Niedersachsen/Wittmund":[53.5957,7.7337],"Niedersachsen/Wunstorf":[52.4248,9.4076],"Niedersachsen/Wurster Nordseeküste":[53.7543,8.6038],"Niedersachsen/Zetel":[53.3964,7.9522],"Nordrhein-Westfalen/Aachen":[50.7507,6.1634],"Nordrhein-Westfalen/Ahlen":[51.7438,7.9264],"Nordrhein-Westfalen/Augustdorf":[51.8978,8.7504],"Nordrhein-Westfalen/Bonn":[50.7139,7.042],"Nordrhein-Westfalen/Dorsten":[51.749,7.0139],"Nordrhein-Westfalen/Düsseldorf":[51.2569,6.8077],"Nordrhein-Westfalen/Erndtebrück":[50.9891,8.2545],"Nordrhein-Westfalen/Euskirchen":[50.6533,6.7888],"Nordrhein-Westfalen/Geilenkirchen":[50.9667,6.1268],"Nordrhein-Westfalen/Gronau (Westfalen)":[52.1841,7.0289],"Nordrhein-Westfalen/Hilden":[51.1771,6.9572],"Nordrhein-Westfalen/Höxter":[51.7981,9.351],"Nordrhein-Westfalen/Hürth":[50.8631,6.8596],"Nordrhein-Westfalen/Jülich":[50.9419,6.3944],"Nordrhein-Westfalen/Kalkar":[51.7575,6.3033],"Nordrhein-Westfalen/Köln":[50.8682,7.1239],"Nordrhein-Westfalen/Mechernich":[50.595,6.6255],"Nordrhein-Westfalen/Minden":[52.2755,8.8428],"Nordrhein-Westfalen/Mönchengladbach":[51.1642,6.3537],"Nordrhein-Westfalen/Münster":[52.0159,7.6724],"Nordrhein-Westfalen/Nörvenich":[50.8133,6.6383],"Nordrhein-Westfalen/Rheinbach":[50.6071,6.9532],"Nordrhein-Westfalen/Rheine":[52.2716,7.4311],"Nordrhein-Westfalen/Sankt Augustin":[50.7589,7.2012],"Nordrhein-Westfalen/Siegburg":[50.8,7.2118],"Nordrhein-Westfalen/Straelen":[51.422,6.2541],"Nordrhein-Westfalen/Uedem":[51.6738,6.2844],"Nordrhein-Westfalen/Unna":[51.5522,7.7013],"Nordrhein-Westfalen/Warendorf":[51.9542,7.9592],"Rheinland-Pfalz/Andernach":[50.4368,7.3533],"Rheinland-Pfalz/Bad Bergzabern":[49.1035,7.9992],"Rheinland-Pfalz/Baumholder":[49.6412,7.3639],"Rheinland-Pfalz/Büchel":[50.1788,7.0857],"Rheinland-Pfalz/Cochem":[50.1373,7.1718],"Rheinland-Pfalz/Daun":[50.2009,6.8018],"Rheinland-Pfalz/Diez":[50.3775,8.0132],"Rheinland-Pfalz/Germersheim":[49.2092,8.3743],"Rheinland-Pfalz/Gerolstein":[50.2207,6.6399],"Rheinland-Pfalz/Grafschaft":[50.5804,7.0509],"Rheinland-Pfalz/Idar-Oberstein":[49.7143,7.3448],"Rheinland-Pfalz/Kastellaun":[50.0713,7.4451],"Rheinland-Pfalz/Koblenz":[50.3858,7.5817],"Rheinland-Pfalz/Lahnstein":[50.3101,7.6119],"Rheinland-Pfalz/Mainz":[49.9407,8.2607],"Rheinland-Pfalz/Mayen":[50.3239,7.1678],"Rheinland-Pfalz/Rennerod":[50.6235,8.0708],"Rheinland-Pfalz/Trier":[49.7288,6.6821],"Rheinland-Pfalz/Ulmen":[50.1869,7.0025],"Rheinland-Pfalz/Zweibrücken":[49.242,7.3734],"Saarland/Lebach":[49.4147,6.8894],"Saarland/Merzig":[49.4413,6.608],"Saarland/Perl":[49.4733,6.3861],"Saarland/Saarlouis":[49.3013,6.737],"Sachsen/Delitzsch":[51.5233,12.303],"Sachsen/Dresden":[51.0872,13.8028],"Sachsen/Frankenberg":[50.9181,13.0686],"Sachsen/Leipzig":[51.3747,12.3724],"Sachsen/Marienberg":[50.6089,13.1847],"Sachsen/Weißkeißel":[51.5202,14.7147],"Sachsen/Zeithain":[51.3564,13.3251],"Sachsen-Anhalt/Blankenburg (Harz)":[51.7868,10.951],"Sachsen-Anhalt/Burg":[52.2979,11.8716],"Sachsen-Anhalt/Gardelegen":[52.5387,11.4051],"Sachsen-Anhalt/Havelberg":[52.8307,12.1672],"Sachsen-Anhalt/Klietz":[52.5829,12.0389],"Sachsen-Anhalt/Magdeburg":[52.1146,11.6326],"Sachsen-Anhalt/Möckern":[52.1425,11.9549],"Sachsen-Anhalt/Naumburg (Saale)":[51.105,11.8278],"Sachsen-Anhalt/Weißenfels":[51.2096,11.9453],"Schleswig-Holstein/Appen":[53.6596,9.7424],"Schleswig-Holstein/Boostedt":[54.0021,10.0609],"Schleswig-Holstein/Eckernförde":[54.4408,9.8227],"Schleswig-Holstein/Eutin":[54.1046,10.6554],"Schleswig-Holstein/Fehmarn":[54.4701,11.1329],"Schleswig-Holstein/Flensburg":[54.8089,9.4781],"Schleswig-Holstein/Glücksburg":[54.8383,9.5626],"Schleswig-Holstein/Heide":[54.1898,9.0911],"Schleswig-Holstein/Husum":[54.4567,9.0593],"Schleswig-Holstein/Kiel":[54.3579,10.1211],"Schleswig-Holstein/Kronshagen":[54.3328,10.0857],"Schleswig-Holstein/Kropp":[54.4005,9.4998],"Schleswig-Holstein/Laboe":[54.4022,10.2256],"Schleswig-Holstein/Neustadt in Holstein":[54.1336,10.8225],"Schleswig-Holstein/Oldenburg in Holstein":[54.3161,10.8806],"Schleswig-Holstein/Panker":[54.3005,10.5616],"Schleswig-Holstein/Plön":[54.1684,10.4323],"Schleswig-Holstein/Stadum":[54.7699,9.0113],"Schleswig-Holstein/Wester-Ohrstedt":[54.5099,9.2307],"Thüringen/Bad Frankenhausen (Kyffhäuser)":[51.3563,11.1109],"Thüringen/Bad Salzungen":[50.8226,10.254],"Thüringen/Erfurt":[50.9629,11.0744],"Thüringen/Gera":[50.9144,12.135],"Thüringen/Gotha":[50.9512,10.6949],"Thüringen/Oberhof":[50.7064,10.7258],"Thüringen/Sondershausen":[51.3658,10.8994]};
+let MAP = null, MAPWRAP = null;
+const MARKERS = {};
+ONLINE.karte = {}; ONLINE.sel = null; ONLINE.selGeb = null;
+
+function ensureMap(){
+  if(MAP || !window.L) return;
+  MAPWRAP = document.createElement('div'); MAPWRAP.className = 'mapwrap';
+  MAP = window.L.map(MAPWRAP, {minZoom:5, maxZoom:12, maxBounds:[[45.5,3],[56.5,18]]});
+  window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:12, attribution:'&copy; OpenStreetMap-Mitwirkende'}).addTo(MAP);
+  MAP.fitBounds([[47.3,5.9],[55.0,15.0]]);
+  for(const [key, ll] of Object.entries(STANDORT_KOORD)){
+    const m = window.L.circleMarker(ll, {radius:5, weight:1.5, color:'#3B4524', fillColor:'#9AA38B', fillOpacity:.9});
+    m.bindTooltip(key.split('/')[1], {direction:'top', offset:[0,-4]});
+    m.on('click', () => selectStandort(key));
+    m.addTo(MAP); MARKERS[key] = m;
+  }
+  styleMarkers();
+}
+function styleMarkers(){
+  const own = S ? standortKey() : null;
+  for(const [key, m] of Object.entries(MARKERS)){
+    const d = ONLINE.karte[key], a = d ? d.ausbau : 0;
+    const fill = a >= 25 ? '#E3B23C' : a >= 10 ? '#3B7436' : a > 0 ? '#7F9450' : '#A9B09C';
+    const hot = key === own || key === ONLINE.sel;
+    m.setStyle({radius: 5 + Math.min(9, a/3), fillColor: fill, color: key === own ? '#B3261E' : (key === ONLINE.sel ? '#1C2217' : '#3B4524'), weight: hot ? 3 : 1.5});
+    if(hot) m.bringToFront();
+  }
+}
+async function loadKarte(){
+  if(!sb) return;
+  const { data, error } = await sb.rpc('standort_karte');
+  if(error) return;
+  ONLINE.karte = {}; (data || []).forEach(r => ONLINE.karte[r.standort] = r);
+  styleMarkers();
+}
+async function selectStandort(key){
+  ONLINE.sel = key; ONLINE.selGeb = null; styleMarkers();
+  if(tab === 'truppe') render();
+  const { data } = await sb.from('kaserne_gebaeude').select('*').eq('standort', key);
+  ONLINE.selGeb = {}; (data || []).forEach(r => ONLINE.selGeb[r.gebaeude] = r);
+  if(tab === 'truppe') render();
+}
+function afterRender(){
+  const slot = document.getElementById('mapslot');
+  if(!slot) return;
+  ensureMap();
+  if(!MAPWRAP){ slot.innerHTML = '<p class="small muted" style="padding:12px 0">Die Karte konnte nicht geladen werden.</p>'; return; }
+  slot.appendChild(MAPWRAP);
+  setTimeout(() => MAP.invalidateSize(), 0);
+}
+function kasernenPlatz(key){
+  const d = ONLINE.karte[key]; if(!d || !d.ausbau) return null;
+  return Object.values(ONLINE.karte).filter(r => r.ausbau > d.ausbau).length + 1;
+}
+function renderKarteInfo(){
+  const key = ONLINE.sel;
+  if(!key) return '<p class="small muted" style="margin-top:8px">Tippe auf einen Standort für Details. Rot umrandet ist dein eigener, je größer und kräftiger der Punkt, desto weiter ist die Kaserne ausgebaut.</p>';
+  const [bl, ort] = key.split('/'), d = ONLINE.karte[key], own = key === standortKey(), platz = kasernenPlatz(key);
+  let h = '<div class="panel pad" style="margin-top:10px"><div style="font-weight:700;font-size:19px">'+esc(ort)+(own ? ' <span class="tag">dein Standort</span>' : '')+'</div><div class="small muted">'+esc(bl)+'</div>'
+    + '<p class="small" style="margin:8px 0">Ausbau gesamt: <b>'+(d ? d.ausbau : 0)+'</b>'+(platz ? ', Platz '+platz+' unter den Kasernen' : '')
+    + '. Aktive Spieler: '+(d && d.spieler ? d.spieler : 'unter 3')+'.</p>';
+  if(ONLINE.selGeb) h += '<div class="small" style="margin-bottom:10px">' + GEB.map(g => esc(g.name)+': Stufe '+((ONLINE.selGeb[g.id] && ONLINE.selGeb[g.id].stufe) || 0)).join('<br>') + '</div>';
+  if(!own){
+    const cost = S.standort ? 5*G.rank().sold : 0;
+    h += '<button class="btn wide" data-act="versetzen" data-id="'+esc(key)+'" '+(S.money < cost ? 'disabled' : '')+'>Hierhin versetzen lassen'+(cost ? ' ('+eur(cost)+')' : '')+'</button>';
+  }
+  return h + '</div>';
+}
 
 /* =========================================================
    START
