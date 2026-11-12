@@ -1,0 +1,2292 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stillgestanden!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4E8DC; --surface:#F5F7F0; --surface2:#E9ECE2; --ink:#1C2217; --muted:#5A6350; --line:#C7CEBA;
+  --olive:#4B582C; --olive-ink:#F2F5EA; --board:#4B582C; --mark:#E8ECDD;
+  --signal:#BF8E10; --stamp:#A3271E; --ok:#3B7436; --bad:#A3271E;
+  --wall:#D3D8C7; --floor:#A69C84; --metal:#8A9286; --wood:#9A7650; --fabric:#4B582C; --window:#BCD1DC;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131711; --surface:#1C2118; --surface2:#262C21; --ink:#E2E7D7; --muted:#9AA38B; --line:#353D2D;
+    --olive:#3E4A24; --olive-ink:#EEF2E3; --board:#4B582C; --mark:#E8ECDD;
+    --signal:#E3B23C; --stamp:#E2584C; --ok:#7CBB6C; --bad:#E2584C;
+    --wall:#2A3025; --floor:#3B362C; --metal:#5E665B; --wood:#6E5539; --fabric:#5E6E38; --window:#34475A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131711; --surface:#1C2118; --surface2:#262C21; --ink:#E2E7D7; --muted:#9AA38B; --line:#353D2D;
+  --olive:#3E4A24; --olive-ink:#EEF2E3; --board:#4B582C; --mark:#E8ECDD;
+  --signal:#E3B23C; --stamp:#E2584C; --ok:#7CBB6C; --bad:#E2584C;
+  --wall:#2A3025; --floor:#3B362C; --metal:#5E665B; --wood:#6E5539; --fabric:#5E6E38; --window:#34475A;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{min-height:100%;background:var(--bg);scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.45;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom,0px));-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--olive)}
+:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--olive);color:var(--olive-ink);
+  padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-family:'Black Ops One',Impact,'Arial Black',sans-serif;font-size:21px;letter-spacing:.01em;white-space:nowrap}
+.res{display:flex;gap:14px;align-items:center;font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:600;font-size:17px}
+.stam{display:flex;align-items:center;gap:6px}
+.stam .bar{width:46px;height:6px;border-radius:3px;background:rgba(255,255,255,.22);overflow:hidden}
+.stam .bar i{display:block;height:100%;background:var(--signal)}
+
+main{max-width:640px;margin:0 auto;padding:16px}
+h2{font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:700;font-size:24px;line-height:1.15;margin:24px 0 10px}
+h2:first-child{margin-top:4px}
+p{margin:0 0 10px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.num{font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:600;font-variant-numeric:tabular-nums}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 16px}
+.panel.pad{padding:16px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .info{min-width:0;flex:1}
+.row .title{font-weight:700;font-size:17px}
+.row .meta{font-size:14px;color:var(--muted);margin-top:2px}
+.row .desc{font-size:14px;margin-top:3px}
+
+.ausweis{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;background:var(--surface);
+  border:1px solid var(--line);border-left:6px solid var(--olive);border-radius:6px;padding:16px}
+.ausweis .rank{font-family:'Black Ops One',Impact,sans-serif;font-size:26px;line-height:1.1}
+.ausweis .name{font-weight:600;font-size:17px}
+
+.btn{font:600 16px 'Barlow',system-ui,sans-serif;background:var(--olive);color:var(--olive-ink);border:0;border-radius:4px;
+  padding:10px 16px;min-height:44px;cursor:pointer;white-space:nowrap}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+.btn.wide{width:100%}
+
+.prog{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:8px}
+.prog>i{display:block;height:100%;background:var(--signal);width:0}
+.active{padding:14px 0;border-bottom:1px solid var(--line)}
+.active:last-child{border-bottom:0}
+.active .head{display:flex;justify-content:space-between;gap:12px;font-weight:600}
+
+.note{display:flex;align-items:baseline;gap:12px}
+.note .big{font-family:'Black Ops One',Impact,sans-serif;font-size:44px;line-height:1}
+.quote{border-left:3px solid var(--signal);padding:4px 0 4px 12px;font-style:italic;margin:16px 0}
+
+.req{list-style:none;padding:0;margin:10px 0 14px}
+.req li{display:flex;gap:8px;padding:3px 0;font-size:15px}
+.req li b{width:16px;flex:none;text-align:center}
+.req .ok b{color:var(--ok)}
+.req .no b{color:var(--bad)}
+.target{padding:16px 0;border-bottom:1px solid var(--line)}
+.target:last-child{border-bottom:0}
+.target .title{font-family:'Black Ops One',Impact,sans-serif;font-size:22px}
+.tag{display:inline-block;font-size:13px;font-weight:600;padding:1px 8px;border-radius:3px;background:var(--surface2);color:var(--muted);margin-left:6px;vertical-align:middle}
+
+.seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{flex:1;font:500 15px 'Barlow',sans-serif;background:transparent;color:var(--ink);border:0;padding:9px 6px;min-height:40px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--olive);color:var(--olive-ink)}
+
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:9;background:var(--surface);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(6,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav button{background:transparent;border:0;color:var(--muted);font:600 11px 'Barlow',sans-serif;padding:8px 1px 10px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;min-height:60px;cursor:pointer}
+.nav button[aria-current="page"]{color:var(--ink)}
+.nav button[aria-current="page"] svg{color:var(--signal)}
+.nav svg{width:24px;height:24px}
+
+.create{max-width:420px;margin:8vh auto 0;text-align:left}
+.create .hero{font-family:'Black Ops One',Impact,sans-serif;font-size:clamp(38px,11vw,58px);line-height:1;margin:18px 0 14px}
+.create label{display:block;font-weight:600;margin:20px 0 6px}
+.create input{width:100%;font:500 18px 'Barlow',sans-serif;padding:12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink)}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:20;
+  background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:4px;font-weight:600;max-width:calc(100% - 32px);
+  box-shadow:0 4px 18px rgba(0,0,0,.25)}
+.overlay{position:fixed;inset:0;z-index:30;background:rgba(10,12,8,.6);display:flex;align-items:center;justify-content:center;padding:24px}
+.sheet{background:var(--surface);color:var(--ink);border-radius:6px;padding:24px;max-width:380px;width:100%;text-align:center}
+.stamp{display:inline-block;border:4px solid var(--stamp);color:var(--stamp);font-family:'Black Ops One',Impact,sans-serif;
+  font-size:34px;padding:4px 16px;transform:rotate(-7deg);margin:6px 0 18px;animation:stamp .38s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes stamp{from{transform:rotate(-7deg) scale(2.2);opacity:0}to{transform:rotate(-7deg) scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.stamp{animation:none}}
+.history li{padding:4px 0}
+.album{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{border:2px solid var(--rc);border-radius:6px;background:var(--surface);min-height:64px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:600;line-height:1.25}
+.tile.miss{opacity:.45;font-size:20px}
+.paket{border:3px solid var(--rc);border-radius:8px;padding:16px;margin-bottom:12px;animation:pop .4s cubic-bezier(.2,1.6,.4,1) both}
+.pname{font-family:'Black Ops One',Impact,sans-serif;font-size:23px;line-height:1.15;margin:6px 0 8px}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.paket{animation:none}}
+.hand{display:flex;gap:6px;flex-wrap:wrap}
+.card{display:inline-flex;align-items:center;justify-content:center;width:46px;height:64px;border-radius:5px;background:#FBFBF6;color:#1C2217;border:1px solid var(--line);font:700 18px 'Barlow',sans-serif}
+.card.red{color:#B3261E}
+.card.back{background:var(--olive);color:var(--olive-ink)}
+.lbl{display:block;font-weight:600;margin:14px 0 6px}
+.sel{width:100%;font:500 17px 'Barlow',sans-serif;padding:11px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink)}
+.npc{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:var(--c);color:#fff;font-family:'Black Ops One',Impact,sans-serif;font-size:15px;flex:none}
+.relbar{position:relative;height:6px;background:var(--surface2);border-radius:3px;margin:8px 0 6px;overflow:hidden}
+.relbar::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--muted)}
+.relbar i{position:absolute;top:0;bottom:0}
+.sheet.ev{text-align:left;max-height:calc(100vh - 48px);overflow:auto}
+.evhead{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.evname{font-weight:700;font-size:18px}
+.evtext{font-size:17px;line-height:1.5}
+.choices{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.choice{text-align:left;white-space:normal;line-height:1.3;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:14px;font-weight:600;padding:3px 9px;border-radius:3px;background:var(--surface2);color:var(--ok)}
+.chip.neg{color:var(--bad)}
+.stamp.small-stamp{font-size:22px;margin:0 0 12px}
+.stamp.good{border-color:var(--ok);color:var(--ok)}
+.nav button{position:relative}
+.dot{position:absolute;top:8px;left:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--stamp)}
+.room{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;line-height:0}
+.room svg{width:100%;height:auto;display:block}
+.inp{width:100%;font:500 17px 'Barlow',sans-serif;padding:11px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink)}
+.rl{list-style:none;margin:0;padding:0}
+.rl li{display:flex;gap:10px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line)}
+.rl li:last-child{border-bottom:0}
+.rl .pos{width:28px;flex:none;text-align:right;font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:700;color:var(--muted)}
+.rl .who{flex:1;min-width:0}
+.rl .me{font-weight:700;color:var(--ink)}
+.bar2{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin:8px 0 4px}
+.bar2>i{display:block;height:100%;background:var(--ok)}
+.code{font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:700;font-size:26px;letter-spacing:.12em;padding:8px 12px;background:var(--surface2);border-radius:4px;display:inline-block;user-select:all}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;font:500 15px 'Barlow',sans-serif;cursor:pointer;padding:8px 0}
+</style>
+</head>
+<body>
+<header class="top" id="top">
+  <div class="logo">Stillgestanden!</div>
+  <div class="res" id="res"></div>
+</header>
+<main id="main"></main>
+<nav class="nav" id="nav" hidden></nav>
+<div id="toastHost"></div>
+<div id="modalHost"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
+<script>
+/* =========================================================
+   SPIELDATEN
+   ========================================================= */
+const GROUPS = {M:'Mannschaften',U:'Unteroffiziere ohne Portepee',F:'Unteroffiziere mit Portepee',A:'Offizieranwärter',O:'Offiziere',G:'Generale'};
+
+// t = Stufe für Dienst-Freischaltungen, sold = Tagessold, minH = Mindeststunden im vorherigen Dienstgrad,
+// note = schlechteste erlaubte Beurteilung, einstand = Tage Sold des aktuellen Dienstgrads
+const RANKS = [
+  {id:'sdt',     name:'Soldat',             g:'M', t:0,  sold:40},
+  {id:'gefr',    name:'Gefreiter',          g:'M', t:1,  sold:46,  minH:1,   note:4, stats:{fitness:1}, einstand:3},
+  {id:'ogefr',   name:'Obergefreiter',      g:'M', t:2,  sold:52,  minH:3,   note:4, stats:{fitness:2,schiessen:2}, einstand:3},
+  {id:'hgefr',   name:'Hauptgefreiter',     g:'M', t:3,  sold:58,  minH:6,   note:4, stats:{fitness:3,schiessen:3,fachwissen:2}, einstand:3},
+  {id:'sgefr',   name:'Stabsgefreiter',     g:'M', t:4,  sold:64,  minH:12,  note:3, stats:{fitness:4,fachwissen:4}, einstand:3},
+  {id:'osgefr',  name:'Oberstabsgefreiter', g:'M', t:5,  sold:70,  minH:24,  note:3, stats:{fitness:5,schiessen:5,fachwissen:6}, einstand:3},
+  {id:'korp',    name:'Korporal',           g:'M', t:6,  sold:82,  minH:48,  note:1, stats:{fachwissen:10,vitaminb:6}, einstand:4, spec:true,
+     hint:'Auswahlverfahren: nur mit Bestnote in der Beurteilung.'},
+  {id:'skorp',   name:'Stabskorporal',      g:'M', t:7,  sold:94,  minH:96,  note:1, stats:{fachwissen:14,vitaminb:9}, einstand:4, spec:true},
+  {id:'uffz',    name:'Unteroffizier',      g:'U', t:4,  sold:84,  minH:6,   note:3, stats:{fuehrung:3}, lehrgang:'ual', einstand:5},
+  {id:'stuffz',  name:'Stabsunteroffizier', g:'U', t:5,  sold:94,  minH:12,  note:3, stats:{fuehrung:5,fachwissen:6}, einstand:5},
+  {id:'fw',      name:'Feldwebel',          g:'F', t:6,  sold:108, minH:12,  note:3, stats:{fuehrung:8,fachwissen:8}, lehrgang:'fwl', einstand:5},
+  {id:'ofw',     name:'Oberfeldwebel',      g:'F', t:7,  sold:120, minH:24,  note:3, stats:{fuehrung:10,schiessen:8}, einstand:5},
+  {id:'hfw',     name:'Hauptfeldwebel',     g:'F', t:8,  sold:134, minH:36,  note:2, stats:{fuehrung:12,fachwissen:12}, einstand:5},
+  {id:'sfw',     name:'Stabsfeldwebel',     g:'F', t:9,  sold:148, minH:48,  note:2, stats:{fuehrung:14,vitaminb:8}, einstand:5},
+  {id:'osfw',    name:'Oberstabsfeldwebel', g:'F', t:10, sold:164, minH:72,  note:2, stats:{fuehrung:16,fachwissen:16}, einstand:5},
+  {id:'fj',      name:'Fahnenjunker',       g:'A', t:7,  sold:118, minH:6,   note:2, stats:{fuehrung:10}, lehrgang:'ofl', einstand:8},
+  {id:'fhr',     name:'Fähnrich',           g:'A', t:8,  sold:128, minH:12,  note:2, stats:{fuehrung:12,fitness:10}, einstand:8},
+  {id:'ofhr',    name:'Oberfähnrich',       g:'A', t:9,  sold:138, minH:12,  note:2, stats:{fachwissen:14}, einstand:8},
+  {id:'lt',      name:'Leutnant',           g:'O', t:10, sold:168, minH:6,   note:2, stats:{fuehrung:14,fachwissen:16}, lehrgang:'stu', einstand:8},
+  {id:'olt',     name:'Oberleutnant',       g:'O', t:11, sold:188, minH:24,  note:2, stats:{fuehrung:16,schiessen:12}, einstand:8},
+  {id:'hptm',    name:'Hauptmann',          g:'O', t:12, sold:212, minH:48,  note:2, stats:{fuehrung:18,fachwissen:18}, einstand:8},
+  {id:'maj',     name:'Major',              g:'O', t:13, sold:240, minH:72,  note:2, stats:{fuehrung:20,vitaminb:12}, einstand:8},
+  {id:'oberstlt',name:'Oberstleutnant',     g:'O', t:14, sold:270, minH:96,  note:1, stats:{fuehrung:22,fachwissen:22}, einstand:8},
+  {id:'oberst',  name:'Oberst',             g:'O', t:15, sold:300, minH:120, note:1, stats:{fuehrung:25,vitaminb:15}, einstand:8},
+  {id:'bg',      name:'Brigadegeneral',     g:'G', t:16, sold:340, minH:168, note:1, stats:{fuehrung:28,vitaminb:18}, einstand:10},
+  {id:'gm',      name:'Generalmajor',       g:'G', t:17, sold:380, minH:168, note:1, stats:{fuehrung:31,fachwissen:28}, einstand:10},
+  {id:'gl',      name:'Generalleutnant',    g:'G', t:18, sold:420, minH:240, note:1, stats:{fuehrung:34,vitaminb:22}, einstand:10},
+  {id:'gen',     name:'General',            g:'G', t:19, sold:480, minH:336, note:1, stats:{fuehrung:38,vitaminb:26}, einstand:10},
+];
+const R = Object.fromEntries(RANKS.map(r=>[r.id,r]));
+
+// Zeitkurve: 1 echter Tag = 1 Dienstwoche. Ziel: General nach rund einem Jahr täglichem Spielen.
+const PACE = {gefr:72, ogefr:72, hgefr:144, sgefr:240, osgefr:480, korp:720, skorp:1440,
+  uffz:432, stuffz:360, fw:720, ofw:720, hfw:1080, sfw:1440, osfw:2160,
+  fj:480, fhr:480, ofhr:480, lt:840, olt:600, hptm:600, maj:600, oberstlt:600, oberst:600, bg:600, gm:480, gl:360, gen:360};
+for(const [k,v] of Object.entries(PACE)) R[k].minH = v;
+R.gefr.ga = true;
+R.uffz.dz = 'SaZ4'; R.korp.dz = 'SaZ8'; R.fw.dz = 'SaZ8'; R.fj.dz = 'SaZ13'; R.maj.dz = 'BS';
+
+const DZ = {
+  FWD:  {name:'Freiwilliger Wehrdienst',  short:'FWD',    jahre:1,    rang:0, praemie:0},
+  SaZ4: {name:'Soldat auf Zeit, 4 Jahre',  short:'SaZ 4',  jahre:4,    rang:1, praemie:500},
+  SaZ8: {name:'Soldat auf Zeit, 8 Jahre',  short:'SaZ 8',  jahre:8,    rang:2, praemie:1500},
+  SaZ13:{name:'Soldat auf Zeit, 13 Jahre', short:'SaZ 13', jahre:13,   rang:3, praemie:4000},
+  BS:   {name:'Berufssoldat',              short:'BS',     jahre:null, rang:4, praemie:8000},
+};
+/* ---------- Standorte (Orte aus der öffentlichen Standortliste von bundeswehrkarriere.de, nur Ortsebene) ---------- */
+const STANDORTE = {
+  'Baden-Württemberg':['Bruchsal','Calw','Donaueschingen','Dornstadt','Hardheim','Karlsruhe','Laupheim','Mannheim','Müllheim','Neckarzimmern','Niederstetten','Pforzheim','Pfullendorf','Setzingen','Stetten am kalten Markt','Stuttgart','Todtnau','Ulm','Ummendorf','Walldürn'],
+  'Bayern':['Altenstadt','Amberg','Bad Reichenhall','Bischofswiesen','Bogen','Cham','Dillingen an der Donau','Donauwörth','Erding','Feldkirchen','Freyung','Füssen','Garching','Garmisch-Partenkirchen','Grafenwöhr','Greding','Hammelburg','Hof','Ingolstadt','Kaufbeuren','Kleinaitingen','Kümmersbruck','Landsberg am Lech','Manching','Mittenwald','München','Murnau am Staffelsee','Neubiberg','Neuburg an der Donau','Nürnberg','Oberviechtach','Pfreimd','Pöcking','Regen','Roding','Roth','Schneizlreuth','Sonthofen','Untermeitingen','Veitshöchheim','Volkach','Waldkirchen','Weiden in der Oberpfalz','Wildflecken'],
+  'Berlin':['Berlin'],
+  'Brandenburg':['Beelitz','Beeskow','Brück','Doberlug-Kirchhain','Frankfurt (Oder)','Märkische Heide','Potsdam','Prenzlau','Schönefeld','Schönewalde','Schwielowsee','Storkow (Mark)','Strausberg'],
+  'Bremen':['Bremen','Bremerhaven'],
+  'Hamburg':['Hamburg'],
+  'Hessen':['Frankenberg (Eder)','Frankfurt am Main','Fritzlar','Homberg (Efze)','Kassel','Pfungstadt','Rosbach vor der Höhe','Schwarzenborn','Stadtallendorf','Wiesbaden'],
+  'Mecklenburg-Vorpommern':['Bad Sülze','Golchen','Hagenow','Kramerhof','Laage','Neubrandenburg','Rostock','Sanitz','Schwerin','Torgelow','Trollenhagen','Utzedel','Viereck','Waren (Müritz)'],
+  'Niedersachsen':['Aurich','Bremervörde','Bückeburg','Celle','Delmenhorst','Diepholz','Faßberg','Hannover','Holzminden','Leer (Ostfriesland)','Lohheide','Lüneburg','Meppen','Munster','Neustadt am Rübenberge','Nienburg (Weser)','Nordhorn','Oldenburg (Oldenburg)','Osterholz-Scharmbeck','Quakenbrück','Rotenburg (Wümme)','Saterland','Schortens','Seedorf','Walsrode','Weener','Westerstede','Wilhelmshaven','Wittmund','Wunstorf','Wurster Nordseeküste','Zetel'],
+  'Nordrhein-Westfalen':['Aachen','Ahlen','Augustdorf','Bonn','Dorsten','Düsseldorf','Erndtebrück','Euskirchen','Geilenkirchen','Gronau (Westfalen)','Hilden','Höxter','Hürth','Jülich','Kalkar','Köln','Mechernich','Minden','Mönchengladbach','Münster','Nörvenich','Rheinbach','Rheine','Sankt Augustin','Siegburg','Straelen','Uedem','Unna','Warendorf'],
+  'Rheinland-Pfalz':['Andernach','Bad Bergzabern','Baumholder','Büchel','Cochem','Daun','Diez','Germersheim','Gerolstein','Grafschaft','Idar-Oberstein','Kastellaun','Koblenz','Lahnstein','Mainz','Mayen','Rennerod','Trier','Ulmen','Zweibrücken'],
+  'Saarland':['Lebach','Merzig','Perl','Saarlouis'],
+  'Sachsen':['Delitzsch','Dresden','Frankenberg','Leipzig','Marienberg','Weißkeißel','Zeithain'],
+  'Sachsen-Anhalt':['Blankenburg (Harz)','Burg','Gardelegen','Havelberg','Klietz','Magdeburg','Möckern','Naumburg (Saale)','Weißenfels'],
+  'Schleswig-Holstein':['Appen','Boostedt','Eckernförde','Eutin','Fehmarn','Flensburg','Glücksburg','Heide','Husum','Kiel','Kronshagen','Kropp','Laboe','Neustadt in Holstein','Oldenburg in Holstein','Panker','Plön','Stadum','Wester-Ohrstedt'],
+  'Thüringen':['Bad Frankenhausen (Kyffhäuser)','Bad Salzungen','Erfurt','Gera','Gotha','Oberhof','Sondershausen'],
+};
+function ortOptions(bl, ort){ return STANDORTE[bl].map(o=>'<option'+(o===ort?' selected':'')+'>'+esc(o)+'</option>').join(''); }
+function standortPicker(bl, ort){
+  const b = (bl && STANDORTE[bl]) ? bl : 'Baden-Württemberg';
+  return '<label class="lbl" for="bl">Bundesland</label><select id="bl" class="sel">'
+    + Object.keys(STANDORTE).map(k=>'<option'+(k===b?' selected':'')+'>'+esc(k)+'</option>').join('')+'</select>'
+    + '<label class="lbl" for="so">Standort</label><select id="so" class="sel">'+ortOptions(b, ort)+'</select>';
+}
+function renderStandort(){
+  const cur = S.standort, cost = cur ? 5*G.rank().sold : 0;
+  return '<h2>Standort</h2><div class="panel pad">'
+    + (cur ? '<p style="margin-bottom:4px"><b>'+esc(cur.ort)+'</b>, '+esc(cur.bl)+'</p><p class="small muted">Eine Versetzung kostet '+eur(cost)+' für Umzug und Abschiedsrunde.</p>'
+           : '<p class="small">Wähle deinen Heimatstandort. In einer späteren Version baust du dort gemeinsam mit anderen deine Kaserne aus.</p>')
+    + standortPicker(cur && cur.bl, cur && cur.ort)
+    + '<button class="btn wide" style="margin-top:14px" data-act="standort">'+(cur ? 'Versetzung beantragen' : 'Standort festlegen')+'</button></div>';
+}
+function fmtDZ(w){
+  w = Math.max(0, Math.floor(w));
+  const y = Math.floor(w/52), m = Math.floor((w%52)/4.345);
+  if(y) return y+(y===1?' Jahr':' Jahre')+(m ? ', '+m+(m===1?' Monat':' Monate') : '');
+  if(m) return m+(m===1?' Monat':' Monate');
+  return w+(w===1?' Woche':' Wochen');
+}
+function renderDZ(){
+  const cur = DZ[S.verpfl];
+  let h = '<h2>Dienstverhältnis</h2><div class="panel pad"><div style="font-weight:700;font-size:19px">'+esc(cur.name)+'</div>'
+    + '<p class="small muted" style="margin:4px 0 0">Dienstzeit bisher: '+fmtDZ(G.weeks())
+    + (cur.jahre ? '. Dienstzeitende: '+(G.dzOver() ? 'erreicht' : 'in '+fmtDZ(G.dzLeft())) : '. Kein Dienstzeitende.')+'</p>'
+    + '<p class="small" style="margin:8px 0 0">Ein echter Tag entspricht einer Dienstwoche.</p></div>';
+  const opts = Object.entries(DZ).filter(([k,v]) => v.rang > cur.rang);
+  if(opts.length){
+    h += '<div class="panel" style="margin-top:12px">' + opts.map(([k,v]) => {
+      const req = G.dzReqs(k), ok = req.every(x=>x.ok);
+      return '<div class="target"><div style="font-weight:700;font-size:17px">'+esc(v.name)+'</div><div class="small muted">Verpflichtungsprämie '+eur(v.praemie)+'</div>'
+        + reqList(req)+'<button class="btn wide" data-act="verpflichten" data-id="'+k+'" '+(ok?'':'disabled')+'>Verpflichten</button></div>';
+    }).join('') + '</div>';
+  }
+  if(G.dzOver()) h += '<div class="panel pad" style="margin-top:12px"><p><b>Ausscheiden</b></p><p class="small">Du verlässt die Truppe und fängst als Wiedereinsteller neu an. Jede abgeschlossene Dienstzeit bringt dauerhaft 5 % mehr Verdienst, höchstens 25 %.</p>'
+    + '<button class="btn danger" data-act="ausscheiden">Ausscheiden und neu beginnen</button></div>';
+  return h;
+}
+
+// Mögliche nächste Dienstgrade (Laufbahnwechsel über Pflichtlehrgänge)
+const NEXT = {
+  sdt:['gefr'], gefr:['ogefr'], ogefr:['hgefr'], hgefr:['sgefr','uffz'], sgefr:['osgefr','uffz'], osgefr:['korp','uffz'],
+  korp:['skorp'], skorp:[],
+  uffz:['stuffz'], stuffz:['fw'], fw:['ofw','fj'], ofw:['hfw','fj'], hfw:['sfw','fj'], sfw:['osfw'], osfw:[],
+  fj:['fhr'], fhr:['ofhr'], ofhr:['lt'],
+  lt:['olt'], olt:['hptm'], hptm:['maj'], maj:['oberstlt'], oberstlt:['oberst'], oberst:['bg'],
+  bg:['gm'], gm:['gl'], gl:['gen'], gen:[]
+};
+
+const STATS = [
+  {id:'fitness',    name:'Fitness',     desc:'Jede Stufe bringt 5 Punkte mehr maximale Ausdauer.'},
+  {id:'schiessen',  name:'Schießen',    desc:'Pflicht für viele Beförderungen. Später die Grundlage für Wettkämpfe.'},
+  {id:'fachwissen', name:'Fachwissen',  desc:'Jede Stufe bringt 3 % mehr Verdienst bei allen Diensten.'},
+  {id:'fuehrung',   name:'Führung',     desc:'Pflicht für Unteroffiziere und Offiziere. Bringt mehr Beurteilungspunkte.'},
+  {id:'vitaminb',   name:'Vitamin B',   desc:'Wer den Spieß kennt, kennt den Weg. Mehr Sold und bessere Beurteilungen.'},
+];
+const STAT_NAME = Object.fromEntries(STATS.map(s=>[s.id,s.name]));
+
+// min = Dauer in Minuten, st = Ausdauerkosten, pay = Grundverdienst, bp = Beurteilungspunkte
+const DIENSTE = [
+  {id:'innen',    name:'Innendienst',      min:5,   st:5,  pay:12,  bp:1,  t:0,
+   desc:'Formulare abheften, Kaffee kochen, beschäftigt aussehen.'},
+  {id:'formal',   name:'Formaldienst',     min:15,  st:10, pay:34,  bp:2,  t:0,
+   desc:'Stillgestanden, rührt euch, stillgestanden. Und das Ganze noch mal mit Gefühl.'},
+  {id:'wache',    name:'Wache',            min:30,  st:15, pay:70,  bp:4,  t:1,
+   desc:'Stundenlang einen Zaun bewachen, der sich nicht bewegt.'},
+  {id:'gelaende', name:'Geländedienst',    min:60,  st:25, pay:145, bp:7,  t:2,
+   desc:'Robben, tarnen, frieren. Danach ist alles nass, vor allem die Moral.'},
+  {id:'uebung',   name:'Truppenübung',     min:180, st:45, pay:480, bp:18, t:3,
+   desc:'Eine Woche Truppenübungsplatz, hier in drei Stunden. Der Regen ist trotzdem echt.'},
+  {id:'spez',     name:'Spezialauftrag',   min:120, st:25, pay:420, bp:14, spec:true,
+   desc:'Nur für Korporale: Die Arbeit, die sonst keiner kann, aber jeder abzeichnet.'},
+  {id:'uvd',      name:'Unteroffizier vom Dienst', min:240, st:40, pay:700, bp:20, groups:['U','F'],
+   desc:'Schlüssel, Stuben, Meldungen und eine Nacht ohne Schlaf.'},
+  {id:'stab',     name:'Stabsdienst',      min:120, st:20, pay:520, bp:14, groups:['A','O','G'],
+   desc:'Besprechungen über Besprechungen. Mit Folien.'},
+];
+/* ---------- Verwendungen ---------- */
+const VERW = {
+  inf: {name:'Infanterie', desc:'Vorne dabei, wenn es nass und dreckig wird.',
+        bonus:'Schießen-Ausbildung 20 % schneller, Geländedienst und Truppenübung bringen 15 % mehr Geld.'},
+  kfz: {name:'Kraftfahrer', desc:'Fährt alles, was Räder hat. Und manches, was keine mehr hat.',
+        bonus:'Alle Dienste kosten 20 % weniger Ausdauer.'},
+  inst:{name:'Instandsetzung', desc:'Repariert, was andere kaputtgefahren haben.',
+        bonus:'Fachwissen-Ausbildung 20 % schneller, 10 % mehr Geld bei allen Diensten.'},
+  san: {name:'Sanitätsdienst', desc:'Pflaster, Tape und gute Nerven.',
+        bonus:'20 Punkte mehr maximale Ausdauer.'},
+  fm:  {name:'Fernmelder', desc:'Ohne Funk keine Führung. Ohne Fernmelder kein Funk.',
+        bonus:'10 % mehr Beurteilungspunkte.'},
+  koch:{name:'Feldkoch', desc:'Wer das Essen macht, hat die Macht.',
+        bonus:'Ansehen bei allen steigt um 50 % stärker.'},
+};
+DIENSTE.push(
+  {id:'ausbilder', name:'Rekrutenausbildung', min:120, st:30, pay:520, bp:14, groups:['U','F'], hideFor:['A','O','G'],
+   desc:'Zwölf Rekruten, ein Gewehr, und jeder hält es anders falsch.'},
+  {id:'spiess_v', name:'Spieß-Vertretung', min:240, st:35, pay:950, bp:22, groups:['F'], minT:8, hideFor:['A','O','G'],
+   desc:'Brockmann hat Urlaub. Jetzt bist du der, vor dem alle Angst haben.'},
+  {id:'hoersaal', name:'Hörsaaldienst', min:120, st:20, pay:480, bp:15, groups:['A'], hideFor:['O','G'],
+   desc:'Lernen, Klausuren, Kaffee. Meistens in dieser Reihenfolge.'},
+  {id:'zug', name:'Zug führen', min:180, st:30, pay:900, bp:20, groups:['O'], hideFor:['G'],
+   desc:'Dreißig Leute, drei Gruppenführer und ein Funkgerät, das nur manchmal will.'},
+  {id:'kompanie', name:'Kompanie führen', min:240, st:35, pay:1500, bp:26, groups:['O'], minT:12, hideFor:['G'],
+   desc:'Jetzt bist du der mit den Folien.'},
+  {id:'lagezentrum', name:'Dienst im Lagezentrum', min:240, st:25, pay:1900, bp:28, groups:['O','G'], minT:13,
+   desc:'Zwölf Bildschirme, drei Kaffeemaschinen, eine Lage.'},
+  {id:'truppenbesuch', name:'Truppenbesuch', min:180, st:20, pay:2600, bp:30, groups:['G'],
+   desc:'Alle Kasernen sind frisch gestrichen. Zufällig immer genau dort, wo du hinkommst.'},
+  {id:'e_patr',   name:'Patrouille',        min:120, st:30, pay:900, bp:14, einsatz:true, desc:'Raus aus dem Lager, Augen auf, Funk an.'},
+  {id:'e_wache',  name:'Lagerwache',        min:60,  st:15, pay:390, bp:7,  einsatz:true, desc:'Der Zaun ist hier höher. Spannender ist er trotzdem nicht.'},
+  {id:'e_konvoi', name:'Versorgungskonvoi', min:180, st:35, pay:1350, bp:18, einsatz:true, desc:'Wasser, Diesel, Post. Wichtig in dieser Reihenfolge, außer für die Post.'},
+  {id:'e_betreu', name:'Betreuungsdienst',  min:45,  st:5,  pay:180, bp:4,  einsatz:true, desc:'Kicker reparieren, Grillabend planen, den WLAN-Router neu starten.'},
+  {id:'ga_marsch', name:'Ausbildungsmarsch', min:30, st:20, pay:40, bp:3, t:0, ga:true, desc:'Zwölf Kilometer mit Gepäck. Die Blasen sind inklusive.'},
+  {id:'v_inf',  name:'Spähtrupp',            min:75, st:25, pay:200, bp:9, t:1, verw:'inf',  desc:'Leise durchs Gelände, Gegner finden, nicht auffallen.'},
+  {id:'v_kfz',  name:'Kolonnenfahrt',        min:90, st:20, pay:230, bp:8, t:1, verw:'kfz',  desc:'Zwölf Fahrzeuge, eine Route, und das Navi will in den Wald.'},
+  {id:'v_inst', name:'Fahrzeuginstandsetzung', min:90, st:25, pay:240, bp:9, t:1, verw:'inst', desc:'Ein Lkw mit einem Geräusch, das niemand beschreiben kann.'},
+  {id:'v_san',  name:'Sanitätsbereitschaft', min:60, st:15, pay:160, bp:8, t:1, verw:'san',  desc:'Bereitschaft beim Sport. Meistens Blasen, manchmal Drama.'},
+  {id:'v_fm',   name:'Funkbetrieb',          min:60, st:15, pay:170, bp:9, t:1, verw:'fm',   desc:'„Kommen.“ Rauschen. „Kommen!“ Rauschen.'},
+  {id:'v_koch', name:'Feldküche',            min:75, st:25, pay:190, bp:7, t:1, verw:'koch', desc:'Erbsensuppe für hundertzwanzig. Die Kelle ist dein Zepter.'},
+);
+
+/* ---------- Stube ---------- */
+const STUBE = [
+  {id:'bett',   name:'Bett',           cost:[300,1200,4000],
+   levels:['Feldbett mit kratziger Wolldecke','Neue Matratze','Daunendecke und ein echtes Kissen','Boxspringbett, irgendwie organisiert'],
+   fx:'Ausdauer lädt je Stufe 5 % schneller.'},
+  {id:'spind',  name:'Spind',          cost:[250,1000,3500],
+   levels:['Standardspind, quietscht','Ordnungssystem mit Etiketten','Doppelspind mit Spiegel','Spind mit Beleuchtung, Brockmann ist neidisch'],
+   fx:'Je Stufe 4 % mehr Beurteilungspunkte.', rel:{3:{spiess:4}}},
+  {id:'kaffee', name:'Kaffeemaschine', cost:[150,800,3000],
+   levels:['Keine. Kaffee gibt’s am Automaten im Flur.','Filtermaschine vom Flohmarkt','Siebträger','Vollautomat mit Milchschaum'],
+   fx:'Je Stufe 10 Punkte mehr maximale Ausdauer.', rel:{2:{chef:2}}},
+  {id:'kuehl',  name:'Kühlschrank',    cost:[400,1500,5000],
+   levels:['Keiner. Die Milch steht auf dem Fensterbrett.','Mini-Kühlschrank','Kühlschrank mit Gefrierfach','Getränkekühlschrank mit Glastür'],
+   fx:'Je Stufe 5 % mehr Tagessold.', rel:{1:{kalle:3,dennis:3}}},
+  {id:'hantel', name:'Hantelbank',     cost:[200,900,3200],
+   levels:['Keine','Kurzhanteln unter dem Bett','Hantelbank','Kraftstation, Lena trainiert jetzt bei dir'],
+   fx:'Fitness-Ausbildung je Stufe 8 % schneller.', rel:{3:{lena:6}}},
+];
+const STUBE_I = Object.fromEntries(STUBE.map(x=>[x.id,x]));
+
+/* ---------- Ausrüstung ---------- */
+const GEAR = [
+  {id:'stiefel',  name:'Eigene Kampfstiefel',     cost:400,   req:r=>r.t>=1, reqL:'ab Gefreiter',
+   fx:'Alle Dienste kosten 5 % weniger Ausdauer.', desc:'Endlich keine Blasen mehr. Die Stiefel aus der Kammer kommen in den Spind, zur Erinnerung.'},
+  {id:'uhr',      name:'Taktische Uhr',           cost:900,   req:r=>r.t>=2, reqL:'ab Obergefreiter',
+   fx:'Alle Dienste dauern 5 % kürzer.', desc:'Kann Höhenmeter, Puls und Mondphasen. Du brauchst nur die Uhrzeit.'},
+  {id:'rucksack', name:'Guter Rucksack',          cost:1500,  req:r=>r.t>=3, reqL:'ab Hauptgefreiter',
+   fx:'15 Punkte mehr maximale Ausdauer.', desc:'Achtzig Liter, zwölf Fächer, und trotzdem findest du nichts.'},
+  {id:'kalender', name:'Dienstkalender in Leder', cost:2500,  req:r=>r.g!=='M', reqL:'ab Unteroffizier',
+   fx:'5 % mehr Beurteilungspunkte.', desc:'Wer einen Kalender hat, hat Termine. Wer Termine hat, ist wichtig.'},
+  {id:'pfeife',   name:'Trillerpfeife mit Kordel', cost:3000, req:r=>'FAOG'.includes(r.g), reqL:'ab Feldwebel',
+   fx:'Führung-Ausbildung 10 % schneller.', desc:'Ein Pfiff, und alle stehen. Meistens.'},
+  {id:'tablet',   name:'Dienst-Tablet',           cost:8000,  req:r=>'OG'.includes(r.g), reqL:'ab Leutnant',
+   fx:'Lehrgänge 20 % günstiger.', desc:'Mit allen Vorschriften drauf. Und zwölf Updates, die gerade installiert werden.'},
+  {id:'wagen',    name:'Dienstwagen mit Fahrer',  cost:25000, req:r=>(r.g==='O' && r.t>=15) || r.g==='G', reqL:'ab Oberst',
+   fx:'Ausdauer lädt 20 % schneller.', desc:'Endlich auf dem Rücksitz schlafen. Dein Fahrer heißt zufällig Dennis.', rel:{dennis:5}},
+  {id:'stander',  name:'Generalsstander',         cost:60000, req:r=>r.g==='G', reqL:'ab Brigadegeneral',
+   fx:'10 % mehr Verdienst bei allen Diensten.', desc:'Ein kleines Fähnchen am Dienstwagen. Alle Wachen grüßen schon von Weitem.'},
+];
+/* ---------- Auslandseinsatz ---------- */
+const EINSATZ = [
+  {id:'ausbm', name:'Ausbildungsmission', ort:'Camp Morgenrot', days:7, n:4, fit:3, dz:'SaZ4',
+   req:r=>r.t>=3, reqL:'Dienstgrad ab Hauptgefreiter',
+   desc:'Partnersoldaten ausbilden, im Container wohnen und Sand in Dingen finden, die eigentlich verschlossen waren.'},
+  {id:'stabm', name:'Stabilisierungsmission', ort:'Feldlager Sandsturm', days:10, n:5, fit:5, dz:'SaZ8',
+   req:r=>r.g!=='M' || r.spec, reqL:'Dienstgrad ab Unteroffizier oder Korporal',
+   desc:'Patrouillen, Lagebesprechungen und ein Kühlschrank für vierzig Leute.'},
+  {id:'buendm', name:'Bündnisverstärkung', ort:'Camp Nordlicht', days:14, n:6, fit:8, dz:'SaZ8',
+   req:r=>'AOG'.includes(r.g) || (r.g==='F' && r.t>=8), reqL:'Dienstgrad ab Hauptfeldwebel oder Fahnenjunker',
+   desc:'Multinationaler Stab, fünf Sprachen, eine gemeinsame Kaffeemaschine.'},
+];
+const EINSATZ_I = Object.fromEntries(EINSATZ.map(e=>[e.id,e]));
+const EX_POOL = ['ex_container','ex_wlan','ex_hitze','ex_sprachmittler','ex_besuch','ex_post','ex_konvoi','ex_heimweh','ex_grill'];
+function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+function fmtRest(ms){
+  const s = Math.max(0,ms)/1000, d = Math.floor(s/86400), h = Math.floor(s%86400/3600), m = Math.floor(s%3600/60);
+  return d ? d+(d===1?' Tag ':' Tage ')+h+' Std.' : h ? h+' Std. '+m+' Min.' : m+' Min.';
+}
+function medalName(n){ return n>=3 ? 'in Gold' : n>=2 ? 'in Silber' : 'in Bronze'; }
+function einsatzReqs(E){
+  const r = G.rank();
+  return [
+    {label:E.reqL, ok:E.req(r)},
+    {label:'Grundausbildung abgeschlossen', ok:!!S.gaDone},
+    {label:'Dienstverhältnis mindestens '+DZ[E.dz].short, ok:DZ[S.verpfl].rang >= DZ[E.dz].rang},
+    {label:'Restdienstzeit mindestens '+E.days+' Wochen', ok:G.dzLeft() >= E.days},
+    {label:'Fitness Stufe '+E.fit, ok:S.stats.fitness >= E.fit},
+    {label:'Kein laufender Dienst oder Lehrgang', ok:!S.dienst && !(S.ausb && S.ausb.type==='lehrgang')},
+    {label:'Einsatzpause vorbei', ok:!S.einsatzPause || now() >= S.einsatzPause},
+  ];
+}
+function startEinsatz(id){
+  const E = EINSATZ_I[id]; if(!E || S.einsatz) return 'Du bist schon im Einsatz.';
+  if(!einsatzReqs(E).every(x=>x.ok)) return 'Voraussetzungen fehlen.';
+  const dur = E.days*864e5/S.speed, ev = shuffle(EX_POOL).slice(0, E.n);
+  S.einsatz = {id, start:now(), end:now()+dur, cps:ev.map((_,i)=>now()+dur*(i+1)/(ev.length+1)), ev, next:0, score:0, fin:false};
+  return null;
+}
+// Auslandszuschlag: 15 Tagessätze pro Einsatztag, plus Leistungszuschlag je nach Bewertung
+function einsatzRate(){ return Math.round(G.rank().sold * 15); }
+function einsatzZuschlag(E){ return E.days * einsatzRate(); }
+const EINSATZ_BONUS = [0, 1.25, 1.1, 1, .9];
+function finishEinsatz(){
+  const a = S.einsatz; if(!a) return '';
+  const E = EINSATZ_I[a.id], s = a.score;
+  const note = s >= E.n*3 ? 1 : s >= E.n*2 ? 2 : s >= E.n ? 3 : 4;
+  const zuschlag = Math.round(einsatzZuschlag(E) * EINSATZ_BONUS[note]);
+  S.einsatz = null; S.money += zuschlag; G.addPoints(10 + (4-note)*5);
+  S.einsaetze.push({id:a.id, ts:now(), note});
+  S.pakete = Math.min(9, (S.pakete||0)+2);
+  S.einsatzPause = now() + 14*864e5/S.speed;
+  return '<div class="stamp good">ZURÜCK</div><p><b>'+esc(E.name)+' abgeschlossen.</b> Bewertung: „'+NOTES[note]+'“. Auslandszuschlag: '+eur(zuschlag)+(note<=2 ? ' inklusive Leistungszuschlag' : '')+'.</p>'
+    + '<p>Du erhältst die Einsatzmedaille '+medalName(S.einsaetze.length)+'.</p><p class="small">Außerdem warten zwei Feldpostpakete in der Übersicht.</p>';
+}
+function renderEinsatz(){
+  let h = '<h2>Auslandseinsatz</h2>';
+  if(S.einsatz){
+    const E = EINSATZ_I[S.einsatz.id];
+    return h + '<div class="panel pad"><p style="margin-bottom:4px"><b>'+esc(E.name)+'</b>, '+esc(E.ort)+'</p><p class="small muted" style="margin:0">Einsatzpunkte: '+S.einsatz.score
+      + '. Rückkehr in '+fmtRest(S.einsatz.end-now())+'.</p></div>';
+  }
+  if(S.einsatzPause && now() < S.einsatzPause) h += '<p class="small muted">Einsatznachbereitung: Der nächste Einsatz ist in '+fmtRest(S.einsatzPause-now())+' möglich.</p>';
+  else h += '<p class="small muted">Ein Einsatz läuft über mehrere Tage. In der Zeit gibt es nur Einsatzdienste und keine Lehrgänge, dafür eigene Lagen, Auslandszuschlag und eine Medaille.</p>';
+  h += '<div class="panel">' + EINSATZ.map(E => {
+    const req = einsatzReqs(E), ok = req.every(x=>x.ok);
+    return '<div class="target"><div style="font-weight:700;font-size:17px">'+esc(E.name)+'</div>'
+      + '<div class="small muted">'+esc(E.ort)+', '+E.days+' Tage</div>'
+      + '<div class="small" style="margin-top:4px"><b>Auslandszuschlag:</b> '+eur(einsatzRate())+' pro Tag, insgesamt '+eur(einsatzZuschlag(E))+'. Bei sehr guter Bewertung 25 % mehr. Dazu besser bezahlte Einsatzdienste.</div>'
+      + '<p class="small" style="margin:6px 0 0">'+esc(E.desc)+'</p>' + reqList(req)
+      + '<button class="btn wide" data-act="einsatz" data-id="'+E.id+'" '+(ok?'':'disabled')+'>Für den Einsatz melden</button></div>';
+  }).join('') + '</div>';
+  if(S.einsaetze.length) h += '<p class="small muted" style="margin-top:10px">Bisherige Einsätze: '+S.einsaetze.map(x=>EINSATZ_I[x.id].name+' („'+NOTES[x.note]+'“)').join(', ')+'</p>';
+  return h;
+}
+
+/* ---------- Feldpost und Sammelalbum ---------- */
+const RAR = {
+  g:{name:'gewöhnlich', label:'Gewöhnlich', col:'var(--muted)', dup:20},
+  s:{name:'selten',     label:'Selten',     col:'#3E78B2',      dup:60},
+  e:{name:'episch',     label:'Episch',     col:'#8A4FB0',      dup:200},
+  l:{name:'legendär',   label:'Legendär',   col:'var(--signal)', dup:800},
+};
+const ALBUM_BONUS = {g:'5 % mehr Verdienst', s:'10 Punkte mehr maximale Ausdauer', e:'5 % mehr Beurteilungspunkte', l:'10 % mehr Verdienst'};
+const ITEMS = [
+  {id:'socken', r:'g', name:'Wollsocken von Oma', text:'Kratzig, warm und mit eingestricktem Namen. Für den Fall, dass jemand sie klauen will.'},
+  {id:'ravioli', r:'g', name:'Dose Ravioli', text:'Mit Zettel: „Falls das Essen bei euch schlecht ist.“'},
+  {id:'riegel', r:'g', name:'Zerdrückter Schokoriegel', text:'Die Feldpost war gründlich.'},
+  {id:'postkarte', r:'g', name:'Postkarte vom Heimatort', text:'Vorne der Marktplatz. Hinten: „Wann kommst du mal wieder?“'},
+  {id:'zahnpasta', r:'g', name:'Familienpackung Zahnpasta', text:'Drei Tuben. Dennis schaut interessiert.'},
+  {id:'lampe', r:'g', name:'Taschenlampe ohne Batterien', text:'Die Batterien kommen „im nächsten Paket“.'},
+  {id:'raetsel', r:'g', name:'Kreuzworträtselheft', text:'Schon halb ausgefüllt. Von Opa.'},
+  {id:'tee', r:'g', name:'Teebeutel-Sortiment', text:'Vierzig Sorten, alle mit „Ruhe“ oder „Entspannung“ im Namen.'},
+  {id:'tape', r:'g', name:'Klebeband in Flecktarn', text:'Hält alles zusammen. Fast alles.'},
+  {id:'nachbarin', r:'g', name:'Brief von der Nachbarin', text:'Sie gießt deine Pflanzen. Eine ist leider „verreist“.'},
+  {id:'baerchen', r:'g', name:'Geschmolzene Gummibärchen', text:'Jetzt ein einziger großer Bär.'},
+  {id:'duschgel', r:'g', name:'Duschgel „Sport Fresh“', text:'Riecht nach Turnhalle, aber auf die gute Art.'},
+  {id:'schal', r:'s', name:'Gestrickter Schal mit Dienstgrad', text:'Der Dienstgrad stimmt nicht ganz, aber die Mühe zählt.'},
+  {id:'hund', r:'s', name:'Foto vom Hund', text:'Er schaut, als würde er fragen, wo du bleibst.'},
+  {id:'zeitung', r:'s', name:'Heimatzeitung mit dir drin', text:'Seite 14, unten links: „Aus unserer Gemeinde bei der Bundeswehr.“'},
+  {id:'kastanie', r:'s', name:'Glückskastanie', text:'Seit der Grundschule in jeder Jackentasche. Jetzt wieder bei dir.'},
+  {id:'messer', r:'s', name:'Opas Taschenmesser', text:'Mit Gravur und einer Klinge, die nichts mehr schneidet.'},
+  {id:'vereinsschal', r:'s', name:'Vereinsschal', text:'Der Verein ist abgestiegen. Der Schal bleibt.'},
+  {id:'kuchen', r:'s', name:'Kuchen im Glas', text:'Hält sechs Monate. Bei dir hält er sechs Minuten.'},
+  {id:'karten', r:'s', name:'Spielkarten mit Widmung', text:'„Damit du Kalle endlich mal schlägst.“'},
+  {id:'kassette', r:'s', name:'Alte Mixtape-Kassette', text:'Du hast keinen Kassettenrekorder. Kalle schon.'},
+  {id:'kapseln', r:'e', name:'Kaffeekapseln für ein Jahr', text:'Die Kompanie liebt dich. Zumindest, bis sie leer sind.'},
+  {id:'feldflasche', r:'e', name:'Opas alte Feldflasche', text:'Ein Erbstück mit Geschichte und einer Delle.'},
+  {id:'fernglas', r:'e', name:'Fernglas vom Großvater', text:'Damit siehst du den Spieß kommen, bevor er dich sieht.'},
+  {id:'trikot', r:'e', name:'Signiertes Trikot', text:'Von wem, weiß keiner. Aber die Unterschrift ist schwungvoll.'},
+  {id:'buergermeister', r:'e', name:'Brief vom Bürgermeister', text:'Offizielles Briefpapier, echter Stempel. Deine Mutter hat ihn darum gebeten.'},
+  {id:'drohne', r:'e', name:'Drohnen-Bausatz', text:'„Für die Freizeit.“ Brockmann sieht das anders.'},
+  {id:'notizbuch', r:'l', name:'Brockmanns verschollenes Notizbuch', text:'Darin: alle Spindkontrollen seit 1998. Und ein Gedicht.'},
+  {id:'spaten', r:'l', name:'Der goldene Spaten', text:'Niemand weiß, woher er kommt. Jeder weiß, dass er Glück bringt.'},
+  {id:'rezept', r:'l', name:'Das Geheimrezept der Truppenküche', text:'Jetzt weißt du, warum die Soße grau ist. Du wirst es niemandem verraten.'},
+];
+function albumSet(r){ return !!(S && S.album) && ITEMS.filter(i=>i.r===r).every(i=>S.album[i.id]); }
+function openPaket(){
+  if(!S.pakete) return;
+  S.pakete--;
+  const x = Math.random()*100, r = x<2 ? 'l' : x<12 ? 'e' : x<38 ? 's' : 'g';
+  const it = pick(ITEMS.filter(i=>i.r===r)), dup = !!S.album[it.id];
+  S.album[it.id] = (S.album[it.id]||0) + 1;
+  let extra;
+  if(dup){ const v = Math.round(RAR[r].dup * G.rank().sold/40); S.money += v; extra = 'Doppelt. Kalle kauft es dir für '+eur(v)+' ab.'; }
+  else extra = '<b>Neu im Sammelalbum!</b>' + (albumSet(r) ? ' Alle '+RAR[r].name+'en Stücke gesammelt: '+ALBUM_BONUS[r]+'.' : '');
+  save(); render();
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-label="Feldpost"><div class="sheet">'
+    + '<div class="paket" style="--rc:'+RAR[r].col+'"><div class="small" style="color:var(--rc);font-weight:700">'+RAR[r].label+'</div>'
+    + '<div class="pname">'+esc(it.name)+'</div><p class="evtext" style="margin:0">'+esc(it.text)+'</p></div>'
+    + '<p class="small">'+extra+'</p>'
+    + (S.pakete ? '<button class="btn wide" data-act="paket">Nächstes Paket öffnen ('+S.pakete+')</button>' : '')
+    + '<button class="btn ghost wide" data-act="close" style="margin-top:8px">Weiter</button></div></div>';
+}
+function renderAlbum(){
+  const own = ITEMS.filter(i=>S.album[i.id]).length;
+  return '<h2>Sammelalbum</h2><p class="small muted">'+own+' von '+ITEMS.length+' Stücken. Feldpostpakete kommen nach Diensten, Lehrgängen und Einsätzen.</p>'
+    + '<div class="album">' + ITEMS.map(i => S.album[i.id]
+        ? '<div class="tile" style="--rc:'+RAR[i.r].col+'" title="'+esc(i.text)+'"><span>'+esc(i.name)+'</span></div>'
+        : '<div class="tile miss" style="--rc:'+RAR[i.r].col+'" aria-label="Noch nicht gefunden, '+RAR[i.r].name+'"><span>?</span></div>').join('') + '</div>'
+    + '<ul class="req">' + Object.keys(RAR).map(k => '<li class="'+(albumSet(k)?'ok':'no')+'"><b>'+(albumSet(k)?'✓':'·')+'</b><span>Alle '+RAR[k].name+'en Stücke: '+ALBUM_BONUS[k]+'</span></li>').join('') + '</ul>';
+}
+
+/* ---------- Stubenrunde: Siebzehn und Vier mit Kalle ---------- */
+const SR_MAX = 5;
+let SR = null;
+const SUITS = ['♥','♦','♣','♠'];
+const FACES = [['7',7],['8',8],['9',9],['10',10],['B',2],['D',3],['K',4],['A',11]];
+function srLeft(){ return (!S.sr || S.sr.day !== dateStr()) ? SR_MAX : SR_MAX - S.sr.n; }
+function srUse(){ if(!S.sr || S.sr.day !== dateStr()) S.sr = {day:dateStr(), n:0}; S.sr.n++; }
+function newDeck(){ const d = []; for(const s of SUITS) for(const [f,v] of FACES) d.push({f,s,v}); return shuffle(d); }
+function handVal(h){ return h.reduce((a,c)=>a+c.v, 0); }
+function cardHtml(c, hidden){
+  return hidden ? '<span class="card back" aria-label="verdeckte Karte">?</span>'
+    : '<span class="card'+('♥♦'.includes(c.s)?' red':'')+'">'+c.f+c.s+'</span>';
+}
+function srStakes(){ const s = G.rank().sold; return [0, s, 3*s, 5*s].map(Math.round); }
+function srRender(msg){
+  let body;
+  const head = '<div class="evhead">'+npcBadge('kalle')+'<div><div class="evname">Stubenrunde</div><div class="small muted">'
+    + (SR ? 'Einsatz: '+(SR.bet ? eur(SR.bet) : 'die Ehre') : 'Siebzehn und Vier mit Kalle') + '</div></div></div>';
+  if(!SR){
+    const left = srLeft();
+    body = head + '<p class="evtext">„Was setzt du?“ Kalle mischt mit einer Geschwindigkeit, die verdächtig ist.</p>'
+      + '<p class="small muted">Wer näher an 21 kommt, gewinnt, über 21 hast du verloren. Zwei Asse sind „Feuer“ und zählen doppelt. Kalle zieht bis 17. Noch '+left+' von '+SR_MAX+' Runden heute.</p>'
+      + (left > 0 ? '<div class="choices">' + srStakes().map((v,i)=>'<button class="btn ghost choice" data-act="sr_start" data-id="'+i+'" '+(S.money<v?'disabled':'')+'><span>'+(v ? 'Um '+eur(v) : 'Um die Ehre')+'</span></button>').join('') + '</div>'
+                  : '<p><b>Für heute ist Schluss.</b> Kalle verstaut die Karten im Spind. Nach dem Zapfenstreich wird nicht mehr gespielt.</p>')
+      + '<button class="btn ghost wide" data-act="close" style="margin-top:14px">Aufstehen</button>';
+  } else {
+    const done = SR.done;
+    body = head
+      + '<p class="small muted" style="margin:6px 0 4px">Kalle'+(done ? ' ('+handVal(SR.d)+')' : '')+'</p><div class="hand">'+SR.d.map((c,i)=>cardHtml(c, !done && i===1)).join('')+'</div>'
+      + '<p class="small muted" style="margin:12px 0 4px">Du ('+handVal(SR.p)+')</p><div class="hand">'+SR.p.map(c=>cardHtml(c)).join('')+'</div>'
+      + (msg ? '<p class="evtext" style="margin-top:12px">'+msg+'</p>' : '')
+      + (!done
+        ? '<div class="choices" style="flex-direction:row"><button class="btn" style="flex:1" data-act="sr_hit">Karte</button><button class="btn ghost" style="flex:1" data-act="sr_stand">Passe</button></div>'
+        : (SR.cheat && !SR.accused ? '<button class="btn ghost wide" style="margin-top:10px" data-act="sr_accuse">Kalle beim Schummeln erwischen ('+rollChance({stat:'vitaminb',base:40})+' %)</button>' : '')
+          + '<div class="choices" style="flex-direction:row;margin-top:10px">'
+          + (srLeft() > 0 ? '<button class="btn" style="flex:1" data-act="sr_again">Noch eine Runde</button>' : '')
+          + '<button class="btn ghost" style="flex:1" data-act="close">Aufstehen</button></div>');
+  }
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-label="Stubenrunde"><div class="sheet ev">'+body+'</div></div>';
+}
+function srStart(i){
+  const v = srStakes()[i];
+  if(v === undefined || srLeft() <= 0 || S.money < v) return;
+  S.money -= v; srUse();
+  const deck = newDeck();
+  SR = {bet:v, deck, p:[deck.pop(), deck.pop()], d:[deck.pop(), deck.pop()], done:false, cheat:false, accused:false};
+  save(); renderRes();
+  if(SR.p[0].f==='A' && SR.p[1].f==='A') return srEnd('feuer');
+  srRender();
+}
+function srHit(){ if(!SR || SR.done) return; SR.p.push(SR.deck.pop()); if(handVal(SR.p) > 21) return srEnd('bust'); srRender(); }
+function srStand(){
+  if(!SR || SR.done) return;
+  while(handVal(SR.d) < 17) SR.d.push(SR.deck.pop());
+  if(handVal(SR.d) > 21 && Math.random() < .2){
+    const need = 21 - handVal(SR.d.slice(0,-1));
+    const fit = FACES.filter(([f,v]) => v <= need).sort((a,b)=>b[1]-a[1])[0];
+    if(fit){ SR.d[SR.d.length-1] = {f:fit[0], s:pick(SUITS), v:fit[1]}; SR.cheat = true; }
+  }
+  const pv = handVal(SR.p), dv = handVal(SR.d);
+  srEnd(dv > 21 || pv > dv ? 'win' : pv === dv ? 'push' : 'lose');
+}
+function srEnd(r){
+  SR.done = true; let msg = '';
+  if(r==='feuer'){ S.money += SR.bet*3; msg = 'Zwei Asse, Feuer! Kalle wirft die Karten hin.'+(SR.bet ? ' +'+eur(SR.bet*2) : ''); }
+  if(r==='win'){ S.money += SR.bet*2; msg = 'Gewonnen!'+(SR.bet ? ' +'+eur(SR.bet) : ' Kalle verlangt sofort Revanche.'); }
+  if(r==='push'){ S.money += SR.bet; msg = 'Unentschieden. Jeder behält seins.'; }
+  if(r==='lose'){ msg = 'Kalle gewinnt'+(SR.bet ? ' und steckt '+eur(SR.bet)+' ein.' : '.'); }
+  if(r==='bust'){ msg = 'Über 21. Kalle grinst'+(SR.bet ? ' und kassiert '+eur(SR.bet)+'.' : '.'); }
+  if(SR.cheat) msg += ' Irgendetwas war komisch an Kalles letzter Karte.';
+  save(); renderRes(); srRender(msg);
+}
+function srAccuse(){
+  if(!SR || !SR.cheat || SR.accused) return;
+  SR.accused = true; let msg;
+  if(Math.random()*100 < rollChance({stat:'vitaminb', base:40})){
+    S.money += SR.bet*2; applyFx({rel:{kalle:-3}});
+    msg = 'Erwischt! Im Ärmel steckt noch eine zweite Karte. Kalle zahlt dir den Gewinn und murmelt etwas von Glück.';
+  } else {
+    applyFx({rel:{kalle:-2}});
+    msg = 'Kalle zeigt seine leeren Ärmel und schaut gekränkt. Beweisen kannst du nichts.';
+  }
+  save(); renderRes(); srRender(msg);
+}
+
+function hasGear(id){ return !!(S && S.gear && S.gear[id]); }
+
+function unlocksFor(id){
+  const cur = S.rank;
+  const before = new Set(DIENSTE.filter(d=>!G.dienstLock(d)).map(d=>d.id));
+  const gb = new Set(GEAR.filter(g=>g.req(R[cur])).map(g=>g.id));
+  S.rank = id;
+  const out = [
+    ...DIENSTE.filter(d => !G.dienstLock(d) && !before.has(d.id) && !(d.hideFor && d.hideFor.includes(R[id].g))).map(d=>'Dienst „'+d.name+'“'),
+    ...GEAR.filter(g => g.req(R[id]) && !gb.has(g.id)).map(g=>g.name),
+    ...EINSATZ.filter(e => e.req(R[id]) && !e.req(R[cur])).map(e=>'Auslandseinsatz „'+e.name+'“')
+  ];
+  S.rank = cur;
+  return out;
+}
+
+function stubeSvg(){
+  const s = S.stube; let g = '';
+  g += '<rect width="360" height="160" fill="var(--wall)"/><rect y="160" width="360" height="60" fill="var(--floor)"/><rect y="157" width="360" height="4" fill="var(--metal)" opacity=".7"/>';
+  g += '<rect x="140" y="22" width="76" height="58" rx="2" fill="var(--window)" stroke="var(--metal)" stroke-width="3"/><path d="M178 22v58M140 51h76" stroke="var(--metal)" stroke-width="2"/>';
+  // Spind
+  const doors = s.spind>=2 ? 3 : 2, sw = doors*29;
+  if(s.spind>=3) g += '<ellipse cx="'+(12+sw/2)+'" cy="36" rx="'+(sw/2+10)+'" ry="9" fill="var(--signal)" opacity=".25"/>';
+  g += '<rect x="12" y="38" width="'+sw+'" height="122" rx="2" fill="var(--metal)"/>';
+  for(let i=0;i<doors;i++){
+    const x = 12+i*29;
+    if(i) g += '<path d="M'+x+' 38v122" stroke="var(--wall)" stroke-width="1.5" opacity=".6"/>';
+    g += '<rect x="'+(x+22)+'" y="92" width="3" height="12" rx="1" fill="var(--wall)"/>';
+    if(s.spind>=1) g += '<rect x="'+(x+6)+'" y="46" width="16" height="7" fill="#F2F2EA"/>';
+  }
+  if(s.spind>=2) g += '<rect x="17" y="62" width="18" height="44" fill="var(--window)" opacity=".85"/>';
+  if(s.spind>=3) g += '<rect x="12" y="34" width="'+sw+'" height="4" fill="var(--signal)"/>';
+  // Bett
+  const bx = 104;
+  g += s.bett>=3 ? '<rect x="'+(bx-4)+'" y="108" width="9" height="56" rx="2" fill="var(--wood)"/>' : '<rect x="'+(bx-2)+'" y="122" width="5" height="42" fill="var(--metal)"/>';
+  g += '<rect x="'+bx+'" y="150" width="112" height="6" fill="'+(s.bett>=3?'var(--wood)':'var(--metal)')+'"/><rect x="'+(bx+2)+'" y="156" width="4" height="10" fill="var(--metal)"/><rect x="'+(bx+106)+'" y="156" width="4" height="10" fill="var(--metal)"/>';
+  const mh = [5,10,12,16][s.bett];
+  g += '<rect x="'+(bx+4)+'" y="'+(150-mh)+'" width="106" height="'+mh+'" rx="3" fill="#DCDFD3"/>';
+  if(s.bett>=2){
+    g += '<ellipse cx="'+(bx+20)+'" cy="'+(147-mh)+'" rx="14" ry="6" fill="#F4F4EE"/>';
+    g += '<rect x="'+(bx+38)+'" y="'+(146-mh)+'" width="74" height="'+(mh+8)+'" rx="4" fill="var(--fabric)"/>';
+  } else {
+    g += '<rect x="'+(bx+44)+'" y="'+(148-mh)+'" width="66" height="'+(mh+4)+'" rx="2" fill="#7C7F70"/>';
+  }
+  // Kaffee
+  g += '<rect x="226" y="116" width="50" height="5" fill="var(--wood)"/><rect x="230" y="121" width="4" height="39" fill="var(--wood)"/><rect x="268" y="121" width="4" height="39" fill="var(--wood)"/>';
+  g += [
+    '<rect x="246" y="106" width="9" height="10" rx="1" fill="#E8E8E0"/>',
+    '<rect x="238" y="96" width="16" height="20" rx="2" fill="#2B2B2B"/><rect x="242" y="108" width="8" height="8" fill="#8FA9A9"/>',
+    '<rect x="236" y="92" width="24" height="24" rx="2" fill="#B8BBB4"/><rect x="240" y="104" width="16" height="3" fill="#333"/><rect x="245" y="109" width="6" height="7" fill="#E8E8E0"/>',
+    '<rect x="234" y="86" width="28" height="30" rx="3" fill="#222"/><rect x="239" y="91" width="18" height="7" rx="1" fill="var(--signal)"/><rect x="245" y="106" width="7" height="10" fill="#E8E8E0"/>'
+  ][s.kaffee];
+  // Kühlschrank
+  if(s.kuehl===1) g += '<rect x="292" y="124" width="34" height="36" rx="3" fill="#ECEDE6" stroke="var(--metal)"/><rect x="318" y="132" width="3" height="10" fill="var(--metal)"/>';
+  if(s.kuehl===2) g += '<rect x="288" y="74" width="42" height="86" rx="3" fill="#ECEDE6" stroke="var(--metal)"/><path d="M288 100h42" stroke="var(--metal)"/><rect x="322" y="82" width="3" height="12" fill="var(--metal)"/><rect x="322" y="106" width="3" height="18" fill="var(--metal)"/>';
+  if(s.kuehl===3){
+    g += '<rect x="286" y="58" width="46" height="102" rx="3" fill="#30343A"/><rect x="291" y="64" width="36" height="88" fill="#7FA7C2" opacity=".45"/>';
+    for(let r=0;r<3;r++) for(let c=0;c<5;c++) g += '<rect x="'+(294+c*6.5)+'" y="'+(70+r*27)+'" width="4" height="16" rx="1" fill="'+['#C9A227','#7A3B2E','#3E6B3A'][(r+c)%3]+'"/>';
+  }
+  // Hantel
+  const db = (x,y) => '<rect x="'+x+'" y="'+(y+3)+'" width="20" height="2" fill="#555"/><rect x="'+x+'" y="'+y+'" width="5" height="8" rx="1" fill="#333"/><rect x="'+(x+15)+'" y="'+y+'" width="5" height="8" rx="1" fill="#333"/>';
+  if(s.hantel===1) g += db(42,200) + db(70,204);
+  if(s.hantel>=2){
+    if(s.hantel===3) g += '<rect x="36" y="170" width="5" height="36" fill="var(--metal)"/><rect x="116" y="170" width="5" height="36" fill="var(--metal)"/><rect x="28" y="177" width="100" height="3" fill="#555"/><rect x="28" y="171" width="7" height="15" rx="1" fill="#333"/><rect x="122" y="171" width="7" height="15" rx="1" fill="#333"/>';
+    g += '<rect x="44" y="194" width="70" height="7" rx="2" fill="var(--fabric)"/><rect x="50" y="201" width="4" height="10" fill="var(--metal)"/><rect x="104" y="201" width="4" height="10" fill="var(--metal)"/>' + db(130,204);
+  }
+  const desc = 'Deine Stube: ' + STUBE.map(it=>it.name+' – '+it.levels[s[it.id]]).join('; ');
+  return '<svg viewBox="0 0 360 220" role="img" aria-label="'+esc(desc)+'">'+g+'</svg>';
+}
+
+function renderKompanie(){
+  return '<h2>Kompanie</h2><div class="panel">' + Object.entries(NPCS).map(([k,n]) => {
+    const v = rel(k), dim = n.th && v < n.th;
+    return '<div class="row" style="align-items:flex-start"><div style="display:flex;gap:12px;min-width:0;flex:1">'+npcBadge(k,40)
+      + '<div class="info"><div class="title">'+esc(n.name)+'</div><div class="meta">'+esc(n.role)+'</div><div class="desc">'+esc(n.desc)+'</div>'
+      + '<div class="relbar"><i style="'+(v>=0?'left:50%;':'right:50%;')+'width:'+(Math.abs(v)/2)+'%;background:'+(v>=0?'var(--ok)':'var(--bad)')+'"></i></div>'
+      + '<div class="small'+(dim?' muted':'')+'">'+esc(n.perk)+'</div></div></div>'
+      + '<span class="num">'+(v>0?'+':'')+v+'</span></div>';
+  }).join('') + '</div>';
+}
+
+function renderRaum(){
+  let h = '<h2>Deine Stube</h2><div class="room">'+stubeSvg()+'</div>';
+  h += '<p class="small muted" style="margin-top:10px">Alles, was du einbaust, wirkt dauerhaft.</p><div class="panel">' + STUBE.map(it => {
+    const l = S.stube[it.id], max = it.cost.length, c = it.cost[l];
+    return '<div class="row"><div class="info"><div class="title">'+esc(it.name)+' <span class="tag">Stufe '+l+'/'+max+'</span></div>'
+      + '<div class="desc">'+esc(it.levels[l])+'</div><div class="meta">'+esc(it.fx)+(l<max ? ' Als Nächstes: '+esc(it.levels[l+1])+' für '+eur(c)+'.' : '')+'</div></div>'
+      + (l<max ? '<button class="btn" data-act="buy" data-id="'+it.id+'" '+(S.money<c?'disabled':'')+'>Einbauen</button>' : '<span class="small muted">fertig</span>')+'</div>';
+  }).join('') + '</div>';
+  h += renderAlbum();
+  h += '<h2>Stubenrunde</h2><div class="panel pad"><p>Kalle hat Karten. Siebzehn und Vier um Spielgeld, höchstens '+SR_MAX+' Runden am Tag. Noch '+srLeft()+' heute.</p><button class="btn" data-act="sr_open">Mitspielen</button></div>';
+  h += '<h2>Ausrüstung</h2><p class="small muted">Eigene Ausrüstung kaufst du einmal, sie wirkt dauerhaft. Neue Stücke gibt es mit höheren Dienstgraden.</p><div class="panel">' + GEAR.map(g => {
+    const own = hasGear(g.id), open = g.req(G.rank());
+    return '<div class="row"><div class="info"><div class="title">'+esc(g.name)+(own?' <span class="tag">vorhanden</span>':'')+'</div>'
+      + '<div class="desc">'+esc(g.desc)+'</div><div class="meta">'+esc(g.fx)+(own ? '' : ' Preis: '+eur(g.cost)+'.')+'</div></div>'
+      + (own ? '' : open ? '<button class="btn" data-act="gear" data-id="'+g.id+'" '+(S.money<g.cost?'disabled':'')+'>Kaufen</button>' : '<span class="small muted">'+esc(g.reqL)+'</span>')+'</div>';
+  }).join('') + '</div>';
+  return h + renderKompanie();
+}
+
+function renderVerw(){
+  let h = '<h2>Verwendung</h2>';
+  if(S.verw){
+    const v = VERW[S.verw], cost = 10*G.rank().sold;
+    h += '<div class="panel pad"><div style="font-weight:700;font-size:19px">'+esc(v.name)+'</div><p class="small" style="margin:4px 0 8px">'+esc(v.desc)+'</p>'
+      + '<p class="small"><b>Bonus:</b> '+esc(v.bonus)+'</p><button class="btn ghost" data-act="umschulung" '+(S.money<cost?'disabled':'')+'>Umschulung beantragen ('+eur(cost)+')</button></div>';
+  } else if(G.rank().t < 1){
+    h += '<div class="panel pad"><p style="margin:0">Ab dem Gefreiten wählst du deine Fachrichtung. Bis dahin bist du für alles zuständig, was sonst keiner macht.</p></div>';
+  } else {
+    h += '<p class="small muted">Deine Fachrichtung bringt einen eigenen Dienst, eigene Meldungen und einen dauerhaften Bonus. Ein späterer Wechsel kostet eine Umschulung.</p><div class="panel">'
+      + Object.entries(VERW).map(([k,v]) => '<div class="row"><div class="info"><div class="title">'+esc(v.name)+'</div><div class="desc">'+esc(v.desc)+'</div><div class="meta">'+esc(v.bonus)+'</div></div>'
+        + '<button class="btn" data-act="verw" data-id="'+k+'">Wählen</button></div>').join('') + '</div>';
+  }
+  return h;
+}
+
+const D = Object.fromEntries(DIENSTE.map(d=>[d.id,d]));
+D.uvd.hideFor = ['A','O','G']; D.spez.hideFor = ['U','F','A','O','G'];
+D.innen.hideFor = ['O','G']; D.wache.hideFor = ['O','G']; D.formal.hideFor = ['G'];
+
+const LEHRGAENGE = [
+  {id:'ual', name:'Unteroffizierlehrgang', ranks:['hgefr','sgefr','osgefr'], stats:{fuehrung:3}, cost:600, min:1440,
+   desc:'Öffnet die Laufbahn der Unteroffiziere.'},
+  {id:'fwl', name:'Feldwebellehrgang', ranks:['stuffz'], stats:{fuehrung:7,fachwissen:7}, cost:2500, min:2880,
+   desc:'Öffnet die Laufbahn der Feldwebel.'},
+  {id:'ofl', name:'Offizierlehrgang', ranks:['fw','ofw','hfw'], stats:{fuehrung:10,fachwissen:10}, cost:6000, min:4320,
+   desc:'Öffnet den Weg zum Offizier. Ab jetzt gibt es Folien.'},
+  {id:'stu', name:'Studium an der Bundeswehr-Uni', ranks:['ofhr'], stats:{fachwissen:14}, cost:12000, min:14400,
+   desc:'Drei Jahre Studium, hier in zehn Tagen. Pflicht für den Leutnant.'},
+];
+const L = Object.fromEntries(LEHRGAENGE.map(l=>[l.id,l]));
+
+const NOTES = ['', 'sehr gut', 'gut', 'befriedigend', 'ausreichend', 'mangelhaft'];
+const NOTE_MIN = [0, 120, 70, 35, 12, 0]; // Punkte der letzten 7 Tage
+
+const SPIESS = [
+  'Pünktlichkeit ist fünf Minuten vor der Zeit. Alles andere ist Urlaub auf Bewährung.',
+  'Ein sauberer Spind ist ein sauberer Charakter. Ihrer ist ausbaufähig.',
+  'Denken ist Glückssache. Melden ist Pflicht.',
+  'Wer nichts macht, macht nichts falsch. Wird aber auch nicht befördert.',
+  'Der Dienstweg ist das Ziel.',
+  'Ihr Antrag auf Motivation liegt vor. Bearbeitungszeit: unbestimmt.',
+  'Hier wird nicht gerannt. Hier wird zügig gegangen.',
+  'Wenn Sie Zeit zum Lehnen haben, haben Sie Zeit zum Fegen.',
+];
+/* ---------- Figuren ---------- */
+const NPCS = {
+  spiess:{name:'Hauptfeldwebel Brockmann', short:'Brockmann', role:'Der Spieß', col:'#8A3B2E',
+    desc:'Liebt Ordnung, Formulare und Sätze, die mit „Ich sag’s nur einmal“ anfangen.',
+    perk:'Gutes Ansehen bringt bis zu 20 % mehr Beurteilungspunkte, schlechtes kostet welche.'},
+  chef:{name:'Hauptmann von Ahlen', short:'von Ahlen', role:'Kompaniechef', col:'#2E4F7A',
+    desc:'Redet gern über Synergien und Mindsets. Hat für alles eine Folie.',
+    perk:'Gutes Ansehen bringt bis zu 10 % mehr Beurteilungspunkte.'},
+  kalle:{name:'Kalle Kallweit', short:'Kalle', role:'Stubenkamerad', col:'#7A5A1E',
+    desc:'Kann alles besorgen. Man fragt besser nicht, woher.',
+    perk:'Ab Ansehen 30: Ausbildungen 10 % günstiger.', th:30},
+  lena:{name:'Lena Brandt', short:'Lena', role:'Stubenkameradin', col:'#3E6B3A',
+    desc:'Läuft die Hindernisbahn zum Aufwärmen. Hat für alles einen Plan.',
+    perk:'Ab Ansehen 30: Ausbildungen 10 % schneller.', th:30},
+  dennis:{name:'Dennis Hoffmann', short:'Dennis', role:'Stubenkamerad', col:'#5E4A7A',
+    desc:'Kann überall schlafen. Im Stehen, im Gelände, einmal sogar beim Appell.',
+    perk:'Ab Ansehen 30: Ausdauer lädt 15 % schneller.', th:30},
+  krueger:{name:'Oberfeldwebel Krüger', short:'Krüger', role:'Hörsaalleiter bei Lehrgängen', col:'#6B4E2E',
+    desc:'Leitet seit zwanzig Jahren Lehrgänge. Hat alles schon gesehen, das meiste zweimal.',
+    perk:'Ab Ansehen 30: jede gute Leistung im Lehrgang zählt einen Punkt mehr.', th:30},
+};
+function rel(k){ return (S && S.rel && S.rel[k]) || 0; }
+function migrate(){
+  S.rel = Object.assign({spiess:0,chef:0,kalle:0,lena:0,dennis:0,krueger:0}, S.rel||{});
+  S.lgNote = S.lgNote || {}; S.lgRetry = S.lgRetry || {};
+  S.flags = S.flags || {}; S.pending = S.pending || []; S.seen = S.seen || {};
+  S.stube = Object.assign({bett:0,spind:0,kaffee:0,kuehl:0,hantel:0}, S.stube||{});
+  if(S.verw === undefined) S.verw = null;
+  if(!S.start) S.start = (S.history && S.history[0] && S.history[0].ts) || now();
+  if(S.gaDone === undefined) S.gaDone = S.rank !== 'sdt';
+  if(!S.verpfl){
+    const r = R[S.rank];
+    S.verpfl = (r.g==='G' || (r.g==='O' && r.t>=13)) ? 'BS' : (r.g==='A' || r.g==='O') ? 'SaZ13'
+      : (r.g==='U' || r.g==='F' || r.spec) ? 'SaZ8' : 'FWD';
+  }
+  S.dc = S.dc || {}; S.res = S.res || 0; S.gear = S.gear || {};
+  S.einsaetze = S.einsaetze || []; if(S.einsatz === undefined) S.einsatz = null;
+  S.album = S.album || {}; if(S.pakete === undefined) S.pakete = 1;
+}
+
+/* ---------- Ereignisse ----------
+   ch: Auswahl. Entweder out (fester Ausgang) oder roll {stat, base} mit ok/fail.
+   fx: money, bp (Beurteilungspunkte), st (Ausdauer), rel {npc: wert}, flag, unflag */
+const EVENTS = [
+ {id:'handy', who:'spiess', ctx:['wache'], text:'Zwei Uhr nachts, Wache am Tor. Du scrollst gerade durch Videos, als sich hinter dir jemand räuspert. Brockmann. „Na? Lage am Tor stabil?“',
+  ch:[
+   {t:'„Ich prüfe die Wetterlage, Herr Hauptfeldwebel.“', roll:{stat:'vitaminb', base:25},
+     ok:{t:'Brockmann mustert dich lange. „Und? Regnet’s?“ Dann geht er weiter. Glück gehabt.', fx:{rel:{spiess:2}}},
+     fail:{t:'„Die Wetterlage hat Katzenvideos?“ Du darfst morgen die Wachstube schrubben.', fx:{bp:-6, rel:{spiess:-8}}}},
+   {t:'Ehrlich zugeben', out:{t:'„Wenigstens lügen Sie nicht.“ Es gibt eine Belehrung, aber Brockmann merkt sich deine Ehrlichkeit.', fx:{bp:-2, rel:{spiess:5}}}},
+   {t:'Das Handy blitzschnell in den Stiefel stecken', roll:{stat:'fitness', base:40},
+     ok:{t:'Saubere Bewegung. Brockmann hat nichts gesehen. Oder tut so.', fx:{}},
+     fail:{t:'Das Handy fällt klappernd auf den Asphalt. Der Bildschirm leuchtet noch.', fx:{bp:-5, rel:{spiess:-6}}}},
+  ]},
+ {id:'energy', who:'kalle', text:'Kalle öffnet seinen Spind. Statt Uniformen: dreißig Dosen Energy-Drink. „Fünf Euro das Stück. Für dich ein Freundschaftspreis: auch fünf Euro.“',
+  ch:[
+   {t:'Zwei Dosen kaufen', out:{t:'Du fühlst dich, als könntest du die Kaserne allein bewachen.', fx:{money:-10, st:20, rel:{kalle:5}}}},
+   {t:'Um Prozente feilschen', roll:{stat:'vitaminb', base:35},
+     ok:{t:'„Na gut, Kumpelpreis.“ Zwei Dosen für fünf Euro.', fx:{money:-5, st:20, rel:{kalle:3}}},
+     fail:{t:'„Wer feilscht, zahlt Aufschlag.“ Du zahlst zähneknirschend den vollen Preis.', fx:{money:-10, st:20, rel:{kalle:-3}}}},
+   {t:'„Lass mal, ich schlaf lieber.“', out:{t:'Kalle zuckt mit den Schultern. „Dein Verlust.“', fx:{rel:{kalle:-2}}}},
+  ]},
+ {id:'folien', who:'chef', minT:1, blockIf:'dennis_rache', text:'Hauptmann von Ahlen hält dich im Flur an. „Ich brauche bis morgen eine Präsentation: Synergien im Stellungsbau. Zwanzig Folien. Wer hat Kapazitäten?“',
+  ch:[
+   {t:'„Mache ich, Herr Hauptmann!“', out:{t:'Die Nacht wird lang. Aber Folie 17 mit dem Schaubild ist ein Kunstwerk.', fx:{st:-15, bp:8, rel:{chef:8}}}},
+   {t:'„Hoffmann hat da sicher Ideen.“', out:{t:'Dennis wird geweckt und bekommt den Auftrag. Er schaut dich lange an.', fx:{rel:{chef:2, dennis:-10}, flag:'dennis_rache'}}},
+   {t:'Fragen, wofür die Präsentation gebraucht wird', roll:{stat:'fuehrung', base:30},
+     ok:{t:'„Gute Frage. Eigentlich … für gar nichts.“ Der Auftrag entfällt. Der Chef ist beeindruckt.', fx:{bp:4, rel:{chef:5}}},
+     fail:{t:'„Für die Präsentation, Soldat!“ Jetzt sind es dreißig Folien.', fx:{st:-20, rel:{chef:-5}}}},
+  ]},
+ {id:'schlaf', who:'dennis', ctx:['gelaende','uebung'], text:'Mitten im Gelände: Dennis liegt im Tarnnetz und schnarcht. Brockmann ist nur zwei Hecken entfernt.',
+  ch:[
+   {t:'Dennis wecken', out:{t:'„Ich war hellwach!“ Natürlich. Du hast ihn gerettet, aber er ist beleidigt.', fx:{bp:2, rel:{dennis:-2}}}},
+   {t:'Dich vor ihn stellen und Schmiere stehen', roll:{stat:'vitaminb', base:55},
+     ok:{t:'Brockmann zieht vorbei. Dennis schläft weiter und wird dir das nie vergessen.', fx:{rel:{dennis:10}}},
+     fail:{t:'„Was verdecken Sie da?“ Ihr bekommt beide Zusatzdienst. Dennis findet, es war es wert.', fx:{bp:-4, rel:{dennis:8, spiess:-6}}}},
+   {t:'Ein Foto für den Stubenchat machen', out:{t:'Das Bild geht durch die ganze Kompanie. Kalle macht Sticker daraus.', fx:{rel:{dennis:-10, kalle:4}}}},
+  ]},
+ {id:'durchgang', who:'spiess', text:'„Stubendurchgang in zehn Minuten!“ Dein Spind sieht aus wie nach einer Sprengübung.',
+  ch:[
+   {t:'Im Eiltempo aufräumen', roll:{stat:'fitness', base:45},
+     ok:{t:'Alles auf Kante. Brockmann findet nichts, was ihn sichtlich ärgert.', fx:{bp:5, rel:{spiess:4}}},
+     fail:{t:'Eine einzelne Socke unter dem Bett. Brockmann hält sie hoch wie ein Beweisstück.', fx:{bp:-3, rel:{spiess:-3}}}},
+   {t:'Lena um Hilfe bitten', out:{t:'Lena faltet deine Hemden auf DIN-A4-Format. „Du schuldest mir was.“', fx:{bp:4, rel:{spiess:3, lena:-3}}}},
+   {t:'Alles ins Bett stopfen', roll:{stat:'vitaminb', base:30},
+     ok:{t:'Brockmann prüft das Bett nicht. Heute nicht.', fx:{bp:2}},
+     fail:{t:'Brockmann hebt die Decke. Eine Lawine aus Wäsche, Dosen und einem Helm.', fx:{bp:-7, rel:{spiess:-8}}}},
+  ]},
+ {id:'wettlauf', who:'lena', text:'Lena dehnt sich vor der Stube. „Einmal um den Sportplatz, um zwanzig Euro. Oder hast du Angst?“',
+  ch:[
+   {t:'Wette annehmen', roll:{stat:'fitness', base:25},
+     ok:{t:'Auf den letzten Metern ziehst du vorbei. Lena verlangt sofort eine Revanche.', fx:{money:20, st:-10, rel:{lena:5}}},
+     fail:{t:'Lena wartet schon im Ziel und trinkt in Ruhe Wasser. Respekt bekommst du trotzdem.', fx:{money:-20, st:-10, rel:{lena:3}}}},
+   {t:'„Ich laufe nur im Ernstfall.“', out:{t:'Lena lacht. „Dann lauf mal weg, Ernstfall.“', fx:{rel:{lena:-2}}}},
+  ]},
+ {id:'formular', who:'spiess', ctx:['innen','formal'], text:'Für deinen Antrag brauchst du Formular 17b. Das gibt es aber nur, wenn man vorher Formular 17a beantragt. Und für 17a braucht man 17b.',
+  ch:[
+   {t:'Selbst ein Formular entwerfen', roll:{stat:'fachwissen', base:35},
+     ok:{t:'Dein Formular ist so gut, dass Brockmann es für die ganze Kompanie übernimmt.', fx:{bp:6, rel:{spiess:5}}},
+     fail:{t:'„Was ist das? Ein Bastelbogen?“ Zurück auf Anfang.', fx:{bp:-2}}},
+   {t:'Beim Spieß nachfragen', out:{t:'Brockmann seufzt, öffnet eine Schublade und reicht dir beide. „Nächstes Mal früher fragen.“', fx:{st:-5, rel:{spiess:2}}}},
+   {t:'Den Antrag einfach vergessen', out:{t:'Drei Tage später fragt jemand nach deinem Antrag. Er ist natürlich überfällig.', fx:{bp:-3}}},
+  ]},
+ {id:'plane', who:'kalle', ctx:['gelaende','uebung','wache'], blockIf:'plane', text:'Es schüttet. Dein Zelt ist undicht. Kalle taucht mit einer nagelneuen Plane auf. „Hab ich organisiert. Frag nicht.“',
+  ch:[
+   {t:'Plane nehmen', out:{t:'Trocken. Warm. Herrlich. Auf der Plane steht klein „Instandsetzung“.', fx:{st:15, rel:{kalle:5}, flag:'plane'}}},
+   {t:'„Woher ist die?“', out:{t:'Kalle verschwindet mit der Plane. Brockmann hat das Gespräch mitbekommen und nickt dir zu.', fx:{bp:2, rel:{kalle:-10, spiess:4}}}},
+   {t:'Nass durchziehen', out:{t:'Du bist nass bis auf die Knochen, aber stolz.', fx:{st:-10, bp:4}}},
+  ]},
+ {id:'rede', who:'chef', minT:2, text:'Nach einer Motivationsrede über „Agilität im Gefecht“ fragt der Kompaniechef: „Und, was nehmen Sie mit?“',
+  ch:[
+   {t:'„Hervorragend, Herr Hauptmann!“', out:{t:'Der Chef strahlt. Lena verdreht neben dir die Augen.', fx:{rel:{chef:5, lena:-2}}}},
+   {t:'Eine ehrliche Rückmeldung geben', roll:{stat:'fuehrung', base:35},
+     ok:{t:'„Konstruktiv. Gefällt mir.“ Der Chef macht sich eine Notiz mit deinem Namen.', fx:{bp:5, rel:{chef:8}}},
+     fail:{t:'Das kam schärfer raus als geplant. Der Chef notiert sich ebenfalls deinen Namen.', fx:{rel:{chef:-6}}}},
+   {t:'Gähnen unterdrücken', roll:{stat:'fitness', base:50},
+     ok:{t:'Niemand hat etwas gemerkt. Du nickst bedeutungsvoll.', fx:{}},
+     fail:{t:'Ein Gähnen in voller Lautstärke. Mitten in den Satz über Leidenschaft.', fx:{rel:{chef:-6}}}},
+  ]},
+ {id:'kueche', who:'kalle', text:'Mittag in der Truppenküche: Es gibt „Jägerschnitzel nach Art des Hauses“. Die Soße ist grau. Kalle flüstert: „Ich hab Döner im Spind.“',
+  ch:[
+   {t:'Mutig das Schnitzel essen', roll:{stat:'fitness', base:60},
+     ok:{t:'Erstaunlich gut. Du fühlst dich gestärkt.', fx:{st:12}},
+     fail:{t:'Der Nachmittag gehört der Toilette.', fx:{st:-15}}},
+   {t:'Kalles Döner kaufen', out:{t:'Acht Euro, aber jeden Cent wert.', fx:{money:-8, st:15, rel:{kalle:3}}}},
+   {t:'Heute lieber fasten', out:{t:'Dein Magen knurrt durch den ganzen Unterricht.', fx:{st:-5}}},
+  ]},
+ {id:'grill', who:'chef', minT:3, text:'Kompaniefest. Der Kompaniechef steht allein am Grill und kämpft mit drei Würstchen und einer Zange.',
+  ch:[
+   {t:'Small Talk anfangen', roll:{stat:'vitaminb', base:30},
+     ok:{t:'Ihr redet über Fußball und Grilltechnik. Am Ende duzt er dich. Fast.', fx:{bp:3, rel:{chef:10}}},
+     fail:{t:'Du fragst nach seinen Hobbys. Er erzählt vierzig Minuten über Golf.', fx:{st:-10, rel:{chef:2}}}},
+   {t:'Die Grillzange übernehmen', out:{t:'Die Würstchen sind gerettet. Brockmann sieht es und nickt anerkennend.', fx:{st:-5, rel:{chef:5, spiess:3}}}},
+   {t:'Wurst holen und weitergehen', out:{t:'Die Wurst ist halb roh. Das hast du jetzt davon.', fx:{}}},
+  ]},
+ {id:'uvd_schluessel', who:'spiess', ctx:['uvd'], text:'Drei Uhr nachts im UvD-Dienst. Ein Rekrut meldet, dass er den Stubenschlüssel „aus Versehen“ ins Klo hat fallen lassen. Die Stube ist zu.',
+  ch:[
+   {t:'Den Ersatzschlüssel im Kasten suchen', roll:{stat:'fachwissen', base:40},
+     ok:{t:'Gefunden, beschriftet, zurückgehängt. Lehrbuchmäßig.', fx:{bp:6}},
+     fail:{t:'Der Kasten ist ein Chaos aus hundert unbeschrifteten Schlüsseln. Es wird Morgen.', fx:{st:-15, bp:-2}}},
+   {t:'Den Rekruten auf dem Flur schlafen lassen', out:{t:'Am Morgen fragt Brockmann, warum ein Rekrut im Flur liegt.', fx:{bp:-5, rel:{spiess:-4}}}},
+  ]},
+ // Ereignisse für höhere Dienstgradgruppen
+ {id:'u_heimweh', who:'spiess', groups:['U','F'], text:'Ein Rekrut aus deiner Gruppe sitzt abends allein auf der Treppe. Heimweh. Er will hinschmeißen.',
+  ch:[
+   {t:'Zuhören und ihm Mut machen', roll:{stat:'fuehrung', base:40},
+     ok:{t:'Am nächsten Morgen steht er als Erster beim Antreten.', fx:{bp:5, rel:{spiess:4}}},
+     fail:{t:'Er bleibt. Vorerst. Bis Freitag will er es sich noch überlegen.', fx:{bp:1}}},
+   {t:'Ihn zum Spieß schicken', out:{t:'Brockmann seufzt: „Dafür haben Sie doch Ihre Schulterklappen.“', fx:{bp:1, rel:{spiess:-2}}}},
+   {t:'Ihm einen Döner von Kalle organisieren', out:{t:'Mit vollem Bauch sieht die Welt anders aus. Er bleibt.', fx:{money:-8, bp:3, rel:{kalle:2}}}},
+  ]},
+ {id:'u_inventur', who:'kalle', groups:['F'], text:'Materialprüfung: Laut Liste fehlen drei Spaten, ein Tarnnetz und ein Kanister. Kalle schaut verdächtig unschuldig.',
+  ch:[
+   {t:'Kalle direkt fragen', roll:{stat:'vitaminb', base:40},
+     ok:{t:'Zehn Minuten später ist alles wieder da. Plus ein Kanister zu viel.', fx:{bp:4, rel:{kalle:2}}},
+     fail:{t:'Kalle weiß von nichts. Die Liste bleibt falsch.', fx:{bp:-3}}},
+   {t:'Eine Fehlmeldung schreiben', out:{t:'Korrekt. Kalle grüßt dich ab jetzt sehr förmlich.', fx:{bp:2, rel:{kalle:-5}}}},
+   {t:'Die Liste kreativ anpassen', roll:{stat:'fachwissen', base:30},
+     ok:{t:'Niemandem fällt es auf. Bis zur nächsten Prüfung.', fx:{bp:1}},
+     fail:{t:'Brockmann zählt nach.', fx:{bp:-8, rel:{spiess:-8}}}},
+  ]},
+ {id:'a_offizierheim', who:'chef', groups:['A'], text:'Als Offizieranwärter isst du jetzt im Offizierheim. Am Tisch geht es um Rotwein. Ein Oberst fragt nach deiner Meinung zu einem bestimmten Weingut.',
+  ch:[
+   {t:'Ehrlich sagen: keine Ahnung', out:{t:'Der Oberst lacht laut. Ehrlichkeit kommt hier gut an.', fx:{bp:1, rel:{chef:2}}}},
+   {t:'Irgendwas Kluges erfinden', roll:{stat:'vitaminb', base:35},
+     ok:{t:'„Ein Kenner!“ Du wirst zur nächsten Weinprobe eingeladen.', fx:{bp:3, rel:{chef:5}}},
+     fail:{t:'Das Weingut gehört dem Schwager des Obersts. Es liegt nicht in Frankreich.', fx:{rel:{chef:-4}}}},
+  ]},
+ {id:'o_vertretung', who:'chef', groups:['O'], text:'Hauptmann von Ahlen fährt in den Urlaub. „Sie vertreten mich. Ich habe eine kleine Übergabe vorbereitet.“ Die Übergabe hat 46 Folien.',
+  ch:[
+   {t:'Alles durcharbeiten', out:{t:'Du kennst jetzt jede Folie. Von Ahlen ist bei der Rückkehr gerührt.', fx:{st:-20, bp:8, rel:{chef:5}}}},
+   {t:'Nur die Zusammenfassung lesen', roll:{stat:'fuehrung', base:35},
+     ok:{t:'Folie 46 war ohnehin die einzig wichtige.', fx:{bp:6}},
+     fail:{t:'Ausgerechnet Folie 23 hätte man lesen sollen.', fx:{bp:-4}}},
+   {t:'Brockmann fragen, was wirklich wichtig ist', out:{t:'„Drei Dinge.“ Brockmann hatte mit allen dreien recht.', fx:{bp:5, rel:{spiess:5}}}},
+  ]},
+ {id:'o_beschaffung', who:'chef', groups:['O','G'], text:'Vor anderthalb Jahren hast du neue Stühle für den Besprechungsraum beantragt. Heute kommt die Antwort: Der Antrag muss auf dem neuen Formular neu gestellt werden.',
+  ch:[
+   {t:'Neu beantragen', out:{t:'Die Stühle kommen. Irgendwann.', fx:{bp:2, st:-5}}},
+   {t:'Kalle fragen', out:{t:'Am nächsten Morgen stehen zwölf neue Stühle im Raum. Mit Inventarnummern einer anderen Kaserne.', fx:{money:-50, rel:{kalle:5}}}},
+   {t:'Eine Beschwerde schreiben', roll:{stat:'fachwissen', base:40},
+     ok:{t:'Deine Beschwerde ist so präzise, dass sie im Ministerium als Vorlage dient.', fx:{bp:5}},
+     fail:{t:'Auch die Beschwerde muss auf das neue Formular.', fx:{bp:-2}}},
+  ]},
+ {id:'o_weihnachten', who:'spiess', groups:['O'], minT:12, text:'Als Kompaniechef hältst du die Rede beim Weihnachtsessen. Die Kompanie hat schon zwei Glühwein intus.',
+  ch:[
+   {t:'Kurz und herzlich', roll:{stat:'fuehrung', base:40},
+     ok:{t:'Drei Sätze, echter Applaus. Lena wischt sich verstohlen über die Augen.', fx:{bp:4, rel:{spiess:5, kalle:3, lena:3}}},
+     fail:{t:'Zu kurz. Jemand ruft „Zugabe!“, und es klingt nicht nett.', fx:{rel:{spiess:-2}}}},
+   {t:'Mit Folien', out:{t:'Von Ahlen ist begeistert. Alle anderen nicht.', fx:{rel:{chef:6, kalle:-4, lena:-4}}}},
+   {t:'Brockmann das Wort geben', out:{t:'Brockmann erzählt die Geschichte mit der Socke. Die Kompanie tobt.', fx:{rel:{spiess:8}}}},
+  ]},
+ {id:'g_presse', who:'chef', groups:['G'], text:'Pressetermin auf dem Übungsplatz. Eine Journalistin fragt, warum der Schützenpanzer im Hintergrund nicht fährt.',
+  ch:[
+   {t:'Ehrlich antworten', roll:{stat:'fuehrung', base:40},
+     ok:{t:'Klare Worte. Der Artikel ist fair.', fx:{bp:6}},
+     fail:{t:'Du sagst etwas zu viel. Das Ministerium ruft an.', fx:{bp:-3}}},
+   {t:'„Das ist eine taktische Pause.“', roll:{stat:'vitaminb', base:35},
+     ok:{t:'Die Journalistin lacht. Das Zitat wird berühmt.', fx:{bp:4}},
+     fail:{t:'Das Zitat wird berühmt. Leider.', fx:{bp:-5}}},
+   {t:'Auf den Pressesprecher verweisen', out:{t:'Sicher, langweilig, folgenlos.', fx:{bp:1}}},
+  ]},
+ {id:'g_kantine', who:'kalle', groups:['G'], text:'Truppenbesuch. Du willst mit den Soldaten in der Truppenküche essen statt im Offizierheim. An der Kasse steht Kalle. Er ist jetzt Kantinenpächter.',
+  ch:[
+   {t:'Bei Kalle essen', out:{t:'Kalle serviert persönlich. Das Schnitzel ist zum ersten Mal nicht grau.', fx:{st:10, rel:{kalle:10}}}},
+   {t:'Das Protokoll einhalten', out:{t:'Im Offizierheim ist das Essen besser. Die Stimmung nicht.', fx:{rel:{chef:3, kalle:-3}}}},
+  ]},
+
+ // Auslandseinsatz (fx.ep = Einsatzpunkte)
+ {id:'ex_container', who:'dennis', ctx:['ex'], text:'Dein Container für die nächsten Wochen: zwei Betten, ein Spind und eine Klimaanlage mit zwei Stufen, aus und Orkan. Dennis liegt schon im unteren Bett.',
+  ch:[
+   {t:'Klimaanlage auf Orkan', roll:{stat:'fitness', base:50},
+     ok:{t:'Endlich kühl. Du schläfst wie ein Stein.', fx:{ep:2, st:10}},
+     fail:{t:'Eine Erkältung bei 38 Grad Außentemperatur. Respekt.', fx:{st:-10}}},
+   {t:'Mit Dennis ums Bett würfeln', roll:{stat:'vitaminb', base:50},
+     ok:{t:'Unteres Bett. Dennis zieht murrend nach oben.', fx:{ep:1, rel:{dennis:-2}}},
+     fail:{t:'Dennis gewinnt und schläft sofort wieder ein.', fx:{rel:{dennis:2}}}},
+   {t:'Freiwillig oben schlafen', out:{t:'Dennis bedankt sich mit einem Schokoriegel aus seinem Geheimvorrat.', fx:{ep:1, rel:{dennis:4}}}},
+  ]},
+ {id:'ex_wlan', who:'kalle', ctx:['ex'], text:'Das WLAN im Betreuungscontainer schafft genau einen Videoanruf gleichzeitig. Die Schlange ist lang.',
+  ch:[
+   {t:'Anstellen', out:{t:'Nach zwei Stunden: fünf Minuten Videoanruf. Das Bild friert ein, aber zu Hause lacht jemand.', fx:{ep:1, st:-5}}},
+   {t:'Kalle fragen', out:{t:'Kalle hat einen eigenen Router „organisiert“. Woher, bleibt sein Geheimnis.', fx:{ep:1, money:-20, rel:{kalle:4}}}},
+   {t:'Einen Brief schreiben', out:{t:'Die Feldpost braucht drei Wochen. Dafür kommt eine Antwort mit Zeichnung zurück.', fx:{ep:2}}},
+  ]},
+ {id:'ex_hitze', who:'lena', ctx:['ex'], text:'42 Grad im Schatten, und es gibt keinen Schatten. Lena will trotzdem morgens um fünf laufen gehen.',
+  ch:[
+   {t:'Mitlaufen', roll:{stat:'fitness', base:35},
+     ok:{t:'Sonnenaufgang über dem Lager, zehn Kilometer. Fast schön.', fx:{ep:2, rel:{lena:4}}},
+     fail:{t:'Nach drei Kilometern trinkst du die ganze Wasserflasche auf einmal.', fx:{st:-15, rel:{lena:2}}}},
+   {t:'Ausschlafen', out:{t:'Lena kommt verschwitzt zurück und sagt nichts. Das sagt genug.', fx:{st:10, rel:{lena:-2}}}},
+  ]},
+ {id:'ex_sprachmittler', who:'chef', ctx:['ex'], text:'Bei der Ausbildung der Partnersoldaten übersetzt ein Sprachmittler. Nach zehn Minuten merkst du: Deine Witze kommen nicht an. Seine schon.',
+  ch:[
+   {t:'Mit ihm als Team arbeiten', out:{t:'Ihr spielt euch die Bälle zu. Am Ende lachen alle, sogar über deine Witze.', fx:{ep:3}}},
+   {t:'Selbst ein paar Wörter lernen', roll:{stat:'fachwissen', base:40},
+     ok:{t:'Die Partnersoldaten sind beeindruckt und bringen dir noch mehr bei.', fx:{ep:4}},
+     fail:{t:'Du hast versehentlich „Ziege“ statt „Ziel“ gesagt. Den ganzen Vormittag lang.', fx:{ep:1}}},
+  ]},
+ {id:'ex_besuch', who:'chef', ctx:['ex'], text:'Besuch aus dem Ministerium hat sich angekündigt. Das ganze Feldlager wird gefegt. Auch der Sand.',
+  ch:[
+   {t:'Eine Vorführung planen', roll:{stat:'fuehrung', base:40},
+     ok:{t:'Die Vorführung läuft perfekt. Der Besuch macht Fotos.', fx:{ep:3, bp:4}},
+     fail:{t:'Bei der Vorführung fällt der Strom aus.', fx:{bp:-2}}},
+   {t:'Ganz normal weiterarbeiten', out:{t:'Der Besuch findet das erfrischend ehrlich.', fx:{ep:2}}},
+   {t:'Den Sand fegen', out:{t:'Der Wind macht die Arbeit in zwanzig Minuten rückgängig.', fx:{ep:1, st:-15}}},
+  ]},
+ {id:'ex_post', who:'dennis', ctx:['ex'], text:'Feldpost! Dennis bekommt ein Paket von seiner Oma. Inhalt: zwölf Gläser Gurken und Wollsocken.',
+  ch:[
+   {t:'Einen Gurkentausch anbieten', out:{t:'Für zwei Gläser Gurken gibt es deinen Kaffee-Vorrat. Fairer Handel.', fx:{ep:1, rel:{dennis:3}}}},
+   {t:'Auf dein eigenes Paket warten', out:{t:'Zwei Tage später kommt es. Inhalt: deine Lieblingsschokolade, geschmolzen.', fx:{ep:1}}},
+  ]},
+ {id:'ex_konvoi', who:'chef', ctx:['ex'], text:'Beim Konvoi bleibt ein Lkw liegen. Die Kolonne steht, und bis zur Dunkelheit bleibt noch eine Stunde.',
+  ch:[
+   {t:'Selbst reparieren', roll:{stat:'fachwissen', base:35},
+     ok:{t:'Ein lockeres Kabel. Fünf Minuten, dann geht es weiter.', fx:{ep:4}},
+     fail:{t:'Abschleppen. Ankunft nach Mitternacht.', fx:{st:-10}}},
+   {t:'Abschleppen lassen', out:{t:'Langsam, aber nach Vorschrift.', fx:{ep:2}}},
+   {t:'Die Ladung umverteilen', roll:{stat:'fuehrung', base:40},
+     ok:{t:'Alle packen mit an. Nach zwanzig Minuten rollt die Kolonne wieder.', fx:{ep:3}},
+     fail:{t:'Am Ende passt nicht alles rein. Ein Kanister fehlt bis heute.', fx:{ep:1}}},
+  ]},
+ {id:'ex_heimweh', who:'lena', ctx:['ex'], text:'Abends am Container. Lena sitzt still da: Zu Hause ist heute ein Geburtstag, den sie verpasst.',
+  ch:[
+   {t:'Dazusetzen und zuhören', out:{t:'Ihr redet bis Mitternacht. Am nächsten Tag geht es ihr besser.', fx:{ep:2, rel:{lena:6}}}},
+   {t:'Eine kleine Überraschungsfeier organisieren', roll:{stat:'vitaminb', base:40},
+     ok:{t:'Kalle besorgt einen Kuchen. Niemand fragt, woher.', fx:{ep:3, rel:{lena:10, kalle:3}}},
+     fail:{t:'Der Kuchen ist ein Müsliriegel mit Kerze. Lena lacht trotzdem.', fx:{ep:1, rel:{lena:4}}}},
+  ]},
+ {id:'ex_grill', who:'kalle', ctx:['ex'], text:'Sonntag im Feldlager: Kalle will grillen. Der Grill ist ein halbiertes Ölfass, die Kohle ist „organisiert“.',
+  ch:[
+   {t:'Grillmeister werden', roll:{stat:'fitness', base:50},
+     ok:{t:'Perfekte Würstchen. Das halbe Lager kommt vorbei.', fx:{ep:2, rel:{kalle:4}}},
+     fail:{t:'Außen schwarz, innen gefroren. Kalle isst sie trotzdem.', fx:{rel:{kalle:1}}}},
+   {t:'Salat beisteuern', out:{t:'Der einzige Salat im Umkreis von 200 Kilometern. Lena ist begeistert.', fx:{ep:1, rel:{lena:2}}}},
+  ]},
+ {id:'ex_heim', who:'spiess', ctx:['ex'], einsatzEnd:true, text:'Rückverlegung. Nach der Landung wartet die Kompanie, Brockmann vorneweg. Er sagt nur: „Gut, dass Sie wieder da sind.“',
+  ch:[
+   {t:'Brockmann die Hand geben', out:{t:'Ein fester Händedruck. Mehr muss keiner sagen.', fx:{ep:2, rel:{spiess:6}}}},
+   {t:'Erst mal ausschlafen', out:{t:'Vierzehn Stunden. Ohne Klimaanlage, ohne Sand.', fx:{ep:1, st:30}}},
+   {t:'Allen ein Andenken mitbringen', out:{t:'Kalle bekommt einen Teppich, Lena ein Lauftrikot, Dennis ein Kissen. Alle freuen sich.', fx:{ep:2, money:-60, rel:{kalle:4, lena:4, dennis:4}}}},
+  ]},
+
+ // Lehrgangs-Kapitel (werden während eines Lehrgangs der Reihe nach ausgelöst, fx.lg = Lehrgangspunkte)
+ {id:'lg_ual1', who:'krueger', ctx:['lg'], text:'Erste Führungsübung: Du sollst eine Gruppe über die Hindernisbahn führen. Die Gruppe besteht aus Leuten, die dich gestern noch „Kumpel“ genannt haben.',
+  ch:[
+   {t:'Klare Ansagen machen', roll:{stat:'fuehrung', base:40},
+     ok:{t:'Nach der ersten Ansage läuft es. Krüger notiert etwas und nickt.', fx:{lg:4, rel:{krueger:3}}},
+     fail:{t:'Deine Ansage geht im Gelächter unter. Die Gruppe läuft trotzdem, nur in drei Richtungen.', fx:{lg:0}}},
+   {t:'Vormachen und mitlaufen', roll:{stat:'fitness', base:50},
+     ok:{t:'Du gehst voran, alle folgen. Führen durch Vorbild, steht so im Lehrbuch.', fx:{lg:3}},
+     fail:{t:'Du bleibst an der Eskaladierwand hängen. Die Gruppe muss dich rüberschieben.', fx:{lg:1, st:-10}}},
+   {t:'Den Lautesten zum Stellvertreter machen', out:{t:'Pragmatisch. Krüger fragt später, wer hier eigentlich die Gruppe geführt hat.', fx:{lg:2}}},
+  ]},
+ {id:'lg_ual2', who:'krueger', ctx:['lg'], text:'Unterrichtsprobe: fünfzehn Minuten zum Thema „Der sachgerechte Gebrauch des Feldspatens“. Vor dem ganzen Hörsaal.',
+  ch:[
+   {t:'Mit Struktur und Tafelbild', roll:{stat:'fachwissen', base:40},
+     ok:{t:'Saubere Gliederung, klare Lernziele. Selbst der Spaten wirkt interessiert.', fx:{lg:4}},
+     fail:{t:'Nach zwei Minuten hast du den Faden verloren und erklärst, was ein Stiel ist.', fx:{lg:1}}},
+   {t:'Frei sprechen, mit Humor', roll:{stat:'vitaminb', base:40},
+     ok:{t:'Der Hörsaal lacht an den richtigen Stellen. Krüger auch, kurz.', fx:{lg:5, rel:{krueger:3}}},
+     fail:{t:'Dein Witz über den Spaten zündet nicht. Die Stille ist sehr lang.', fx:{lg:-1}}},
+   {t:'Auswendig gelernt aufsagen', out:{t:'Fehlerfrei und völlig leblos. Bestanden, mehr nicht.', fx:{lg:2}}},
+  ]},
+ {id:'lg_ual3', who:'krueger', ctx:['lg'], text:'Abends auf der Stube flüstert ein Lehrgangsteilnehmer: Er hat die Lösungen der Abschlussprüfung. Angeblich.',
+  ch:[
+   {t:'Ablehnen und selbst lernen', out:{t:'Zwei Tage später fliegt der Spickzettel auf. Du hast nichts damit zu tun.', fx:{lg:2}}},
+   {t:'Mal reinschauen', roll:{stat:'vitaminb', base:40},
+     ok:{t:'Die Lösungen sind falsch. Beim Korrigieren lernst du mehr als in der ganzen Woche.', fx:{lg:3}},
+     fail:{t:'In dem Moment steht Krüger in der Tür.', fx:{lg:-6, rel:{krueger:-10}}}},
+   {t:'Krüger Bescheid geben', out:{t:'Krüger bedankt sich knapp. Auf der Stube redet heute niemand mehr mit dir.', fx:{lg:1, rel:{krueger:5}}}},
+  ]},
+ {id:'lgx_ual', who:'krueger', ctx:['lg'], exam:true, text:'Abschlussprüfung Unteroffizierlehrgang: Gruppengefechtsübung mit Bewertung. Krüger steht mit dem Klemmbrett am Waldrand.',
+  ch:[
+   {t:'Nach Lehrbuch führen', roll:{stat:'fuehrung', base:35},
+     ok:{t:'Lagebeurteilung, Entschluss, Befehl. Alles sitzt.', fx:{lg:6}},
+     fail:{t:'Der Befehl kommt zu spät, die Gruppe steht ratlos im Gras.', fx:{lg:1}}},
+   {t:'Mutig improvisieren', roll:{stat:'vitaminb', base:25},
+     ok:{t:'Ein Umgehungsangriff, mit dem keiner gerechnet hat. Krüger hebt die Augenbrauen.', fx:{lg:8}},
+     fail:{t:'Die Umgehung endet im Sumpf.', fx:{lg:-3}}},
+   {t:'Auf Nummer sicher gehen', out:{t:'Kein Fehler, keine Überraschung. Solide.', fx:{lg:3}}},
+  ]},
+
+ {id:'lg_fwl1', who:'krueger', ctx:['lg'], text:'Planübung: Du sollst den Dienstplan einer ganzen Kompanie für eine Woche erstellen. Die Tabellenvorlage stammt von 2007.',
+  ch:[
+   {t:'Sauber durchplanen', roll:{stat:'fachwissen', base:40},
+     ok:{t:'Keine Doppelbelegung, keine Lücke. Krüger druckt ihn als Muster aus.', fx:{lg:4}},
+     fail:{t:'Am Mittwoch hat die halbe Kompanie gleichzeitig Wache.', fx:{lg:0}}},
+   {t:'Von Hand auf Papier', out:{t:'Langsam, aber fehlerfrei. Deine Hand schmerzt.', fx:{lg:2, st:-10}}},
+   {t:'Kalle anrufen, der kennt sich aus', out:{t:'Kalle hat „zufällig“ eine fertige Vorlage. Woher, will niemand wissen.', fx:{lg:3, rel:{kalle:3}}}},
+  ]},
+ {id:'lg_fwl2', who:'krueger', ctx:['lg'], text:'Ausbildung am Gerät: Du bildest Rekruten am Funkgerät aus. Einer hat es nach fünf Minuten geschafft, es auszuschalten. Dauerhaft.',
+  ch:[
+   {t:'Ruhig bleiben und neu erklären', roll:{stat:'fuehrung', base:40},
+     ok:{t:'Am Ende kann es sogar der Rekrut. Krüger ist zufrieden.', fx:{lg:4}},
+     fail:{t:'Deine Geduld reicht bis Minute zwölf.', fx:{lg:1}}},
+   {t:'Das Gerät selbst reparieren', roll:{stat:'fachwissen', base:35},
+     ok:{t:'Akku raus, Akku rein, läuft. Du nennst es „Technischer Dienst“.', fx:{lg:5}},
+     fail:{t:'Jetzt ist es wirklich kaputt.', fx:{lg:-1}}},
+   {t:'Den Fehler als Lehrbeispiel nutzen', out:{t:'„So machen wir es nicht.“ Alle lachen, alle lernen.', fx:{lg:3}}},
+  ]},
+ {id:'lg_fwl3', who:'krueger', ctx:['lg'], text:'Krüger fragt, ob du ihm am Samstag beim Umzug hilfst. „Ganz freiwillig natürlich.“',
+  ch:[
+   {t:'Helfen', out:{t:'Drei Stockwerke, kein Aufzug, ein Klavier. Krüger spendiert Pizza und vergisst es dir nicht.', fx:{lg:1, st:-20, rel:{krueger:8}}}},
+   {t:'Freundlich absagen', out:{t:'„Kein Problem.“ Es klingt, als wäre es ein kleines Problem.', fx:{rel:{krueger:-3}}}},
+  ]},
+ {id:'lgx_fwl', who:'krueger', ctx:['lg'], exam:true, text:'Abschlussprüfung Feldwebellehrgang: ein schriftlicher Test und eine Ausbildungseinheit vor zwei Prüfern.',
+  ch:[
+   {t:'Auf den schriftlichen Teil setzen', roll:{stat:'fachwissen', base:35},
+     ok:{t:'Du bist als Erster fertig und hast trotzdem alles richtig.', fx:{lg:6}},
+     fail:{t:'Frage 14 handelt von einer Vorschrift, die du nie gesehen hast.', fx:{lg:1}}},
+   {t:'Die Ausbildungseinheit glänzen lassen', roll:{stat:'fuehrung', base:30},
+     ok:{t:'Die Prüfer machen sich Notizen. Gute Notizen.', fx:{lg:7}},
+     fail:{t:'Dein Beamer geht nicht, und dein Plan B auch nicht.', fx:{lg:0}}},
+   {t:'Beides solide machen', out:{t:'Keine Glänzleistung, keine Patzer.', fx:{lg:3}}},
+  ]},
+
+ {id:'lg_ofl1', who:'krueger', ctx:['lg'], text:'Taktisches Planspiel am Sandkasten. Den Gegner spielt ein Major, der nicht verlieren kann.',
+  ch:[
+   {t:'Angreifen und gewinnen', roll:{stat:'fuehrung', base:30},
+     ok:{t:'Du gewinnst. Der Major verlangt sofort eine Revanche. Krüger grinst.', fx:{lg:4}},
+     fail:{t:'Knapp verloren, aber gut begründet.', fx:{lg:2}}},
+   {t:'Den Major gewinnen lassen', roll:{stat:'vitaminb', base:40},
+     ok:{t:'Er lobt deine „realistische Lagebeurteilung“. Diplomatie ist auch Führung.', fx:{lg:5}},
+     fail:{t:'Er merkt es und ist beleidigt.', fx:{lg:0}}},
+  ]},
+ {id:'lg_ofl2', who:'krueger', ctx:['lg'], text:'Seminar Menschenführung: Du sollst ein Beispiel aus deiner eigenen Zeit in der Truppe vortragen.',
+  ch:[
+   {t:'Die Geschichte mit Brockmann und der Socke', out:{t:'Der Hörsaal lacht, Krüger auch. Und die Lehre daraus ist sogar richtig.', fx:{lg:4, rel:{krueger:2}}}},
+   {t:'Ein ernstes Beispiel wählen', roll:{stat:'fuehrung', base:40},
+     ok:{t:'Es wird still im Raum. Danach gibt es Applaus.', fx:{lg:5}},
+     fail:{t:'Gut gemeint, aber du verlierst dich in Details.', fx:{lg:2}}},
+  ]},
+ {id:'lg_ofl3', who:'lena', ctx:['lg'], text:'Sportprüfung: 5000 Meter. Lena hat dir ungefragt einen Trainingsplan geschickt. Mit Tabellen.',
+  ch:[
+   {t:'Einfach durchziehen', roll:{stat:'fitness', base:30},
+     ok:{t:'Neue Bestzeit. Du schreibst Lena sofort.', fx:{lg:4}},
+     fail:{t:'Bei Kilometer vier hasst du alles.', fx:{lg:-1, st:-10}}},
+   {t:'Lenas Plan befolgen', out:{t:'Gleichmäßiges Tempo, starker Endspurt. Lena antwortet nur: „Siehste.“', fx:{lg:3, rel:{lena:4}}}},
+  ]},
+ {id:'lgx_ofl', who:'krueger', ctx:['lg'], exam:true, text:'Abschlussprüfung Offizierlehrgang: Lagevortrag vor einer Kommission, danach Fragen. Sehr viele Fragen.',
+  ch:[
+   {t:'Mit klarer Führungsidee überzeugen', roll:{stat:'fuehrung', base:30},
+     ok:{t:'Die Kommission nickt im Takt. Am Ende fragt keiner mehr nach.', fx:{lg:7}},
+     fail:{t:'Die zweite Frage bringt deine ganze Idee ins Wanken.', fx:{lg:1}}},
+   {t:'Mit Fachwissen glänzen', roll:{stat:'fachwissen', base:35},
+     ok:{t:'Du kennst jede Vorschrift und jede Zahl.', fx:{lg:6}},
+     fail:{t:'Du verwechselst zwei Vorschriften. Ein Kommissionsmitglied seufzt.', fx:{lg:2}}},
+   {t:'Ruhig und sachlich bleiben', out:{t:'Unaufgeregt, korrekt, unauffällig.', fx:{lg:3}}},
+  ]},
+
+ {id:'lg_stu1', who:'krueger', ctx:['lg'], text:'Erstes Trimester an der Bundeswehr-Uni. Mathe I. Der Professor beginnt mit: „Wie Sie natürlich alle wissen …“',
+  ch:[
+   {t:'Dranbleiben und mitschreiben', roll:{stat:'fachwissen', base:30},
+     ok:{t:'Nach drei Wochen verstehst du sogar den Professor.', fx:{lg:4}},
+     fail:{t:'Du verstehst nur das Wort „natürlich“.', fx:{lg:0}}},
+   {t:'Eine Lerngruppe gründen', out:{t:'Vier Leute, viel Kaffee, zwei funktionierende Gehirne. Reicht.', fx:{lg:3}}},
+  ]},
+ {id:'lg_stu2', who:'kalle', ctx:['lg'], text:'Kalle besucht dich im Wohnheim. Heute ist Party auf dem Flur, morgen ist Klausur.',
+  ch:[
+   {t:'Mitfeiern', roll:{stat:'vitaminb', base:30},
+     ok:{t:'Du lernst die richtigen Leute kennen, darunter den Tutor. Er gibt dir Tipps.', fx:{lg:2, rel:{kalle:4}}},
+     fail:{t:'Die Klausur schreibst du mit Kopfschmerzen.', fx:{lg:-4, rel:{kalle:4}}}},
+   {t:'Lernen', out:{t:'Kalle feiert ohne dich. Die Klausur läuft gut.', fx:{lg:3, st:-10, rel:{kalle:-2}}}},
+   {t:'Nur kurz vorbeischauen', roll:{stat:'fitness', base:50},
+     ok:{t:'Um elf im Bett. Respekt.', fx:{lg:2}},
+     fail:{t:'„Kurz“ endet um vier.', fx:{lg:-2}}},
+  ]},
+ {id:'lg_stu3', who:'krueger', ctx:['lg'], text:'Hausarbeit: dreißig Seiten zum Thema „Logistik im Wandel“. Abgabe in drei Tagen.',
+  ch:[
+   {t:'Gründlich recherchieren', roll:{stat:'fachwissen', base:35},
+     ok:{t:'Sauber belegt und gut geschrieben. Der Betreuer ist angetan.', fx:{lg:5}},
+     fail:{t:'Du findest die Hälfte der Quellen nicht mehr.', fx:{lg:1}}},
+   {t:'Zwei Nächte durcharbeiten', out:{t:'Abgegeben, eine Minute vor Fristende. Du siehst aus wie ein Gespenst.', fx:{lg:4, st:-25}}},
+  ]},
+ {id:'lgx_stu', who:'krueger', ctx:['lg'], exam:true, text:'Abschlussarbeit und Verteidigung. Der Zweitgutachter hat Fragen. Viele Fragen.',
+  ch:[
+   {t:'Jede Frage fachlich kontern', roll:{stat:'fachwissen', base:30},
+     ok:{t:'Am Ende nickt sogar der Zweitgutachter.', fx:{lg:8}},
+     fail:{t:'Bei Frage drei wird es eng.', fx:{lg:2}}},
+   {t:'Den Zweitgutachter in ein Gespräch über Golf verwickeln', roll:{stat:'vitaminb', base:30},
+     ok:{t:'Er erzählt zwanzig Minuten von seinem Handicap. Die Zeit ist um.', fx:{lg:6}},
+     fail:{t:'„Schön. Zurück zur Arbeit.“', fx:{lg:-2}}},
+   {t:'Gut vorbereitet, aber ohne Risiko', out:{t:'Ordentlich verteidigt.', fx:{lg:4}}},
+  ]},
+
+ // Verwendungs-Ereignisse
+ {id:'v_inf1', who:'lena', ctx:['v_inf'], text:'Spähtrupp im Morgennebel. Lena flüstert: „Da vorne bewegt sich was.“ Es könnte der Übungsgegner sein. Oder ein Reh.',
+  ch:[
+   {t:'Sofort melden', roll:{stat:'schiessen', base:40},
+     ok:{t:'Es war tatsächlich der Übungsgegner. Lob vom Zugführer.', fx:{bp:6, rel:{lena:3}}},
+     fail:{t:'Es war ein Reh. Dein Funkspruch „Gegner in Zugstärke“ geht in die Kompaniegeschichte ein.', fx:{bp:-3, rel:{kalle:3}}}},
+   {t:'Näher ranschleichen', roll:{stat:'fitness', base:40},
+     ok:{t:'Lautlos bis auf zehn Meter. Du siehst den Gegner beim Frühstück.', fx:{bp:8, rel:{lena:5}}},
+     fail:{t:'Ein Ast knackt. Das Reh rennt weg, der Gegner auch.', fx:{st:-10}}},
+  ]},
+ {id:'v_kfz1', who:'kalle', ctx:['v_kfz'], text:'Kolonnenfahrt. Das Navi schickt dich in einen Feldweg, der auf keiner Karte existiert. Hinter dir elf Fahrzeuge.',
+  ch:[
+   {t:'Dem Navi vertrauen', roll:{stat:'fachwissen', base:30},
+     ok:{t:'Eine Abkürzung! Die Kolonne ist zwanzig Minuten zu früh.', fx:{bp:6, rel:{chef:4}}},
+     fail:{t:'Ein Bauernhof. Der Bauer bietet Kaffee an, während elf Fahrzeuge wenden.', fx:{bp:-4, st:-10}}},
+   {t:'Umkehren und die Karte nehmen', out:{t:'Langsam, aber sicher. Niemand lobt dich, aber niemand meckert.', fx:{bp:2}}},
+  ]},
+ {id:'v_inst1', who:'spiess', ctx:['v_inst'], text:'Brockmanns Privatauto steht vor der Werkstatt. „Schauen Sie da mal kurz drüber? Nur ganz kurz. Inoffiziell.“',
+  ch:[
+   {t:'Kurz drüberschauen', out:{t:'Zündkerzen getauscht, Brockmann ist begeistert. Der Werkstattleiter weniger.', fx:{bp:-2, rel:{spiess:10}}}},
+   {t:'„Nur mit Auftrag, Herr Hauptfeldwebel.“', out:{t:'Brockmann zieht eine Augenbraue hoch. „Korrekt.“ Er klingt fast beeindruckt.', fx:{bp:3, rel:{spiess:-2}}}},
+  ]},
+ {id:'v_san1', who:'dennis', ctx:['v_san'], text:'Sanitätsbereitschaft beim Sport. Dennis humpelt heran: „Knie. Ganz schlimm. Ich brauche eine Befreiung. Mindestens eine Woche.“',
+  ch:[
+   {t:'Gründlich untersuchen', roll:{stat:'fachwissen', base:40},
+     ok:{t:'Das Knie ist kerngesund. Dennis läuft zurück zum Sport, ohne zu humpeln.', fx:{bp:5, rel:{dennis:-3}}},
+     fail:{t:'Du bist dir unsicher und schreibst ihn krank. Eine Stunde später spielt er Fußball.', fx:{bp:-4, rel:{dennis:6}}}},
+   {t:'Kühlpack und zurück zum Sport', out:{t:'Dennis murmelt etwas von unterlassener Hilfeleistung.', fx:{bp:2, rel:{dennis:-2}}}},
+  ]},
+ {id:'v_fm1', who:'chef', ctx:['v_fm'], blockIf:'funk_aufnahme', text:'Übungsfunkverkehr. Plötzlich hörst du den Kompaniechef auf der Frequenz. Seine Sprechtaste klemmt, und er singt.',
+  ch:[
+   {t:'Diskret die Frequenz wechseln lassen', out:{t:'Niemand außer dir hat es gehört. Der Chef wird es nie erfahren.', fx:{bp:3, rel:{chef:3}}}},
+   {t:'Mitschneiden', out:{t:'Kalle kauft dir die Aufnahme sofort ab. Der Chef darf das nie erfahren.', fx:{money:30, rel:{kalle:5}, flag:'funk_aufnahme'}}},
+  ]},
+ {id:'v_koch1', who:'chef', ctx:['v_koch'], text:'Der Kompaniechef hat sich zum Mittagessen angekündigt. Die Erbsensuppe ist versalzen.',
+  ch:[
+   {t:'Kartoffeln rein, alter Trick', roll:{stat:'fachwissen', base:40},
+     ok:{t:'Die Suppe ist gerettet. Der Chef nimmt einen Nachschlag.', fx:{bp:5, rel:{chef:6}}},
+     fail:{t:'Jetzt ist sie versalzen und dick. Der Chef isst tapfer.', fx:{rel:{chef:-3}}}},
+   {t:'Kalles Döner-Vorrat beschlagnahmen', out:{t:'Döner für alle. Kalle weint leise. Der Chef nennt es „Innovation in der Truppenverpflegung“.', fx:{rel:{chef:6, kalle:-8}}}},
+  ]},
+ {id:'v_fm2', who:'chef', need:'funk_aufnahme', text:'Der Kompaniechef ruft dich zu sich. „Mir ist da eine Aufnahme zu Ohren gekommen. Wissen Sie etwas darüber?“',
+  ch:[
+   {t:'Alles abstreiten', roll:{stat:'vitaminb', base:40},
+     ok:{t:'„Hm. Dann wird es wohl Kallweit gewesen sein.“ Du schweigst.', fx:{rel:{kalle:-6}, unflag:'funk_aufnahme'}},
+     fail:{t:'Er spielt dir die Aufnahme vor. Am Ende hört man deine Stimme: „Geil, noch mal!“', fx:{bp:-8, rel:{chef:-12}, unflag:'funk_aufnahme'}}},
+   {t:'Zugeben und entschuldigen', out:{t:'Der Chef schweigt lange. Dann: „Der Refrain war gut, oder?“', fx:{bp:-2, rel:{chef:4}, unflag:'funk_aufnahme'}}},
+  ]},
+ // Folgeereignisse
+ {id:'rache', who:'dennis', need:'dennis_rache', text:'Morgens beim Anziehen: Deine Stiefel sind bis oben mit Zahnpasta gefüllt. Dennis pfeift unschuldig.',
+  ch:[
+   {t:'Lachen und abhaken', out:{t:'„Okay, das hab ich verdient.“ Dennis grinst. Die Sache ist erledigt.', fx:{rel:{dennis:12}, unflag:'dennis_rache'}}},
+   {t:'Beim Spieß melden', out:{t:'Dennis bekommt Zusatzdienst. Auf der Stube wird es still um dich.', fx:{rel:{dennis:-10, kalle:-4, spiess:2}, unflag:'dennis_rache'}}},
+   {t:'Einen Gegenschlag planen', out:{t:'Kalle besorgt Rasierschaum. Der Krieg der Stube hat begonnen.', fx:{bp:-2, rel:{dennis:-4, kalle:5}, unflag:'dennis_rache'}}},
+  ]},
+ {id:'plane_weg', who:'spiess', need:'plane', text:'Brockmann steht im Flur. „Der Instandsetzung fehlt eine Plane. Nagelneu. Hat jemand was gesehen?“ Kalle schaut sehr interessiert an die Decke.',
+  ch:[
+   {t:'Schweigen', roll:{stat:'vitaminb', base:50},
+     ok:{t:'Brockmann zieht weiter. Kalle schuldet dir was.', fx:{rel:{kalle:8}, unflag:'plane'}},
+     fail:{t:'Brockmann findet die Plane unter deinem Bett. Erklär das mal.', fx:{bp:-8, rel:{spiess:-10}, unflag:'plane'}}},
+   {t:'Kalle verraten', out:{t:'Kalle muss die Plane zurückbringen und den Fuhrpark fegen. Er redet nicht mehr mit dir.', fx:{rel:{kalle:-15, spiess:6}, unflag:'plane'}}},
+   {t:'Die Plane nachts heimlich zurückbringen', out:{t:'Eine Nacht weniger Schlaf, aber niemand weiß etwas.', fx:{st:-15, unflag:'plane'}}},
+  ]},
+];
+const EV = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
+const LG_EV = {ual:['lg_ual1','lg_ual2','lg_ual3'], fwl:['lg_fwl1','lg_fwl2','lg_fwl3'], ofl:['lg_ofl1','lg_ofl2','lg_ofl3'], stu:['lg_stu1','lg_stu2','lg_stu3']};
+function lgCost(l){ let c = (S.lgRetry && S.lgRetry[l.id]) ? l.cost/2 : l.cost; if(hasGear('tablet')) c *= .8; return Math.round(c); }
+function finishLehrgang(){
+  const a = S.ausb; if(!a || a.type!=='lehrgang') return '';
+  const s = a.score, note = s>=14 ? 1 : s>=10 ? 2 : s>=6 ? 3 : s>=3 ? 4 : 5, l = L[a.id];
+  S.ausb = null; S.lgNote = S.lgNote || {}; S.lgRetry = S.lgRetry || {};
+  if(note === 5){
+    S.lgRetry[a.id] = true; S.lgNote[a.id] = 5;
+    return '<div class="stamp">NICHT BESTANDEN</div><p>'+esc(l.name)+': '+s+' Punkte. Du kannst den Lehrgang zum halben Preis wiederholen.</p>';
+  }
+  S.lehrgaenge[a.id] = now(); S.lgNote[a.id] = note; delete S.lgRetry[a.id];
+  G.addPoints(6 + (5-note)*4);
+  S.pakete = Math.min(9, (S.pakete||0)+1);
+  if(note === 1) S.money += Math.round(l.cost*.5);
+  return '<div class="stamp good">BESTANDEN</div><p><b>'+esc(l.name)+': Note '+note+' ('+NOTES[note]+')</b>'
+    + (note===1 ? '. Lehrgangsbester! Die Hälfte der Kosten gibt es als Prämie zurück.' : '.')+'</p>';
+}
+
+function maybeEvent(ctx, chance){
+  if(S.einsatz || S.pending.length >= 3 || Math.random() > chance) return null;
+  const t = R[S.rank].t;
+  const ok = EVENTS.filter(e => !S.pending.includes(e.id)
+    && (!e.minT || t >= e.minT)
+    && (!e.groups || e.groups.includes(R[S.rank].g))
+    && (!e.ctx || e.ctx.includes(ctx))
+    && (!e.need || S.flags[e.need])
+    && (!e.blockIf || !S.flags[e.blockIf])
+    && e.id !== S.lastEvent);
+  if(!ok.length) return null;
+  const follow = ok.filter(e=>e.need), normal = ok.filter(e=>!e.need);
+  const pool = (follow.length && (Math.random() < .7 || !normal.length)) ? follow : normal;
+  pool.sort((a,b)=>(S.seen[a.id]||0)-(S.seen[b.id]||0)); // Seltenes bevorzugen
+  const e = pool[Math.floor(Math.random()*Math.min(pool.length,4))];
+  S.pending.push(e.id); S.lastEvent = e.id;
+  return e;
+}
+function rollChance(r){ return Math.min(95, r.base + 4*S.stats[r.stat]); }
+function applyFx(fx){
+  const chips = [];
+  if(fx.money){ S.money = Math.max(0, S.money+fx.money); chips.push((fx.money>0?'+':'−')+eur(Math.abs(fx.money))); }
+  if(fx.bp){ if(fx.bp>0) G.addPoints(fx.bp); else S.log.push({ts:now(), p:fx.bp}); chips.push((fx.bp>0?'+':'−')+Math.abs(fx.bp)+' Beurteilung'); }
+  if(fx.st){ G.normStamina(); S.stamina = Math.max(0, Math.min(G.maxStamina(), S.stamina+fx.st)); chips.push((fx.st>0?'+':'−')+Math.abs(fx.st)+' Ausdauer'); }
+  for(const [k,v0] of Object.entries(fx.rel||{})){ const v = (v0>0 && S.verw==='koch') ? Math.round(v0*1.5) : v0; S.rel[k] = Math.max(-100, Math.min(100, S.rel[k]+v)); chips.push(NPCS[k].short+' '+(v>0?'+':'−')+Math.abs(v)); }
+  if(fx.lg && S.ausb && S.ausb.type==='lehrgang'){
+    let v = fx.lg; if(v>0 && rel('krueger')>=30) v += 1;
+    S.ausb.score = (S.ausb.score||0) + v; chips.push('Lehrgang '+(v>0?'+':'−')+Math.abs(v));
+  }
+  if(fx.ep && S.einsatz){ S.einsatz.score += fx.ep; chips.push('Einsatz '+(fx.ep>0?'+':'−')+Math.abs(fx.ep)); }
+  if(fx.flag) S.flags[fx.flag] = 1;
+  if(fx.unflag) delete S.flags[fx.unflag];
+  return chips;
+}
+function npcBadge(k, size=44){
+  const n = NPCS[k], ini = n.short.split(' ').map(w=>w[0]).join('').slice(0,2);
+  return '<span class="npc" aria-hidden="true" style="--c:'+n.col+';width:'+size+'px;height:'+size+'px">'+esc(ini)+'</span>';
+}
+let curEvent = null;
+function showEvent(id){
+  const e = EV[id]; if(!e) return; curEvent = id; const n = NPCS[e.who];
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="et"><div class="sheet ev">'
+    + '<div class="evhead">'+npcBadge(e.who)+'<div><div id="et" class="evname">'+esc(n.name)+'</div><div class="small muted">'+esc(n.role)+'</div></div></div>'
+    + '<p class="evtext">'+esc(e.text)+'</p><div class="choices">'
+    + e.ch.map((c,i)=>'<button class="btn ghost choice" data-act="choose" data-id="'+i+'"><span>'+esc(c.t)+'</span>'
+      + (c.roll ? '<span class="small muted">'+STAT_NAME[c.roll.stat]+'-Probe, '+rollChance(c.roll)+' % Chance</span>' : '')+'</button>').join('')
+    + '</div></div></div>';
+  document.querySelector('.choice').focus();
+}
+function chooseEvent(i){
+  const e = EV[curEvent]; if(!e) return; const c = e.ch[i]; if(!c) return;
+  let out = c.out, roll = null;
+  if(c.roll){ const hit = Math.random()*100 < rollChance(c.roll); out = hit ? c.ok : c.fail; roll = hit ? 'GESCHAFFT' : 'DANEBEN'; }
+  const chips = applyFx(out.fx||{});
+  const lgLine = e.exam ? finishLehrgang() : e.einsatzEnd ? finishEinsatz() : '';
+  S.pending = S.pending.filter(x=>x!==curEvent); S.seen[curEvent] = (S.seen[curEvent]||0)+1; curEvent = null; save();
+  render();
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-label="Ergebnis"><div class="sheet ev">'
+    + (roll && !e.exam ? '<div class="stamp small-stamp'+(roll==='DANEBEN'?'':' good')+'">'+roll+'</div>' : '')
+    + '<p class="evtext">'+esc(out.t)+'</p>'
+    + lgLine
+    + (chips.length ? '<div class="chips">'+chips.map(x=>'<span class="chip'+(x.includes('−')?' neg':'')+'">'+esc(x)+'</span>').join('')+'</div>' : '<p class="small muted">Keine Folgen. Diesmal.</p>')
+    + '<button class="btn wide" data-act="close" style="margin-top:14px">Weiter</button></div></div>';
+  document.querySelector('[data-act="close"]').focus();
+}
+
+const PROMO_LINES = [
+  'Der Kasten Bier steht schon im Geschäftszimmer.',
+  'Das Mett ist bestellt, die Brötchen sind halbiert.',
+  'Die Kompanie dankt für den Einstand. Der Spieß hat zwei Stück Kuchen genommen.',
+  'Neue Schulterklappen, gleiche Stube.',
+];
+
+/* =========================================================
+   SPIELZUSTAND
+   ========================================================= */
+const KEY = 'stillgestanden_v1';
+let S = null;
+let tab = 'stube';
+
+function load(){ try{ const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
+function save(){
+  if(!S) return;
+  S.savedAt = now(); if(typeof USER !== 'undefined' && USER) S.uid = USER.id;
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+  if(typeof cloudDirty !== 'undefined') cloudDirty = true;
+}
+const now = () => Date.now();
+
+function dateStr(d=new Date()){ const p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+function daysBetween(a,b){ return Math.round((new Date(b+'T12:00:00') - new Date(a+'T12:00:00'))/864e5); }
+
+function newGame(name, res=0){
+  S = {
+    v:1, name, rank:'sdt', money:150,
+    stats:{fitness:0,schiessen:0,fachwissen:0,fuehrung:0,vitaminb:0},
+    lehrgaenge:{}, stamina:100, staminaTs:now(),
+    dienst:null, ausb:null, log:[],
+    lastPromo:now(), lastPay:dateStr(), speed:1, theme:'system',
+    history:[{rank:'sdt', ts:now()}], dienstCount:0,
+    rel:{spiess:0,chef:0,kalle:0,lena:0,dennis:0,krueger:0}, flags:{}, pending:[], seen:{}, lgNote:{}, lgRetry:{},
+    verw:null, stube:{bett:0,spind:0,kaffee:0,kuehl:0,hantel:0},
+    start:now(), gaDone:false, verpfl:'FWD', dc:{}, gear:{}, einsatz:null, einsaetze:[], album:{}, pakete:1, sr:null, res
+  };
+  save();
+}
+
+/* =========================================================
+   SPIELLOGIK (später 1:1 auf den Server verlagerbar)
+   ========================================================= */
+const G = {
+  rank(){ return R[S.rank]; },
+  weeks(){ return (now()-S.start)/864e5*S.speed; },
+  dzLeft(){ const j = DZ[S.verpfl].jahre; return j ? j*52 - G.weeks() : Infinity; },
+  dzOver(){ return G.dzLeft() <= 0; },
+  gaReqs(){ return [
+    {label:'Drei Wochen Grundausbildung (drei Tage)', ok: G.weeks() >= 3},
+    {label:'Formaldienst 3× ('+Math.min(3,S.dc.formal||0)+'/3)', ok:(S.dc.formal||0) >= 3},
+    {label:'Ausbildungsmarsch 2× ('+Math.min(2,S.dc.ga_marsch||0)+'/2)', ok:(S.dc.ga_marsch||0) >= 2},
+    {label:'Fitness Stufe 1', ok:S.stats.fitness >= 1},
+    {label:'Schießen Stufe 1', ok:S.stats.schiessen >= 1},
+  ]; },
+  dzReqs(k){
+    const r = G.rank(), out = [];
+    if(k==='SaZ4') out.push({label:'Grundausbildung abgeschlossen', ok:!!S.gaDone});
+    if(k==='SaZ8'){ out.push({label:'Dienstgrad mindestens Hauptgefreiter', ok:r.t>=3}); out.push({label:'Beurteilung mindestens „befriedigend“', ok:G.note()<=3}); }
+    if(k==='SaZ13'){ out.push({label:'Dienstgrad mindestens Stabsgefreiter oder Unteroffizier', ok:r.t>=4}); out.push({label:'Führung Stufe 5', ok:S.stats.fuehrung>=5}); out.push({label:'Beurteilung mindestens „gut“', ok:G.note()<=2}); }
+    if(k==='BS'){ out.push({label:'Dienstgrad Oberfeldwebel oder Leutnant und höher', ok:(r.g==='F'&&r.t>=7)||r.g==='O'||r.g==='G'}); out.push({label:'Beurteilung mindestens „gut“', ok:G.note()<=2}); }
+    return out;
+  },
+  maxStamina(){ return 100 + 5*S.stats.fitness + 10*S.stube.kaffee + (S.verw==='san' ? 20 : 0) + (hasGear('rucksack') ? 15 : 0) + (albumSet('s') ? 10 : 0) + 2*kStufe('truppenkueche'); },
+  regenMs(){ return 120000 / S.speed / (rel('dennis')>=30 ? 1.15 : 1) / (1 + .05*S.stube.bett) / (hasGear('wagen') ? 1.2 : 1) / (1 + .02*kStufe('sanbereich')); }, // 1 Ausdauer alle 2 Minuten
+  normStamina(){
+    const max = G.maxStamina(), rg = G.regenMs();
+    if(S.stamina >= max){ S.stamina = Math.min(S.stamina, max); S.staminaTs = now(); return; }
+    const gained = Math.floor((now() - S.staminaTs)/rg);
+    if(gained > 0){
+      S.stamina = Math.min(max, S.stamina + gained);
+      S.staminaTs = S.stamina >= max ? now() : S.staminaTs + gained*rg;
+    }
+  },
+  payMult(){ return (G.rank().sold/40) * (1 + .03*S.stats.fachwissen) * (1 + .02*S.stats.vitaminb) * (S.verw==='inst' ? 1.1 : 1) * (1 + .05*Math.min(5, S.res||0)) * (hasGear('stander') ? 1.1 : 1) * (albumSet('g') ? 1.05 : 1) * (albumSet('l') ? 1.1 : 1) * (1 + .01*kStufe('betreuung')); },
+  bpMult(){ return Math.max(.2, 1 + .03*S.stats.vitaminb + .02*S.stats.fuehrung + rel('spiess')/500 + Math.max(0,rel('chef'))/1000 + .04*S.stube.spind + (S.verw==='fm' ? .1 : 0) + (hasGear('kalender') ? .05 : 0) + (albumSet('e') ? .05 : 0)); },
+  dienstPay(d){ return Math.round(d.pay * G.payMult() * ((S.verw==='inf' && (d.id==='gelaende'||d.id==='uebung')) ? 1.15 : 1)); },
+  dienstSt(d){ return Math.round(d.st * (S.verw==='kfz' ? .8 : 1) * (hasGear('stiefel') ? .95 : 1)); },
+  dienstMin(d){ return d.min * (hasGear('uhr') ? .95 : 1); },
+  addPoints(p){ S.log.push({ts:now(), p: p>0 ? Math.round(p*G.bpMult()*10)/10 : p}); },
+  points(){
+    const cut = now() - 7*864e5/S.speed;
+    S.log = S.log.filter(x => x.ts >= cut);
+    return Math.round(S.log.reduce((a,x)=>a+x.p,0)*10)/10;
+  },
+  note(){ const p = G.points(); for(let n=1;n<=4;n++) if(p >= NOTE_MIN[n]) return n; return 5; },
+  dienstLock(d){
+    const r = G.rank();
+    if(S.einsatz && !d.einsatz) return 'im Auslandseinsatz';
+    if(d.einsatz && !S.einsatz) return 'nur im Auslandseinsatz';
+    if(d.verw && S.verw !== d.verw) return 'nur für ' + VERW[d.verw].name;
+    if(G.dzOver()) return 'Dienstzeitende';
+    if(d.ga && S.gaDone) return 'nur in der Grundausbildung';
+    if(d.spec) return r.spec ? null : 'nur für Korporale';
+    if(d.groups && !d.groups.includes(r.g)) return 'ab ' + R[{U:'uffz',F:'fw',A:'fj',O:'lt',G:'bg'}[d.groups[0]]].name;
+    if(d.minT && r.t < d.minT) return 'ab ' + (RANKS.find(x => d.groups.includes(x.g) && x.t >= d.minT) || r).name;
+    if(d.groups) return null;
+    if(r.t < d.t) return 'ab ' + RANKS.find(x=>x.g==='M' && x.t===d.t).name;
+    return null;
+  },
+  statCost(id){ const l=S.stats[id]; return Math.round(25*(l+1)**2 * (rel('kalle')>=30 ? .9 : 1)); },
+  statMin(id){
+    const l = S.stats[id]; let f = rel('lena')>=30 ? .9 : 1;
+    if(id==='fitness') f *= (1 - .08*S.stube.hantel) * (1 - .03*kStufe('sporthalle'));
+    if(id==='schiessen') f *= 1 - .03*kStufe('schiessanlage');
+    if((id==='schiessen' && S.verw==='inf') || (id==='fachwissen' && S.verw==='inst')) f *= .8;
+    if(id==='fuehrung' && hasGear('pfeife')) f *= .9;
+    return Math.max(1, Math.round(4*(l+1)**1.7 * f));
+  },
+
+  startDienst(id){
+    const d = D[id];
+    if(S.dienst) return 'Du bist schon im Dienst.';
+    if(G.dienstLock(d)) return 'Dieser Dienst ist noch gesperrt.';
+    G.normStamina();
+    if(S.stamina < G.dienstSt(d)) return 'Zu wenig Ausdauer.';
+    S.stamina -= G.dienstSt(d); if(S.staminaTs > now()) S.staminaTs = now();
+    S.dienst = {id, start:now(), end:now()+G.dienstMin(d)*60000/S.speed, pay:G.dienstPay(d), bp:d.bp};
+    return null;
+  },
+  startStat(id){
+    if(S.ausb) return 'Es läuft schon eine Ausbildung.';
+    const c = G.statCost(id);
+    if(S.money < c) return 'Zu wenig Geld.';
+    S.money -= c;
+    S.ausb = {type:'stat', id, start:now(), end:now()+G.statMin(id)*60000/S.speed};
+    return null;
+  },
+  lehrgangReqs(l){
+    const out = [{label:'Dienstgrad: ' + l.ranks.map(x=>R[x].name).join(' oder '), ok:l.ranks.includes(S.rank)}];
+    for(const [k,v] of Object.entries(l.stats)) out.push({label:STAT_NAME[k]+' Stufe '+v, ok:S.stats[k]>=v});
+    out.push({label:'Kosten: '+eur(lgCost(l))+(lgCost(l)<l.cost ? ' (Wiederholung)' : ''), ok:S.money>=lgCost(l)});
+    return out;
+  },
+  startLehrgang(id){
+    const l = L[id];
+    if(S.einsatz) return 'Im Auslandseinsatz gibt es keine Lehrgänge.';
+    if(S.ausb) return 'Es läuft schon eine Ausbildung.';
+    if(S.lehrgaenge[id]) return 'Lehrgang schon abgeschlossen.';
+    if(!G.lehrgangReqs(l).every(r=>r.ok)) return 'Voraussetzungen fehlen.';
+    S.money -= lgCost(l);
+    const dur = l.min*60000/S.speed, ev = LG_EV[id].slice();
+    S.ausb = {type:'lehrgang', id, start:now(), end:now()+dur, cps:ev.map((_,i)=>now()+dur*(i+1)/(ev.length+1)), ev, next:0, score:0, exam:false};
+    return null;
+  },
+  einstand(targetId){ return R[targetId].einstand * G.rank().sold; },
+  promoReqs(targetId){
+    const t = R[targetId], out = [];
+    const needMs = t.minH*3600000/S.speed, done = now()-S.lastPromo;
+    out.push({label: 'Mindestdienstzeit: ' + fmtHours(t.minH/S.speed) + (done<needMs ? ' (noch ' + fmtLeft(needMs-done) + ')' : ''), ok: done>=needMs});
+    out.push({label: 'Beurteilung mindestens „' + NOTES[t.note] + '“', ok: G.note() <= t.note});
+    for(const [k,v] of Object.entries(t.stats||{})) out.push({label: STAT_NAME[k]+' Stufe '+v, ok: S.stats[k]>=v});
+    if(t.ga) out.push({label:'Grundausbildung mit Gelöbnis abgeschlossen', ok:!!S.gaDone});
+    if(t.dz) out.push({label:'Dienstverhältnis mindestens '+DZ[t.dz].short, ok: DZ[S.verpfl].rang >= DZ[t.dz].rang});
+    if(t.lehrgang) out.push({label: L[t.lehrgang].name + ' abgeschlossen', ok: !!S.lehrgaenge[t.lehrgang]});
+    out.push({label: 'Einstand für die Kompanie: ' + eur(G.einstand(targetId)), ok: S.money >= G.einstand(targetId)});
+    return out;
+  },
+  promote(targetId){
+    if(!(NEXT[S.rank]||[]).includes(targetId)) return 'Dieser Dienstgrad ist von hier aus nicht erreichbar.';
+    if(!G.promoReqs(targetId).every(r=>r.ok)) return 'Voraussetzungen fehlen.';
+    S.money -= G.einstand(targetId);
+    S.rank = targetId; S.lastPromo = now();
+    S.history.push({rank:targetId, ts:now()});
+    G.addPoints(5);
+    return null;
+  },
+  tick(){
+    let events = [], changed = false;
+    G.normStamina();
+    // Sold
+    const today = dateStr();
+    if(S.lastPay !== today){
+      const days = Math.max(1, Math.min(7, daysBetween(S.lastPay, today)));
+      const amount = Math.round(G.rank().sold*days*(1+.02*S.stats.vitaminb)*(1+.05*S.stube.kuehl));
+      S.money += amount; S.lastPay = today; changed = true;
+      events.push('Sold ist da: ' + eur(amount));
+    }
+    if(S.dienst && now() >= S.dienst.end){
+      const d = D[S.dienst.id];
+      S.money += S.dienst.pay; G.addPoints(S.dienst.bp); S.dienstCount++; S.dc[S.dienst.id] = (S.dc[S.dienst.id]||0) + 1;
+      if(D[S.dienst.id].einsatz && S.einsatz) S.einsatz.score += 1;
+      if(Math.random() < (D[S.dienst.id].einsatz ? .25 : .12)){ S.pakete = Math.min(9, (S.pakete||0)+1); events.push('Feldpost ist da!'); }
+      events.push(d.name + ' beendet: +' + eur(S.dienst.pay));
+      { const ev = maybeEvent(d.id, .55); if(ev) events.push('Neue Meldung von ' + NPCS[ev.who].short); }
+      S.dienst = null; changed = true;
+    }
+    if(S.ausb && S.ausb.type==='lehrgang' && S.ausb.cps){
+      const a = S.ausb;
+      while(a.next < a.cps.length && now() >= a.cps[a.next]){
+        if(!S.pending.includes(a.ev[a.next])) S.pending.push(a.ev[a.next]);
+        a.next++; changed = true; events.push(L[a.id].name + ': neue Lage');
+      }
+      if(now() >= a.end && !a.exam){
+        a.exam = true; S.pending.push('lgx_'+a.id); changed = true;
+        events.push('Abschlussprüfung ' + L[a.id].name + ' wartet');
+      }
+    }
+    if(S.einsatz){
+      const a = S.einsatz;
+      while(a.next < a.cps.length && now() >= a.cps[a.next]){
+        if(!S.pending.includes(a.ev[a.next])) S.pending.push(a.ev[a.next]);
+        a.next++; changed = true; events.push('Auslandseinsatz: neue Lage');
+      }
+      if(now() >= a.end && !a.fin){
+        a.fin = true; S.pending.push('ex_heim'); changed = true; events.push('Rückverlegung steht an');
+      }
+    }
+    if(S.ausb && now() >= S.ausb.end && !S.ausb.cps){
+      if(S.ausb.type === 'stat'){
+        S.stats[S.ausb.id]++; G.addPoints(2);
+        events.push(STAT_NAME[S.ausb.id] + ' jetzt auf Stufe ' + S.stats[S.ausb.id]);
+      } else {
+        S.lehrgaenge[S.ausb.id] = now(); G.addPoints(10);
+        events.push(L[S.ausb.id].name + ' bestanden');
+      }
+      S.ausb = null; changed = true;
+      { const ev = maybeEvent('ausb', .3); if(ev) events.push('Neue Meldung von ' + NPCS[ev.who].short); }
+    }
+    if(changed) save();
+    return {changed, events};
+  }
+};
+
+/* =========================================================
+   HILFSFUNKTIONEN
+   ========================================================= */
+function eur(n){ return Math.round(n).toLocaleString('de-DE') + ' €'; }
+function fmtMin(m){ m=Math.max(1,Math.round(m)); if(m<60) return m+' Min.'; const h=Math.floor(m/60), r=m%60; return h+' Std.'+(r?' '+r+' Min.':''); }
+function fmtHours(h){ return h<1 ? fmtMin(h*60) : fmtMin(h*60); }
+function fmtLeft(ms){ const s=Math.max(0,Math.ceil(ms/1000)), h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60;
+  const p=n=>String(n).padStart(2,'0'); return (h? h+':'+p(m) : m) + ':' + p(x); }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+function toast(msg){
+  const host = document.getElementById('toastHost');
+  host.innerHTML = '<div class="toast" role="status">'+esc(msg)+'</div>';
+  clearTimeout(toast._t); toast._t = setTimeout(()=>host.innerHTML='', 2800);
+}
+
+function applyTheme(){
+  const el = document.documentElement;
+  if(S && S.theme && S.theme !== 'system') el.dataset.theme = S.theme; else delete el.dataset.theme;
+}
+
+/* Schulterklappe: eigene, vereinfachte Darstellung je Dienstgradgruppe */
+function star(cx,cy,r){
+  let d=''; for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rr=i%2?r*.45:r; d+=(i?'L':'M')+(cx+rr*Math.cos(a)).toFixed(1)+' '+(cy+rr*Math.sin(a)).toFixed(1); }
+  return '<path d="'+d+'Z" fill="var(--mark)"/>';
+}
+function insignia(id, size=56){
+  const r = R[id], list = RANKS.filter(x=>x.g===r.g), k = list.indexOf(r);
+  let m = '';
+  const stripe = (y,h=4) => '<rect x="13" y="'+y+'" width="30" height="'+h+'" rx="1" fill="var(--mark)"/>';
+  const chev = y => '<path d="M17 '+y+' L28 '+(y+7)+' L39 '+y+'" fill="none" stroke="var(--mark)" stroke-width="3"/>';
+  const frameOpen = '<path d="M9 86 V24 Q9 9 28 7 Q47 9 47 24 V86" fill="none" stroke="var(--mark)" stroke-width="2.5"/>';
+  const frameClosed = frameOpen + '<path d="M9 84.5 H47" stroke="var(--mark)" stroke-width="2.5"/>';
+  const leaf = '<path d="M17 76 Q28 62 39 76 Q28 71 17 76Z" fill="var(--mark)"/>';
+  if(r.g==='M'){
+    if(id==='korp'||id==='skorp'){ m += stripe(60,9); if(id==='skorp') m += stripe(50); }
+    else for(let i=0;i<k;i++) m += stripe(72-i*8);
+  } else if(r.g==='U'){ m += frameOpen; for(let i=0;i<k;i++) m += chev(62-i*9); }
+  else if(r.g==='F'){ m += frameClosed; for(let i=0;i<=k;i++) m += chev(64-i*9); }
+  else if(r.g==='A'){ m += frameClosed + '<circle cx="28" cy="70" r="4.5" fill="none" stroke="var(--mark)" stroke-width="2.5"/>'; for(let i=0;i<k;i++) m += chev(52-i*9); }
+  else if(r.g==='O'){ const n = k<3 ? k+1 : k-2; if(k>=3) m += leaf; for(let i=0;i<n;i++) m += star(28, (k>=3?56:66)-i*15, 6); }
+  else { m += '<path d="M9 86 V24 Q9 9 28 7 Q47 9 47 24 V86" fill="none" stroke="var(--signal)" stroke-width="3"/>' + leaf.replace('var(--mark)','var(--signal)');
+         for(let i=0;i<=k;i++) m += star(28, 58-i*12, 5.5).replace('var(--mark)','var(--signal)'); }
+  return '<svg viewBox="0 0 56 90" width="'+size+'" height="'+Math.round(size*90/56)+'" aria-hidden="true">'
+    + '<path d="M4 88 V24 Q4 4 28 2 Q52 4 52 24 V88 Z" fill="var(--board)"/>'
+    + '<circle cx="28" cy="15" r="3.5" fill="var(--mark)" opacity=".75"/>' + m + '</svg>';
+}
+
+/* =========================================================
+   OBERFLÄCHE
+   ========================================================= */
+const ICONS = {
+  stube:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.5"/><path d="M14 10h4M14 14h4"/></svg>',
+  truppe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M12 20c0-3.3 1.8-6 4-6s6 2.7 6 6"/></svg>',
+  raum:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11 12 4l9 7v9H3z"/><path d="M9 20v-6h6v6"/></svg>',
+  dienst:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>',
+  ausb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></svg>',
+  laufbahn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/></svg>',
+};
+const TABS = [['stube','Übersicht'],['raum','Stube'],['dienst','Dienst'],['ausb','Ausbildung'],['laufbahn','Laufbahn'],['truppe','Truppe']];
+
+function renderNav(){
+  const nav = document.getElementById('nav');
+  nav.hidden = !(S && USER && ONLINE.profile);
+  if(nav.hidden) return;
+  nav.innerHTML = TABS.map(([id,label]) =>
+    '<button data-act="tab" data-id="'+id+'" '+(tab===id?'aria-current="page"':'')+'>'+ICONS[id]+label
+    + (id==='stube' && (S.pending.length || S.pakete) ? '<span class="dot" aria-label="neue Meldung"></span>' : '')+'</button>').join('');
+}
+
+function renderRes(){
+  const el = document.getElementById('res');
+  if(!S || !USER || !ONLINE.profile){ el.innerHTML=''; return; }
+  const max = G.maxStamina();
+  el.innerHTML = '<span class="num" title="Geld">'+eur(S.money)+'</span>'
+    + '<span class="stam" title="Ausdauer"><span class="num">'+S.stamina+'/'+max+'</span><span class="bar"><i style="width:'+(S.stamina/max*100)+'%"></i></span></span>';
+}
+
+function activeBlock(){
+  let h = '';
+  if(S.dienst){
+    const d = D[S.dienst.id];
+    h += '<div class="active"><div class="head"><span>'+esc(d.name)+'</span><span class="num" data-left="dienst"></span></div>'
+       + '<div class="prog"><i data-prog="dienst"></i></div><div class="small muted" style="margin-top:4px">Verdienst: '+eur(S.dienst.pay)+'</div></div>';
+  }
+  if(S.ausb){
+    const name = S.ausb.type==='stat' ? STAT_NAME[S.ausb.id]+' auf Stufe '+(S.stats[S.ausb.id]+1) : L[S.ausb.id].name;
+    h += '<div class="active"><div class="head"><span>'+esc(name)+'</span><span class="num" data-left="ausb"></span></div>'
+       + '<div class="prog"><i data-prog="ausb"></i></div>'
+       + (S.ausb.type==='lehrgang' && S.ausb.cps ? '<div class="small muted" style="margin-top:4px">Lehrgangspunkte: '+(S.ausb.score||0)+(S.ausb.exam ? '. Die Abschlussprüfung wartet in den Meldungen.' : '')+'</div>' : '')
+       + '</div>';
+  }
+  return h;
+}
+
+function renderStube(){
+  const r = G.rank(), note = G.note(), pts = G.points();
+  const nextN = note>1 ? NOTE_MIN[note-1] : null;
+  const prevN = NOTE_MIN[note] || 0;
+  const pct = nextN ? Math.min(100,(pts-prevN)/(nextN-prevN)*100) : 100;
+  let h = '<div class="ausweis">'+insignia(S.rank,58)
+    + '<div><div class="small muted">'+esc(GROUPS[r.g])+'</div><div class="rank">'+esc(r.name)+'</div>'
+    + '<div class="name">'+esc(S.name)+(S.verw ? ', '+esc(VERW[S.verw].name) : '')+'</div><div class="small muted">Tagessold '+eur(r.sold)+'</div>'
+    + (S.standort ? '<div class="small muted">Standort '+esc(S.standort.ort)+'</div>' : '')
+    + (S.einsaetze.length ? '<div class="small muted">Einsatzmedaille '+medalName(S.einsaetze.length)+'</div>' : '')
+    + '<div class="small muted">Dienstzeit '+fmtDZ(G.weeks())+', '+DZ[S.verpfl].short+(isFinite(G.dzLeft()) ? ', Ende '+(G.dzOver() ? 'erreicht' : 'in '+fmtDZ(G.dzLeft())) : '')+'</div>'
+    + (S.res ? '<div class="small muted">'+(S.res+1)+'. Dienstzeit als Wiedereinsteller</div>' : '')+'</div></div>';
+
+  if(S.pending.length){
+    h += '<h2>Meldungen</h2><div class="panel">' + S.pending.map(id => { const e = EV[id], n = NPCS[e.who];
+      return '<div class="row"><div style="display:flex;gap:12px;align-items:center;min-width:0;flex:1">'+npcBadge(e.who,36)
+        + '<div class="info"><div class="title">Meldung von '+esc(n.short)+'</div><div class="meta">'+esc(n.role)+'</div></div></div>'
+        + '<button class="btn" data-act="event" data-id="'+id+'">Ansehen</button></div>'; }).join('') + '</div>';
+  }
+  if(!S.gaDone){
+    const req = G.gaReqs(), ok = req.every(x=>x.ok);
+    h += '<h2>Grundausbildung</h2><div class="panel pad"><p class="small">Bevor es richtig losgeht: drei Wochen Grundausbildung. Am Ende steht das feierliche Gelöbnis.</p>'
+      + reqList(req) + '<button class="btn wide" data-act="geloebnis" '+(ok?'':'disabled')+'>Gelöbnis ablegen</button></div>';
+  }
+  if(G.dzOver()){
+    h += '<h2>Dienstzeitende</h2><div class="panel pad"><p><b>Deine Dienstzeit ('+esc(DZ[S.verpfl].name)+') ist zu Ende.</b> Bis du dich entscheidest, ruht der Dienst. In der Laufbahn kannst du dich weiterverpflichten oder ausscheiden.</p>'
+      + '<button class="btn" data-act="tab" data-id="laufbahn">Zur Entscheidung</button></div>';
+  } else if(G.dzLeft() <= 6){
+    h += '<div class="panel pad" style="margin-top:16px"><p><b>Dein Dienstzeitende rückt näher</b> (noch '+fmtDZ(G.dzLeft())+'). Kümmere dich rechtzeitig um eine Weiterverpflichtung.</p>'
+      + '<button class="btn ghost" data-act="tab" data-id="laufbahn">Dienstverhältnis ansehen</button></div>';
+  }
+  if(S.pakete)
+    h += '<div class="panel pad" style="margin-top:16px"><p><b>Feldpost!</b> '+(S.pakete===1 ? 'Ein Paket wartet' : S.pakete+' Pakete warten')+' auf dich.</p><button class="btn" data-act="paket">Paket öffnen</button></div>';
+  if(!S.standort)
+    h += '<div class="panel pad" style="margin-top:16px"><p><b>Wo dienst du?</b> Leg deinen Heimatstandort fest.</p><button class="btn ghost" data-act="tab" data-id="laufbahn">Standort wählen</button></div>';
+  if(!S.verw && G.rank().t >= 1)
+    h += '<div class="panel pad" style="margin-top:16px"><p><b>Wähle deine Verwendung.</b> Als Gefreiter darfst du dich jetzt spezialisieren.</p><button class="btn" data-act="tab" data-id="laufbahn">Fachrichtung wählen</button></div>';
+  h += '<p class="quote">„'+esc(pick(SPIESS))+'“ – Hauptfeldwebel Brockmann, Spieß</p>';
+  if(S.einsatz){
+    const E = EINSATZ_I[S.einsatz.id];
+    h += '<h2>Auslandseinsatz</h2><div class="panel"><div class="active"><div class="head"><span>'+esc(E.name)+', '+esc(E.ort)+'</span><span class="num" data-left="einsatz"></span></div>'
+      + '<div class="prog"><i data-prog="einsatz"></i></div><div class="small muted" style="margin-top:4px">Einsatzpunkte: '+S.einsatz.score+'. Normale Dienste und Lehrgänge ruhen, im Dienstplan stehen jetzt Einsatzdienste.</div></div></div>';
+  }
+
+  h += '<h2>Im Dienst</h2>';
+  const act = activeBlock();
+  h += act ? '<div class="panel">'+act+'</div>'
+           : '<div class="panel pad"><p>Gerade nichts zu tun. Das fällt auf.</p><button class="btn" data-act="tab" data-id="dienst">Dienst antreten</button></div>';
+
+  h += '<h2>Beurteilung</h2><div class="panel pad"><div class="note"><span class="big">'+note+'</span><span><b>'+NOTES[note]+'</b><br><span class="small muted">'
+    + pts.toLocaleString('de-DE')+' Punkte in den letzten 7 Tagen</span></span></div>'
+    + '<div class="prog"><i style="width:'+pct+'%"></i></div>'
+    + '<p class="small muted" style="margin:8px 0 0">'+(nextN ? 'Für „'+NOTES[note-1]+'“ brauchst du '+nextN+' Punkte. Punkte gibt es für Dienste, Ausbildungen und Lehrgänge.' : 'Bestnote. Der Spieß ist misstrauisch.')+'</p></div>';
+
+  h += '<h2>Werte</h2><div class="panel">' + STATS.map(s =>
+    '<div class="row"><span>'+s.name+'</span><span class="num">Stufe '+S.stats[s.id]+'</span></div>').join('') + '</div>';
+
+  h += '<h2>Einstellungen</h2><div class="panel pad">'
+    + '<p style="margin-bottom:6px"><b>Darstellung</b></p><div class="seg" role="group" aria-label="Darstellung">'
+    + [['system','System'],['light','Hell'],['dark','Dunkel']].map(([v,l])=>'<button data-act="theme" data-id="'+v+'" aria-pressed="'+(S.theme===v)+'">'+l+'</button>').join('')
+    + '</div><p style="margin:16px 0 6px"><b>Testmodus</b></p><p class="small muted">Alle Zeiten laufen schneller. Nur zum Ausprobieren, nicht zum echten Spielen.</p>'
+    + '<div class="seg" role="group" aria-label="Testmodus">'
+    + [[1,'Aus'],[10,'10×'],[100,'100×']].map(([v,l])=>'<button data-act="speed" data-id="'+v+'" aria-pressed="'+(S.speed===v)+'">'+l+'</button>').join('')
+    + '</div><p style="margin:16px 0 6px"><b>Spielstand</b></p><p class="small muted">Dein Spielstand wird automatisch in deinem Konto gespeichert'+(USER && USER.email ? ' ('+esc(USER.email)+')' : '')+'.</p>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" data-act="logout">Abmelden</button><button class="btn danger" data-act="reset">Neu anfangen</button></div></div>';
+  return h;
+}
+
+function renderDienst(){
+  let h = '<h2>Dienstplan</h2>';
+  if(S.dienst) h += '<div class="panel" style="margin-bottom:16px">'+activeBlock().split('<div class="active">').slice(0,2).join('<div class="active">')+'</div>';
+  h += '<p class="small muted">Dienste kosten Ausdauer und bringen Geld und Beurteilungspunkte. Ausdauer lädt sich alle '+fmtMin(2/S.speed)+' um einen Punkt auf.</p>';
+  h += '<div class="panel">' + DIENSTE.map(d => {
+    const lock = G.dienstLock(d);
+    if(!!d.einsatz !== !!S.einsatz) return '';
+    if(d.verw && d.verw !== S.verw) return '';
+    if(d.ga && S.gaDone) return '';
+    if(d.hideFor && d.hideFor.includes(G.rank().g)) return '';
+    if(lock && (d.spec || d.groups) && G.rank().t < 3) return ''; // Fortgeschrittene Dienste erst zeigen, wenn sie in Reichweite sind
+    const dis = !!lock || !!S.dienst || S.stamina < G.dienstSt(d);
+    return '<div class="row"><div class="info"><div class="title">'+esc(d.name)+'</div>'
+      + '<div class="desc">'+esc(d.desc)+'</div>'
+      + '<div class="meta">'+fmtMin(G.dienstMin(d)/S.speed)+', '+G.dienstSt(d)+' Ausdauer, '+eur(G.dienstPay(d))+', '+d.bp+' Punkte</div></div>'
+      + (lock ? '<span class="small muted">'+lock+'</span>' : '<button class="btn" data-act="dienst" data-id="'+d.id+'" '+(dis?'disabled':'')+'>Antreten</button>')
+      + '</div>';
+  }).join('') + '</div>';
+  return h;
+}
+
+function renderAusb(){
+  let h = '<h2>Ausbildung</h2>';
+  if(S.ausb) h += '<div class="panel" style="margin-bottom:16px">'+(S.dienst ? activeBlock().split('<div class="active">').slice(2).map(x=>'<div class="active">'+x).join('') : activeBlock())+'</div>';
+  h += '<p class="small muted">Es läuft immer nur eine Ausbildung oder ein Lehrgang gleichzeitig. Parallel kannst du Dienst schieben.</p>';
+  h += '<div class="panel">' + STATS.map(s => {
+    const c = G.statCost(s.id), dis = !!S.ausb || S.money < c;
+    return '<div class="row"><div class="info"><div class="title">'+s.name+' <span class="tag">Stufe '+S.stats[s.id]+'</span></div>'
+      + '<div class="desc">'+esc(s.desc)+'</div><div class="meta">Nächste Stufe: '+eur(c)+', '+fmtMin(G.statMin(s.id)/S.speed)+'</div></div>'
+      + '<button class="btn" data-act="stat" data-id="'+s.id+'" '+(dis?'disabled':'')+'>Ausbilden</button></div>';
+  }).join('') + '</div>';
+
+  h += '<h2>Lehrgänge</h2><div class="panel">' + LEHRGAENGE.map(l => {
+    const done = !!S.lehrgaenge[l.id], reqs = G.lehrgangReqs(l), ok = reqs.every(r=>r.ok);
+    return '<div class="target"><div class="row" style="padding:0;border:0"><div class="info"><div class="title" style="font-family:Barlow,sans-serif;font-weight:700;font-size:17px">'+esc(l.name)+(done?' <span class="tag">bestanden'+(S.lgNote&&S.lgNote[l.id] ? ', Note '+S.lgNote[l.id] : '')+'</span>':'')+'</div>'
+      + '<div class="desc">'+esc(l.desc)+'</div><div class="meta">Dauer '+fmtMin(l.min/S.speed)+'</div></div>'
+      + (done ? '' : '<button class="btn" data-act="lehrgang" data-id="'+l.id+'" '+((!ok||S.ausb)?'disabled':'')+'>Anmelden</button>')+'</div>'
+      + (done ? '' : reqList(reqs)) + '</div>';
+  }).join('') + '</div>';
+  return h;
+}
+
+function reqList(reqs){
+  return '<ul class="req">'+reqs.map(r=>'<li class="'+(r.ok?'ok':'no')+'"><b>'+(r.ok?'✓':'✗')+'</b><span>'+esc(r.label)+'</span></li>').join('')+'</ul>';
+}
+
+function renderLaufbahn(){
+  const r = G.rank(), next = NEXT[S.rank] || [];
+  let h = '<h2>Nächste Beförderung</h2>';
+  if(!next.length){
+    h += '<div class="panel pad"><p>'+(S.rank==='gen' ? 'General. Höher geht es nicht. Der Spieß grüßt jetzt zuerst.' : 'Das ist das Ende dieser Laufbahn. Ein Wechsel ist von hier aus nicht mehr möglich.')+'</p></div>';
+  } else {
+    h += '<div class="panel">' + next.map(id => {
+      const t = R[id], reqs = G.promoReqs(id), ok = reqs.every(x=>x.ok);
+      const branch = t.g !== r.g || t.spec !== r.spec;
+      return '<div class="target"><div style="display:flex;gap:14px;align-items:center">'+insignia(id,40)
+        + '<div><div class="title">'+esc(t.name)+'</div><div class="small muted">'+esc(GROUPS[t.g])+(branch?' <span class="tag">Laufbahnwechsel</span>':'')+', Tagessold '+eur(t.sold)+'</div></div></div>'
+        + (t.hint ? '<p class="small" style="margin:10px 0 0">'+esc(t.hint)+'</p>' : '')
+        + (()=>{ const u = unlocksFor(id); return u.length ? '<p class="small" style="margin:10px 0 0"><b>Schaltet frei:</b> '+esc(u.join(', '))+'</p>' : ''; })()
+        + reqList(reqs)
+        + '<button class="btn wide" data-act="promote" data-id="'+id+'" '+(ok?'':'disabled')+'>Beförderung beantragen</button></div>';
+    }).join('') + '</div>';
+  }
+  h += renderDZ();
+  h += renderVerw();
+  h += renderStandort();
+  h += renderEinsatz();
+  h += '<h2>Werdegang</h2><div class="panel pad"><ul class="history" style="margin:0;padding-left:18px">'
+    + S.history.slice().reverse().map(x=>'<li><b>'+esc(R[x.rank].name)+'</b> <span class="small muted">seit '+new Date(x.ts).toLocaleDateString('de-DE')+'</span></li>').join('')
+    + '</ul><p class="small muted" style="margin:10px 0 0">'+S.dienstCount+' Dienste geleistet</p></div>';
+  return h;
+}
+
+function renderCreate(){
+  return '<div class="create"><div>'+insignia('sdt',64)+'</div>'
+    + '<div class="hero">Stillgestanden!</div>'
+    + '<p>Willkommen in der Kaserne. Noch ist deine Schulterklappe leer. Das ändern wir.</p>'
+    + '<label for="nm">Dein Name in der Truppe</label><input id="nm" maxlength="24" autocomplete="off" placeholder="z. B. Krause">'
+    + '<p class="small muted" style="margin-top:8px">Ein Spielname reicht, bitte keinen echten Namen.</p>'
+    + '<div style="margin-top:6px">'+standortPicker('Baden-Württemberg')+'<p class="small muted" style="margin-top:8px">Der Standort ist frei wählbar und lässt sich später ändern.</p></div>'
+    + '<button class="btn wide" style="margin-top:16px" data-act="create">Zum Dienst melden</button></div>';
+}
+
+function render(){
+  applyTheme();
+  const main = document.getElementById('main');
+  if(!BOOTED){ main.innerHTML = '<p class="muted" style="margin-top:20vh;text-align:center">Melde mich zum Dienst …</p>'; renderNav(); return; }
+  if(!USER){ main.innerHTML = renderLogin(); renderNav(); renderRes(); return; }
+  if(!S || !ONLINE.profile){ main.innerHTML = renderCreate(); }
+  else {
+    main.innerHTML = tab==='stube' ? renderStube() : tab==='raum' ? renderRaum() : tab==='dienst' ? renderDienst() : tab==='ausb' ? renderAusb() : tab==='truppe' ? renderTruppe() : renderLaufbahn();
+  }
+  renderNav(); renderRes(); live();
+}
+
+function live(){
+  if(!S) return;
+  for(const k of ['dienst','ausb','einsatz']){
+    const a = S[k]; if(!a) continue;
+    const pct = Math.min(100, (now()-a.start)/(a.end-a.start)*100);
+    document.querySelectorAll('[data-prog="'+k+'"]').forEach(e=>e.style.width=pct+'%');
+    document.querySelectorAll('[data-left="'+k+'"]').forEach(e=>e.textContent=(k==='einsatz' ? fmtRest : fmtLeft)(a.end-now()));
+  }
+}
+
+function showPromotion(id, un=[]){
+  document.getElementById('modalHost').innerHTML =
+    '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="pt"><div class="sheet">'
+    + '<div class="stamp">GENEHMIGT</div><div>'+insignia(id,52)+'</div>'
+    + '<h2 id="pt" style="margin:10px 0 6px;text-align:center">Befördert zum '+esc(R[id].name)+'</h2>'
+    + '<p class="muted">'+esc(pick(PROMO_LINES))+'</p>'
+    + (un.length ? '<p class="small" style="text-align:left"><b>Neu freigeschaltet:</b> '+esc(un.join(', '))+'</p>' : '')
+    + '<button class="btn wide" data-act="close" style="margin-top:8px">Wegtreten</button></div></div>';
+  document.querySelector('[data-act="close"]').focus();
+}
+
+/* Eigener Bestätigungsdialog, weil Browser-Dialoge in eingebetteten Seiten blockiert sein können */
+let askFn = null;
+function ask(text, fn, yes){
+  askFn = fn;
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="askt"><div class="sheet ev">'
+    + '<p id="askt" class="evtext">'+esc(text)+'</p>'
+    + '<div class="choices" style="flex-direction:row"><button class="btn" style="flex:1" data-act="ask_yes">'+esc(yes||'Bestätigen')+'</button>'
+    + '<button class="btn ghost" style="flex:1" data-act="close">Abbrechen</button></div></div></div>';
+  document.querySelector('[data-act="ask_yes"]').focus();
+}
+
+/* =========================================================
+   AKTIONEN
+   ========================================================= */
+const ACT = {
+  tab(id){ tab=id; render(); window.scrollTo(0,0); if(id==='truppe') loadTruppe(); },
+  async create(){
+    const v = document.getElementById('nm').value.trim();
+    const bl = document.getElementById('bl'), so = document.getElementById('so');
+    if(!/^[A-Za-zÄÖÜäöüß0-9 ._-]{3,20}$/.test(v)){ toast('Name: 3 bis 20 Zeichen, nur Buchstaben, Zahlen, Leerzeichen, Punkt, Strich.'); return; }
+    if(!bl || !so || !STANDORTE[bl.value]){ toast('Bitte einen Standort wählen.'); return; }
+    const std = {bl:bl.value, ort:so.value};
+    const { error } = await sb.from('profiles').insert({id:USER.id, name:v, standort:std.ort, bundesland:std.bl});
+    if(error){ toast(error.code==='23505' ? 'Der Name ist schon vergeben.' : 'Fehler: '+error.message); return; }
+    ONLINE.profile = {id:USER.id, name:v, standort:std.ort, bundesland:std.bl};
+    if(!S){ newGame(v); } else { S.name = v; }
+    S.standort = std; save(); await cloudPush(true); await loadOnline(); tab='stube'; render();
+  },
+  dienst(id){ const e=G.startDienst(id); if(e) toast(e); else { save(); toast(D[id].name+' angetreten'); } render(); },
+  stat(id){ const e=G.startStat(id); if(e) toast(e); else { save(); toast('Ausbildung '+STAT_NAME[id]+' begonnen'); } render(); },
+  lehrgang(id){ const e=G.startLehrgang(id); if(e) toast(e); else { save(); toast(L[id].name+' begonnen'); } render(); },
+  promote(id){ const un = unlocksFor(id); const e=G.promote(id); if(e){ toast(e); return; } save(); render(); showPromotion(id, un); },
+  gear(id){
+    const g = GEAR.find(x=>x.id===id);
+    if(!g || hasGear(id) || !g.req(G.rank())) return;
+    if(S.money < g.cost){ toast('Zu wenig Geld.'); return; }
+    S.money -= g.cost; S.gear[id] = now(); if(g.rel) applyFx({rel:g.rel});
+    save(); toast(g.name + ' gekauft'); render();
+  },
+  close(){ document.getElementById('modalHost').innerHTML=''; curEvent = null; },
+  event(id){ showEvent(id); },
+  choose(i){ chooseEvent(Number(i)); },
+  geloebnis(){
+    if(S.gaDone || !G.gaReqs().every(x=>x.ok)) return;
+    S.gaDone = true; G.addPoints(10); applyFx({rel:{spiess:5}}); save(); render();
+    document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="gt"><div class="sheet"><div class="stamp good">GELOBT</div>'
+      + '<h2 id="gt" style="margin:10px 0 6px;text-align:center">Grundausbildung bestanden</h2>'
+      + '<p class="muted">Feierliches Gelöbnis auf dem Antreteplatz. Die Familie ist da, das Musikkorps spielt, und Brockmann putzt sich auffällig lange die Brille.</p>'
+      + '<p class="small">Jetzt kannst du zum Gefreiten befördert werden und dich als Soldat auf Zeit verpflichten.</p>'
+      + '<button class="btn wide" data-act="close">Wegtreten</button></div></div>';
+  },
+  verpflichten(k, ok){
+    const v = DZ[k];
+    if(!v || v.rang <= DZ[S.verpfl].rang || !G.dzReqs(k).every(x=>x.ok)) return;
+    if(!ok) return ask('Als '+v.name+' verpflichten? Das lässt sich nicht rückgängig machen.', ()=>ACT.verpflichten(k, true), 'Verpflichten');
+    S.verpfl = k; S.money += v.praemie; G.addPoints(5); save();
+    toast('Verpflichtet: '+v.short+', Prämie '+eur(v.praemie)); render();
+  },
+  ausscheiden(_, ok){
+    if(!G.dzOver()) return;
+    if(!ok) return ask('Wirklich ausscheiden? Du beginnst neu als Soldat und behältst deinen Wiedereinsteller-Bonus.', ()=>ACT.ausscheiden(null, true), 'Ausscheiden');
+    const name = S.name, res = (S.res||0)+1, theme = S.theme, speed = S.speed;
+    newGame(name, res); S.theme = theme; S.speed = speed; save(); tab = 'stube'; render();
+    toast('Willkommen zurück, Wiedereinsteller.');
+  },
+  verw(id){
+    if(S.verw || G.rank().t < 1 || !VERW[id]) return;
+    S.verw = id; save(); toast('Verwendung: ' + VERW[id].name); render();
+  },
+  umschulung(_, ok){
+    const cost = 10*G.rank().sold;
+    if(S.money < cost){ toast('Zu wenig Geld.'); return; }
+    if(!ok) return ask('Umschulung für ' + eur(cost) + '? Danach wählst du eine neue Verwendung.', ()=>ACT.umschulung(null, true), 'Umschulen');
+    if(S.dienst && D[S.dienst.id].verw){ toast('Erst den laufenden Fachdienst beenden.'); return; }
+    S.money -= cost; S.verw = null; save(); render();
+  },
+  buy(id){
+    const it = STUBE_I[id]; if(!it) return;
+    const l = S.stube[id]; if(l >= it.cost.length) return;
+    const c = it.cost[l];
+    if(S.money < c){ toast('Zu wenig Geld.'); return; }
+    S.money -= c; S.stube[id]++;
+    const r = it.rel && it.rel[S.stube[id]]; if(r) applyFx({rel:r});
+    save(); toast(it.name + ': ' + it.levels[S.stube[id]]); render();
+  },
+  standort(_, ok){
+    const bl = document.getElementById('bl'), so = document.getElementById('so');
+    if(!bl || !so || !STANDORTE[bl.value]) return;
+    const neu = {bl:bl.value, ort:so.value};
+    if(S.standort && S.standort.ort===neu.ort && S.standort.bl===neu.bl){ toast('Da bist du schon.'); return; }
+    const cost = S.standort ? 5*G.rank().sold : 0;
+    if(cost){
+      if(S.money < cost){ toast('Zu wenig Geld für den Umzug.'); return; }
+      if(!ok) return ask('Versetzung nach '+neu.ort+' für '+eur(cost)+' beantragen?', ()=>ACT.standort(null, true), 'Versetzen');
+      S.money -= cost;
+    }
+    const first = !S.standort; S.standort = neu; save(); cloudPush(true).then(loadOnline).then(render);
+    toast(first ? 'Heimatstandort: '+neu.ort : 'Versetzung genehmigt: '+neu.ort); render();
+  },
+  paket(){ openPaket(); },
+  sr_open(){ SR = null; srRender(); },
+  sr_start(i){ srStart(Number(i)); },
+  sr_hit(){ srHit(); },
+  sr_stand(){ srStand(); },
+  sr_accuse(){ srAccuse(); },
+  sr_again(){ SR = null; srRender(); },
+  einsatz(id, ok){
+    const E = EINSATZ_I[id]; if(!E) return;
+    if(!ok) return ask(E.name+' in '+E.ort+' für '+E.days+' Tage antreten? Normale Dienste und Lehrgänge ruhen in der Zeit.', ()=>ACT.einsatz(id, true), 'Abflug');
+    const e = startEinsatz(id); if(e){ toast(e); return; }
+    save(); toast('Abflug nach '+E.ort); tab='stube'; render();
+  },
+  theme(v){ S.theme=v; save(); render(); },
+  speed(v){ S.speed=Number(v); save(); render(); },
+  reset(_, ok){
+    if(!ok) return ask('Wirklich neu anfangen? Dein Spielstand wird gelöscht.', ()=>ACT.reset(null, true), 'Löschen');
+    try{ localStorage.removeItem(KEY); }catch(e){}
+    const p = ONLINE.profile, theme = S.theme;
+    newGame(p.name); S.theme = theme;
+    if(p.standort && p.bundesland) S.standort = {bl:p.bundesland, ort:p.standort};
+    save(); cloudPush(true); tab='stube'; render();
+  },
+  async login(){ await authSubmit('login'); },
+  async signup(){ await authSubmit('signup'); },
+  logout(_, ok){
+    if(!ok) return ask('Abmelden? Dein Spielstand ist im Konto gesichert.', ()=>ACT.logout(null, true), 'Abmelden');
+    cloudPush(true).finally(async () => { await sb.auth.signOut(); USER = null; S = null; ONLINE.profile = null; try{ localStorage.removeItem(KEY); }catch(e){} render(); });
+  },
+  async spende(arg){
+    const [g, mult] = arg.split(':'); const betrag = Math.round(G.rank().sold * Number(mult));
+    if(S.money < betrag){ toast('Zu wenig Geld.'); return; }
+    const vorher = kStufe(g);
+    const { data, error } = await sb.rpc('kaserne_spenden', {p_gebaeude:g, p_betrag:betrag});
+    if(error){ toast(error.message); return; }
+    S.money -= betrag; ONLINE.kaserne[g] = data; ONLINE.heute += betrag; save(); cloudPush(true);
+    toast(data.stufe > vorher ? GEB_I[g].name+' ausgebaut auf Stufe '+data.stufe+'!' : eur(betrag)+' eingezahlt.');
+    render();
+  },
+  async kp_gruenden(){
+    const n = (document.getElementById('kpn')||{}).value || '', k = ((document.getElementById('kpk')||{}).value || '').toUpperCase();
+    if(n.trim().length < 3 || !/^[A-Z0-9]{2,5}$/.test(k)){ toast('Name ab 3 Zeichen, Kürzel 2 bis 5 Buchstaben oder Zahlen.'); return; }
+    const { error } = await sb.rpc('kompanie_gruenden', {p_name:n, p_kuerzel:k});
+    if(error){ toast(error.code==='23505' ? 'Name oder Kürzel ist schon vergeben.' : error.message); return; }
+    toast('Kompanie gegründet'); await loadTruppe();
+  },
+  async kp_beitreten(){
+    const c = ((document.getElementById('kpc')||{}).value || '').trim();
+    if(!c){ toast('Bitte den Einladecode eingeben.'); return; }
+    const { error } = await sb.rpc('kompanie_beitreten', {p_code:c});
+    if(error){ toast(error.message); return; }
+    toast('Willkommen in der Kompanie'); await loadTruppe();
+  },
+  kp_verlassen(_, ok){
+    if(!ok) return ask('Kompanie wirklich verlassen?', ()=>ACT.kp_verlassen(null, true), 'Verlassen');
+    sb.rpc('kompanie_verlassen').then(({error}) => { if(error) toast(error.message); else { toast('Du hast die Kompanie verlassen.'); loadTruppe(); } });
+  },
+  rl(id){ ONLINE.rlTab = id; loadRangliste(); },
+  ask_yes(){ const f = askFn; askFn = null; ACT.close(); if(f) f(); },
+};
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if(!b || b.disabled) return;
+  ACT[b.dataset.act] && ACT[b.dataset.act](b.dataset.id);
+});
+document.addEventListener('change', e => {
+  if(e.target.id==='bl' && STANDORTE[e.target.value]){
+    const so = document.getElementById('so'); if(so) so.innerHTML = ortOptions(e.target.value);
+  }
+});
+document.addEventListener('keydown', e => {
+  if(e.key==='Enter' && e.target.id==='nm') ACT.create();
+  if(e.key==='Enter' && (e.target.id==='em' || e.target.id==='pw')) ACT.login();
+  if(e.key==='Escape') ACT.close();
+});
+
+/* =========================================================
+   ONLINE: Konto, Cloud-Spielstand, Kaserne, Kompanie, Ranglisten
+   Die URL und der Publishable key sind öffentlich und dürfen hier stehen.
+   Der Secret key gehört NIE in diese Datei.
+   ========================================================= */
+const SB_URL = 'https://ngbdvpdispsdbogeokrr.supabase.co';
+const SB_KEY = 'sb_publishable_5EjgTSBCNFKfZfb6bMxj4A_yGF0HxD_';
+let sb = null;
+try{ sb = window.supabase.createClient(SB_URL, SB_KEY); }catch(e){ sb = null; }
+
+let USER = null, BOOTED = false, cloudDirty = false, cloudBusy = false;
+const ONLINE = {profile:null, kaserne:{}, heute:0, kompanie:null, code:null, mitglieder:[], rlTab:'spieler', rl:null, rlLoading:false};
+
+const GEB = [
+  {id:'sporthalle',    name:'Sporthalle',            fx:'Fitness-Ausbildung 3 % schneller je Stufe'},
+  {id:'truppenkueche', name:'Truppenküche',          fx:'2 Punkte mehr maximale Ausdauer je Stufe'},
+  {id:'schiessanlage', name:'Schießanlage',          fx:'Schießen-Ausbildung 3 % schneller je Stufe'},
+  {id:'sanbereich',    name:'Sanitätsbereich',       fx:'Ausdauer lädt 2 % schneller je Stufe'},
+  {id:'betreuung',     name:'Betreuungseinrichtung', fx:'1 % mehr Verdienst je Stufe'},
+];
+const GEB_I = Object.fromEntries(GEB.map(g=>[g.id,g]));
+function kStufe(g){ return (ONLINE.kaserne[g] && ONLINE.kaserne[g].stufe) || 0; }
+function gebKosten(stufe){ return 50000 * (stufe+1) * (stufe+1); }
+function standortKey(){ return S && S.standort ? S.standort.bl + '/' + S.standort.ort : null; }
+function spendenLimit(){ return 20000 + G.rank().t * 10000; }
+
+function punkte(){
+  const s = Object.values(S.stats).reduce((a,b)=>a+b, 0);
+  return Math.round(RANKS.indexOf(G.rank())*10000 + s*50 + S.dienstCount*10 + S.einsaetze.length*500
+    + ITEMS.filter(i=>S.album[i.id]).length*100 + Object.keys(S.lehrgaenge).length*1000);
+}
+function profilePayload(){
+  return {
+    name:S.name, rang:S.rank, rang_stufe:G.rank().t, verwendung:S.verw,
+    standort:S.standort ? S.standort.ort : null, bundesland:S.standort ? S.standort.bl : null,
+    dienstwochen:Math.floor(G.weeks()), einsaetze:S.einsaetze.length,
+    album:ITEMS.filter(i=>S.album[i.id]).length, punkte:punkte(), updated_at:new Date().toISOString()
+  };
+}
+
+async function cloudPush(force){
+  if(!sb || !USER || !S || !ONLINE.profile) return;
+  if(!force && !cloudDirty) return;
+  if(cloudBusy){ cloudDirty = true; return; }
+  cloudBusy = true; cloudDirty = false;
+  try{
+    const a = await sb.from('saves').upsert({user_id:USER.id, data:S, updated_at:new Date().toISOString()});
+    const b = await sb.from('profiles').update(profilePayload()).eq('id', USER.id);
+    if(a.error || b.error) cloudDirty = true;
+  }catch(e){ cloudDirty = true; }
+  cloudBusy = false;
+}
+
+async function loadOnline(){
+  if(!sb || !USER) return;
+  const key = standortKey();
+  ONLINE.kaserne = {}; ONLINE.heute = 0;
+  if(key){
+    const { data } = await sb.from('kaserne_gebaeude').select('*').eq('standort', key);
+    (data||[]).forEach(r => ONLINE.kaserne[r.gebaeude] = r);
+    const heute = new Date().toISOString().slice(0,10);
+    const sp = await sb.from('kaserne_spenden').select('betrag').eq('tag', heute);
+    ONLINE.heute = (sp.data||[]).reduce((a,r)=>a+r.betrag, 0);
+  }
+}
+
+async function loadTruppe(){
+  if(!sb || !USER) return;
+  await loadOnline();
+  const k = await sb.rpc('meine_kompanie_info');
+  ONLINE.kompanie = (k.data && k.data[0]) || null;
+  ONLINE.code = null; ONLINE.mitglieder = [];
+  if(ONLINE.kompanie){
+    const c = await sb.rpc('kompanie_code'); ONLINE.code = c.data || null;
+    const m = await sb.from('meine_kompanie').select('*').order('punkte', {ascending:false});
+    ONLINE.mitglieder = m.data || [];
+  }
+  if(tab==='truppe') render();
+  loadRangliste();
+}
+
+async function loadRangliste(){
+  if(!sb) return;
+  ONLINE.rlLoading = true; if(tab==='truppe') render();
+  const view = {spieler:'rangliste', kompanien:'kompanie_rangliste', kasernen:'kasernen_rangliste'}[ONLINE.rlTab];
+  const { data, error } = await sb.from(view).select('*').limit(50);
+  ONLINE.rl = error ? [] : (data || []);
+  ONLINE.rlLoading = false;
+  if(tab==='truppe') render();
+}
+
+async function afterLogin(){
+  const local = load();
+  const row = await sb.from('saves').select('data').eq('user_id', USER.id).maybeSingle();
+  const prof = await sb.from('profiles').select('*').eq('id', USER.id).maybeSingle();
+  ONLINE.profile = prof.data || null;
+  let st = row.data ? row.data.data : null;
+  if(local && local.uid === USER.id && (!st || (local.savedAt||0) > (st.savedAt||0))) st = local;
+  S = st;
+  if(S){
+    migrate();
+    const r = G.tick(); r.events.forEach((m,i)=>setTimeout(()=>toast(m), i*1600));
+    save();
+  }
+  await loadOnline();
+}
+
+async function boot(){
+  render();
+  if(!sb){
+    BOOTED = true;
+    document.getElementById('main').innerHTML = '<div class="panel pad" style="margin-top:20vh"><p><b>Keine Verbindung zum Server.</b> Bitte prüfe deine Internetverbindung und lade die Seite neu.</p></div>';
+    return;
+  }
+  const { data } = await sb.auth.getSession();
+  USER = data && data.session ? data.session.user : null;
+  if(USER){ try{ await afterLogin(); }catch(e){ toast('Laden fehlgeschlagen. Bitte Seite neu laden.'); } }
+  BOOTED = true; render();
+  sb.auth.onAuthStateChange((ev, session) => {
+    if(ev === 'SIGNED_OUT'){ USER = null; S = null; ONLINE.profile = null; render(); }
+    else if(session) USER = session.user;
+  });
+}
+
+async function authSubmit(mode){
+  const em = (document.getElementById('em')||{}).value || '', pw = (document.getElementById('pw')||{}).value || '';
+  if(!em.includes('@') || pw.length < 8){ toast('Bitte E-Mail und ein Passwort mit mindestens 8 Zeichen eingeben.'); return; }
+  const res = mode === 'signup'
+    ? await sb.auth.signUp({email:em.trim(), password:pw})
+    : await sb.auth.signInWithPassword({email:em.trim(), password:pw});
+  if(res.error){
+    const m = res.error.message || '';
+    toast(/invalid login/i.test(m) ? 'E-Mail oder Passwort falsch.' : /already registered/i.test(m) ? 'Für diese E-Mail gibt es schon ein Konto.' : 'Fehler: '+m);
+    return;
+  }
+  if(!res.data.session){ toast('Fast geschafft: Bitte bestätige deine E-Mail-Adresse über den Link im Postfach.'); return; }
+  USER = res.data.session.user;
+  BOOTED = false; render();
+  try{ await afterLogin(); }catch(e){ toast('Laden fehlgeschlagen.'); }
+  BOOTED = true; tab = 'stube'; render();
+}
+
+function renderLogin(){
+  return '<div class="create"><div>'+insignia('sdt',64)+'</div>'
+    + '<div class="hero">Stillgestanden!</div>'
+    + '<p>Melde dich an, damit dein Spielstand in deinem Konto gespeichert wird und du mit deiner Kompanie und deinem Standort spielen kannst.</p>'
+    + '<label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" inputmode="email">'
+    + '<label for="pw">Passwort</label><input id="pw" type="password" autocomplete="current-password" minlength="8">'
+    + '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn" style="flex:1" data-act="login">Anmelden</button>'
+    + '<button class="btn ghost" style="flex:1" data-act="signup">Registrieren</button></div>'
+    + '<p class="small muted" style="margin-top:14px">Deine E-Mail-Adresse ist nur für die Anmeldung da und für andere Spieler nicht sichtbar.</p></div>';
+}
+
+// Ersetzt die Offline-Version: Name und Standort für das Profil
+function renderCreate(){
+  return '<div class="create"><div>'+insignia('sdt',64)+'</div>'
+    + '<div class="hero">Stillgestanden!</div>'
+    + '<p>Willkommen in der Kaserne. Noch ist deine Schulterklappe leer. Das ändern wir.</p>'
+    + '<label for="nm">Dein Name in der Truppe</label><input id="nm" maxlength="20" autocomplete="off" placeholder="z. B. Krause" value="'+esc(S ? S.name : '')+'">'
+    + '<p class="small muted" style="margin-top:8px">Dieser Name ist in den Ranglisten für alle sichtbar. Bitte keinen echten Namen.</p>'
+    + '<div style="margin-top:6px">'+standortPicker(S && S.standort ? S.standort.bl : 'Baden-Württemberg', S && S.standort ? S.standort.ort : null)
+    + '<p class="small muted" style="margin-top:8px">Der Standort ist frei wählbar, für andere nicht sichtbar und lässt sich später ändern.</p></div>'
+    + '<button class="btn wide" style="margin-top:16px" data-act="create">Zum Dienst melden</button>'
+    + '<button class="linkbtn" data-act="logout">Abmelden</button></div>';
+}
+
+function renderTruppe(){
+  let h = '';
+  // Kaserne
+  const key = standortKey();
+  h += '<h2>Kaserne '+(S.standort ? esc(S.standort.ort) : '')+'</h2>';
+  if(!key){
+    h += '<div class="panel pad"><p>Wähle zuerst in der Laufbahn deinen Standort.</p></div>';
+  } else {
+    const lim = spendenLimit(), rest = Math.max(0, lim - ONLINE.heute);
+    h += '<p class="small muted">Alle Spieler an diesem Standort bauen die Kaserne gemeinsam aus, und alle bekommen die Boni. Heute kannst du noch '+eur(rest)+' einzahlen.</p><div class="panel">'
+      + GEB.map(g => {
+        const st = kStufe(g.id), pts = (ONLINE.kaserne[g.id] && ONLINE.kaserne[g.id].punkte) || 0, max = st >= 10, cost = gebKosten(st);
+        return '<div class="target"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+esc(g.name)+'</b><span class="tag">Stufe '+st+'/10</span></div>'
+          + '<div class="small muted">'+esc(g.fx)+'</div>'
+          + (max ? '<p class="small" style="margin:6px 0 0">Voll ausgebaut.</p>'
+            : '<div class="bar2"><i style="width:'+Math.min(100, pts/cost*100)+'%"></i></div><div class="small muted">'+eur(pts)+' von '+eur(cost)+' für Stufe '+(st+1)+'</div>'
+              + '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">'
+              + [1,5,10].map(m => { const b = Math.round(G.rank().sold*m); return '<button class="btn ghost" style="flex:1;min-width:90px" data-act="spende" data-id="'+g.id+':'+m+'" '+((S.money<b || b>rest)?'disabled':'')+'>'+eur(b)+'</button>'; }).join('')
+              + '</div>')
+          + '</div>';
+      }).join('') + '</div>';
+  }
+
+  // Kompanie
+  h += '<h2>Kompanie</h2>';
+  const k = ONLINE.kompanie;
+  if(k){
+    h += '<div class="panel pad"><div style="font-weight:700;font-size:19px">'+esc(k.name)+' <span class="tag">'+esc(k.kuerzel)+'</span></div>'
+      + (ONLINE.code ? '<p class="small" style="margin:10px 0 6px">Einladecode für Freunde:</p><span class="code">'+esc(ONLINE.code)+'</span><p class="small muted" style="margin-top:6px">Gib den Code nur an Leute weiter, die du in der Kompanie haben willst.</p>' : '')
+      + '</div><div class="panel" style="margin-top:12px"><ul class="rl">'
+      + ONLINE.mitglieder.map((m,i) => '<li><span class="pos">'+(i+1)+'</span><span class="who'+(m.name===S.name?' me':'')+'">'+esc(m.name)+(m.gruender?' <span class="tag">Gründer</span>':'')
+        + '<br><span class="small muted">'+esc(R[m.rang] ? R[m.rang].name : m.rang)+'</span></span><span class="num">'+Number(m.punkte).toLocaleString('de-DE')+'</span></li>').join('')
+      + '</ul></div><button class="btn danger" style="margin-top:12px" data-act="kp_verlassen">Kompanie verlassen</button>';
+  } else {
+    h += '<div class="panel pad"><p><b>Einer Kompanie beitreten</b></p><p class="small muted">Den Einladecode bekommst du von jemandem aus der Kompanie.</p>'
+      + '<input id="kpc" class="inp" placeholder="Einladecode" autocomplete="off" maxlength="12" style="text-transform:uppercase">'
+      + '<button class="btn wide" style="margin-top:10px" data-act="kp_beitreten">Beitreten</button></div>'
+      + '<div class="panel pad" style="margin-top:12px"><p><b>Eigene Kompanie gründen</b></p>'
+      + '<label class="lbl" for="kpn">Name</label><input id="kpn" class="inp" maxlength="30" placeholder="z. B. Die Spindkontrolle">'
+      + '<label class="lbl" for="kpk">Kürzel</label><input id="kpk" class="inp" maxlength="5" placeholder="z. B. SPK" style="text-transform:uppercase">'
+      + '<button class="btn wide" style="margin-top:12px" data-act="kp_gruenden">Gründen</button></div>';
+  }
+
+  // Ranglisten
+  h += '<h2>Ranglisten</h2><div class="seg" role="group" aria-label="Rangliste" style="margin-bottom:10px">'
+    + [['spieler','Spieler'],['kompanien','Kompanien'],['kasernen','Kasernen']].map(([v,l]) => '<button data-act="rl" data-id="'+v+'" aria-pressed="'+(ONLINE.rlTab===v)+'">'+l+'</button>').join('') + '</div>';
+  if(ONLINE.rlLoading && !ONLINE.rl) h += '<p class="muted">Lade …</p>';
+  else if(ONLINE.rl && ONLINE.rl.length){
+    h += '<div class="panel"><ul class="rl">' + ONLINE.rl.map((r,i) => {
+      let who, val;
+      if(ONLINE.rlTab==='spieler'){ who = '<span class="'+(r.name===S.name?'me':'')+'">'+esc(r.name)+'</span>'+(r.kompanie?' <span class="tag">'+esc(r.kompanie)+'</span>':'')+'<br><span class="small muted">'+esc(R[r.rang] ? R[r.rang].name : r.rang)+'</span>'; val = Number(r.punkte).toLocaleString('de-DE'); }
+      else if(ONLINE.rlTab==='kompanien'){ who = esc(r.name)+' <span class="tag">'+esc(r.kuerzel)+'</span><br><span class="small muted">'+r.mitglieder+' Mitglieder</span>'; val = Number(r.punkte).toLocaleString('de-DE'); }
+      else { const [bl, ort] = String(r.standort).split('/'); who = '<span class="'+(r.standort===key?'me':'')+'">'+esc(ort||r.standort)+'</span><br><span class="small muted">'+esc(bl||'')+'</span>'; val = 'Ausbau '+r.ausbau; }
+      return '<li><span class="pos">'+(i+1)+'</span><span class="who">'+who+'</span><span class="num">'+val+'</span></li>';
+    }).join('') + '</ul></div>';
+  } else h += '<p class="muted">Noch keine Einträge.</p>';
+  return h;
+}
+
+// Regelmäßig und beim Verlassen der Seite speichern
+setInterval(() => { cloudPush(false); }, 15000);
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') cloudPush(true); });
+
+/* =========================================================
+   START
+   ========================================================= */
+boot();
+setInterval(() => {
+  if(!S || !USER || !ONLINE.profile) return;
+  const before = S.stamina;
+  const r = G.tick();
+  if(r.changed){ render(); r.events.forEach((m,i)=>setTimeout(()=>toast(m), i*1600)); }
+  else { if(S.stamina!==before) renderRes(); live(); }
+}, 1000);
+</script>
+</body>
+</html>
