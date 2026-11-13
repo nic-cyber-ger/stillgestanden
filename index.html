@@ -130,6 +130,14 @@ p{margin:0 0 10px}
 @keyframes stamp{from{transform:rotate(-7deg) scale(2.2);opacity:0}to{transform:rotate(-7deg) scale(1);opacity:1}}
 @media (prefers-reduced-motion: reduce){.stamp{animation:none}}
 .history li{padding:4px 0}
+:root[data-tsk="lw"]{--olive:#45566B;--board:#45566B;--fabric:#45566B}
+:root[data-tsk="marine"]{--olive:#1F3557;--board:#1F3557;--fabric:#1F3557;--mark:#E6C35C}
+@media (prefers-color-scheme: dark){
+  :root[data-tsk="lw"]:not([data-theme="light"]){--olive:#34404F;--board:#45566B;--fabric:#45566B}
+  :root[data-tsk="marine"]:not([data-theme="light"]){--olive:#1A2C49;--board:#1F3557;--fabric:#1F3557}
+}
+:root[data-tsk="lw"][data-theme="dark"]{--olive:#34404F}
+:root[data-tsk="marine"][data-theme="dark"]{--olive:#1A2C49}
 .btn.mini{min-height:32px;padding:4px 9px;font-size:13px;margin-top:3px;white-space:normal;text-align:left}
 .linkbtn {background:none;border:0;color:var(--muted);text-decoration:underline;font:500 15px 'Barlow',sans-serif;cursor:pointer;padding:8px 0}
 .linkbtn:disabled{opacity:.5;text-decoration:none;cursor:not-allowed}
@@ -529,7 +537,7 @@ function einsatzReqs(E){
 function startEinsatz(id){
   const E = EINSATZ_I[id]; if(!E || S.einsatz) return 'Du bist schon im Einsatz.';
   if(!einsatzReqs(E).every(x=>x.ok)) return 'Voraussetzungen fehlen.';
-  const dur = E.days*864e5/S.speed, ev = shuffle(EX_POOL).slice(0, E.n);
+  const dur = E.days*864e5/S.speed, ev = shuffle(EX_POOLS[S.tsk] || EX_POOL).slice(0, E.n);
   S.einsatz = {id, start:now(), end:now()+dur, cps:ev.map((_,i)=>now()+dur*(i+1)/(ev.length+1)), ev, next:0, score:0, fin:false};
   return null;
 }
@@ -765,7 +773,7 @@ function acard(title, kind, inner, run){
   return '<div class="acard'+(run ? ' run' : '')+'"><div class="ah">'+esc(title)+'</div><div class="art">'+art(kind)+'</div><div class="ab">'+inner+'</div></div>';
 }
 function facts(rows){ return '<div class="facts">'+rows.map(([k,v]) => '<span>'+k+'</span><b>'+v+'</b>').join('')+'</div>'; }
-function reqMini(reqs){ return '<ul class="reqmini">'+reqs.map(r => '<li class="'+(r.ok?'ok':'no')+'"><b>'+(r.ok?'✓':'✗')+'</b><span>'+esc(r.label)+'</span></li>').join('')+'</ul>'; }
+function reqMini(reqs){ return '<ul class="reqmini">'+reqs.map(r => '<li class="'+(r.ok?'ok':'no')+'"><b>'+(r.ok?'✓':'✗')+'</b><span>'+esc(tskText(r.label))+'</span></li>').join('')+'</ul>'; }
 function fig(x, y, s, c){
   s = s || 1; c = c || 'var(--olive)';
   return '<circle cx="'+x+'" cy="'+(y-15*s)+'" r="'+(4.5*s)+'" fill="'+c+'"/><rect x="'+(x-4.5*s)+'" y="'+(y-10*s)+'" width="'+(9*s)+'" height="'+(14*s)+'" rx="'+(2*s)+'" fill="'+c+'"/>'
@@ -812,16 +820,20 @@ const ARTS = {
   bottles: '<rect x="32" y="34" width="56" height="18" fill="var(--olive)"/><path d="M38 34v18M50 34v18M62 34v18M74 34v18" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>'
     + [38,50,62,74].map(x => '<rect x="'+(x+1)+'" y="16" width="9" height="20" rx="2" fill="#5B7A46"/><rect x="'+(x+3.5)+'" y="8" width="4" height="9" fill="#5B7A46"/>').join('')
     + '<rect x="94" y="38" width="10" height="14" rx="2" fill="var(--metal)"/><rect x="18" y="40" width="9" height="12" rx="2" fill="#BCD1DC" opacity=".8"/>',
+  ship: '<path d="M12 40h96l-12 12H24z" fill="var(--olive)"/><rect x="44" y="26" width="30" height="14" fill="var(--metal)"/><rect x="52" y="16" width="12" height="10" fill="var(--metal)"/><path d="M58 16V6M50 9h16" stroke="#1C2217" stroke-width="2"/><path d="M24 40v-6M96 40v-4" stroke="#1C2217" stroke-width="2"/>',
   carfix: '<rect x="14" y="32" width="64" height="14" rx="5" fill="var(--olive)"/><path d="M26 32l8-10h24l8 10z" fill="var(--olive)"/><path d="M36 24h20l5 8H31z" fill="#BCD1DC"/><circle cx="30" cy="47" r="6" fill="#1C2217"/><circle cx="64" cy="47" r="6" fill="#1C2217"/>'
     + '<path d="M84 48l16-16a7 7 0 1 1 4 4L88 52z" fill="var(--metal)" stroke="#1C2217" stroke-width="1.2"/>',
 };
 function art(kind){
-  return '<svg viewBox="0 0 120 64" aria-hidden="true"><rect width="120" height="64" fill="var(--wall)"/><rect y="52" width="120" height="12" fill="var(--floor)"/>'+(ARTS[kind] || ARTS.star)+'</svg>';
+  return '<svg viewBox="0 0 120 64" aria-hidden="true"><rect width="120" height="64" fill="var(--wall)"/><rect y="52" width="120" height="12" fill="'+(kind==='ship' ? '#5E87A3' : 'var(--floor)')+'"/>'+(ARTS[kind] || ARTS.star)+'</svg>';
 }
 const DIENST_ART = {innen:'desk', formal:'formal', wache:'tower', gelaende:'field', uebung:'tent', spez:'star', uvd:'keys', stab:'slides',
   ausbilder:'recruits', spiess_v:'clip', hoersaal:'books', zug:'map', kompanie:'hq', lagezentrum:'screens', truppenbesuch:'car', ga_marsch:'march',
   v_inf:'binoc', v_kfz:'truck', v_inst:'wrench', v_san:'medbag', v_fm:'radio', v_koch:'pot',
   e_patr:'binoc', e_wache:'tower', e_konvoi:'truck', e_betreu:'ball'};
+Object.assign(DIENST_ART, {lw_vorfeld:'plane', lw_flugplatz:'tower', lw_radar_d:'screens', m_reinschiff:'ship', m_hafenwache:'ship', m_seewache:'ship',
+  v_lw_obj:'binoc', v_lw_flug:'plane', v_lw_mech:'wrench', v_lw_san:'medbag', v_lw_radar:'screens', v_lw_koch:'pot',
+  v_m_seebtl:'binoc', v_m_deck:'ship', v_m_masch:'wrench', v_m_san:'medbag', v_m_funk:'radio', v_m_smut:'pot'});
 const GEAR_ART = {stiefel:'boot', uhr:'watch', rucksack:'backpack', kalender:'calendar', pfeife:'whistle', tablet:'tablet', wagen:'car', stander:'flag'};
 
 /* =========================================================
@@ -944,7 +956,7 @@ function nachfrageText(f){ return f >= 1.1 ? 'hoch' : f <= .92 ? 'niedrig' : 'no
 function carLoss(c, onlyVisible){ return c.defs.filter(x => !x.done && (!onlyVisible || !x.hidden)).reduce((a,x)=>a + DEF_I[x.id].loss, 0); }
 function carValue(c){ return Math.round(c.wert * Math.max(.2, 1 - carLoss(c)) * nachfrage(CAR_I[c.model].cat) / 10) * 10; }
 function carCap(){ return GAR_UP.platz.cap[S.garage.up.platz]; }
-function fixMin(d){ return Math.max(5, Math.round(DEF_I[d].min * GAR_UP.werkzeug.f[S.garage.up.werkzeug] * GAR_UP.buehne.f[S.garage.up.buehne] * (S.verw==='inst' ? .75 : 1) * (1 - .01*Math.min(40, S.stats.fachwissen)))); }
+function fixMin(d){ return Math.max(5, Math.round(DEF_I[d].min * GAR_UP.werkzeug.f[S.garage.up.werkzeug] * GAR_UP.buehne.f[S.garage.up.buehne] * (vb()==='inst' ? .75 : 1) * (1 - .01*Math.min(40, S.stats.fachwissen)))); }
 function fixCost(d){ return Math.round(DEF_I[d].parts * GAR_UP.teile.f[S.garage.up.teile]); }
 function genCar(){
   const rare = Math.random() < .05, m = pick(CAR_MODELS.filter(x => !!x.rare === rare));
@@ -1090,6 +1102,79 @@ function renderStubenrundeBox(){
   return '<h2>Stubenrunde</h2><div class="panel pad"><p>Kalle hat Karten. Siebzehn und Vier um Spielgeld, höchstens '+SR_MAX+' Runden am Tag. Noch '+srLeft()+' heute.</p><button class="btn" data-act="sr_open">Mitspielen</button></div>';
 }
 
+/* ---------- Teilstreitkr\u00e4fte ---------- */
+const TSK = {
+  heer:  {name:'Heer',      desc:'Gel\u00e4nde, Gefechtsstand und Matsch bis zu den Knien.'},
+  lw:    {name:'Luftwaffe', desc:'Fliegerh\u00f6rste, Radar und der Duft von Kerosin am Morgen.'},
+  marine:{name:'Marine',    desc:'Seegang, Komb\u00fcse und Dienstgrade, die keiner an Land versteht.'},
+};
+let CREATE_TSK = 'heer';
+const RANK_BASE = Object.fromEntries(RANKS.map(r => [r.id, r.name]));
+const TSK_RANKS = {
+  heer: {},
+  lw: {sdt:'Flieger'},
+  marine: {sdt:'Matrose', uffz:'Maat', stuffz:'Obermaat', fw:'Bootsmann', ofw:'Oberbootsmann', hfw:'Hauptbootsmann', sfw:'Stabsbootsmann', osfw:'Oberstabsbootsmann',
+    fj:'Seekadett', fhr:'F\u00e4hnrich zur See', ofhr:'Oberf\u00e4hnrich zur See', lt:'Leutnant zur See', olt:'Oberleutnant zur See', hptm:'Kapit\u00e4nleutnant',
+    maj:'Korvettenkapit\u00e4n', oberstlt:'Fregattenkapit\u00e4n', oberst:'Kapit\u00e4n zur See', bg:'Flottillenadmiral', gm:'Konteradmiral', gl:'Vizeadmiral', gen:'Admiral'},
+};
+function rankNameFor(tsk, id){ return (TSK_RANKS[tsk||'heer'] || {})[id] || RANK_BASE[id] || id; }
+const EINSATZ_BASE = Object.fromEntries(EINSATZ.map(e => [e.id, {name:e.name, ort:e.ort, desc:e.desc}]));
+const EINSATZ_TSK = {
+  lw: {ausbm:{name:'Ausbildungsunterst\u00fctzung', ort:'Fliegerhorst Morgenrot', desc:'Partnerluftwaffe ausbilden, Hangars bewohnen und Kerosin riechen, wo man geht und steht.'},
+       stabm:{name:'Lufttransportverband', ort:'Lufttransportst\u00fctzpunkt Sandsturm', desc:'Fracht, Paletten und Starts im Morgengrauen.'},
+       buendm:{name:'Luftraum\u00fcberwachung', ort:'Fliegerhorst Nordlicht', desc:'Alarmrotte rund um die Uhr. Der Kaffee ist stark, die N\u00e4chte sind kurz.'}},
+  marine: {ausbm:{name:'Ausbildungsfahrt', ort:'Schulschiff auf gro\u00dfer Fahrt', desc:'Sieben Wochen auf See, viele H\u00e4fen und noch mehr Reinschiff.'},
+       stabm:{name:'Seeraum\u00fcberwachung', ort:'Fregatte im Einsatzgebiet Sandsturm', desc:'Funkverkehr, Kontrollen und endloser Horizont.'},
+       buendm:{name:'St\u00e4ndiger Marineverband', ort:'Verband Nordlicht', desc:'Multinationaler Verband, f\u00fcnf Sprachen und eine gemeinsame Messe.'}},
+};
+const EX_POOLS = {
+  heer: EX_POOL,
+  lw: ['lx_alarm','ex_container','ex_wlan','ex_hitze','ex_heimweh','ex_post','ex_besuch','ex_grill','ex_konvoi'],
+  marine: ['mx_sturm','mx_kombuese','mx_mann','ex_heimweh','ex_post','ex_besuch','ex_sprachmittler'],
+};
+const DIENST_TSK = {
+  lw: {e_patr:{name:'Objektschutzstreife', desc:'Rund um den Fliegerhorst, Augen auf, Funk an.'}, e_wache:{name:'Wache am Fliegerhorst', desc:'Der Zaun ist hier l\u00e4nger. Spannender ist er trotzdem nicht.'},
+       e_konvoi:{name:'Flugzeugbetankung', desc:'Tankwagen, Schlauch, Geh\u00f6rschutz. Und bitte nicht verwechseln, was wo reinkommt.'}, e_betreu:{name:'Betreuungsabend', desc:'Kicker, Grill und ein WLAN-Router mit Launen.'}},
+  marine: {e_patr:{name:'Ausguck auf der Br\u00fccke', desc:'Fernglas, Wind und Salz auf den Lippen.'}, e_wache:{name:'Wache an Deck', desc:'Nachts an Deck, nur du und die Sterne. Und der Bootsmann.'},
+       e_konvoi:{name:'Versorgung auf See', desc:'Ein Tanker l\u00e4ngsseits, Leinen r\u00fcber, Diesel r\u00fcber. Bitte nicht kentern.'}, e_betreu:{name:'Messe-Abend', desc:'Kicker gibt es an Bord nicht, daf\u00fcr Skat in der Messe.'}},
+};
+const DIENST_BASE = Object.fromEntries(DIENSTE.filter(d=>d.einsatz).map(d => [d.id, {name:d.name, desc:d.desc}]));
+const TSK_ORTE = {
+  lw: ['Laage','Wittmund','N\u00f6rvenich','B\u00fcchel','Neuburg an der Donau','Kropp','Wunstorf','Fa\u00dfberg','Diepholz','Kaufbeuren','Manching','Sch\u00f6newalde','Erndtebr\u00fcck','Husum','Bad S\u00fclze','Panker','K\u00f6ln','Kalkar','Germersheim','Roth','Appen'],
+  marine: ['Kiel','Wilhelmshaven','Eckernf\u00f6rde','Rostock','Flensburg','Gl\u00fccksburg','Pl\u00f6n','Neustadt in Holstein','Kramerhof','Bremerhaven','Wurster Nordseek\u00fcste','Fehmarn','Saterland','Laboe'],
+};
+function applyTsk(){
+  const t = (S && S.tsk) || 'heer';
+  for(const r of RANKS) r.name = rankNameFor(t, r.id);
+  for(const e of EINSATZ){ const o = (EINSATZ_TSK[t] || {})[e.id] || EINSATZ_BASE[e.id]; e.name = o.name; e.ort = o.ort; e.desc = o.desc; }
+  for(const id in DIENST_BASE){ const o = (DIENST_TSK[t] || {})[id] || DIENST_BASE[id]; D[id].name = o.name; D[id].desc = o.desc; }
+  DIENST_ART.e_patr = t==='marine' ? 'ship' : 'binoc'; DIENST_ART.e_wache = t==='marine' ? 'ship' : 'tower'; DIENST_ART.e_konvoi = t==='marine' ? 'ship' : t==='lw' ? 'plane' : 'truck';
+}
+// Heer-Dienstgrade in festen Texten f\u00fcr die Marine umschreiben
+function tskText(str){
+  if(!S || S.tsk !== 'marine') return str;
+  let out = String(str);
+  const ids = Object.keys(TSK_RANKS.marine).sort((a,b) => RANK_BASE[b].length - RANK_BASE[a].length);
+  for(const id of ids){ out = out.replace(new RegExp('(?<![A-Za-z\u00c4\u00d6\u00dc\u00e4\u00f6\u00fc\u00df])'+RANK_BASE[id]+'(?![a-z\u00e4\u00f6\u00fc\u00df])', 'g'), TSK_RANKS.marine[id]); }
+  return out;
+}
+function vb(){ return S && S.verw && VERW[S.verw] ? (VERW[S.verw].as || S.verw) : null; }
+function tskHint(t){
+  return esc(TSK[t].desc) + (TSK_ORTE[t] ? ' Typische Standorte: '+TSK_ORTE[t].slice(0,8).join(', ')+'.' : '');
+}
+function tskPicker(){
+  return '<label>Teilstreitkraft</label><div class="seg" role="group" aria-label="Teilstreitkraft">'
+    + Object.entries(TSK).map(([k,v]) => '<button data-act="tsk_pick" data-id="'+k+'" aria-pressed="'+(CREATE_TSK===k)+'">'+v.name+'</button>').join('') + '</div>'
+    + '<p class="small muted" id="tskhint" style="margin-top:8px">'+tskHint(CREATE_TSK)+'</p>';
+}
+function renderTsk(){
+  const t = S.tsk, cost = 20*G.rank().sold;
+  return '<h2>Teilstreitkraft</h2><div class="panel pad"><div style="font-weight:700;font-size:19px">'+TSK[t].name+'</div>'
+    + '<p class="small" style="margin:4px 0 10px">'+esc(TSK[t].desc)+'</p>'
+    + '<p class="small muted" style="margin:0 0 6px">Ein Wechsel ist die gro\u00dfe Ausnahme: Er kostet '+eur(cost)+', und deine Verwendung musst du neu w\u00e4hlen. Dienstgrad und Werte bleiben.</p>'
+    + '<div class="seg" role="group" aria-label="Wechseln zu">' + Object.entries(TSK).filter(([k]) => k !== t).map(([k,v]) => '<button data-act="tsk_wechsel" data-id="'+k+'" '+(S.money < cost ? 'disabled' : '')+'>Wechsel zu '+v.name+'</button>').join('') + '</div></div>';
+}
+
 function hasGear(id){ return !!(S && S.gear && S.gear[id]); }
 
 function unlocksFor(id){
@@ -1186,7 +1271,7 @@ function renderRaum(){
     const inner = '<p class="flv">'+esc(g.desc)+'</p><p class="eff">'+esc(g.fx)+'</p>'
       + (own ? '<div class="stamp good small-stamp" style="margin:auto auto 2px;font-size:16px">VORHANDEN</div>'
         : open ? '<button class="btn wide" style="margin-top:auto" data-act="gear" data-id="'+g.id+'" '+(S.money<g.cost?'disabled':'')+'>Kaufen<small>'+eur(g.cost)+'</small></button>'
-        : '<div class="lock" style="margin-top:auto">'+esc(g.reqL)+', '+eur(g.cost)+'</div>');
+        : '<div class="lock" style="margin-top:auto">'+esc(tskText(g.reqL))+', '+eur(g.cost)+'</div>');
     return acard(g.name, GEAR_ART[g.id], inner);
   }).join('') + '</div>';
   return h + renderKompanie();
@@ -1202,12 +1287,48 @@ function renderVerw(){
     h += '<div class="panel pad"><p style="margin:0">Ab dem Gefreiten wählst du deine Fachrichtung. Bis dahin bist du für alles zuständig, was sonst keiner macht.</p></div>';
   } else {
     h += '<p class="small muted">Deine Fachrichtung bringt einen eigenen Dienst, eigene Meldungen und einen dauerhaften Bonus. Ein späterer Wechsel kostet eine Umschulung.</p><div class="panel">'
-      + Object.entries(VERW).map(([k,v]) => '<div class="row"><div class="info"><div class="title">'+esc(v.name)+'</div><div class="desc">'+esc(v.desc)+'</div><div class="meta">'+esc(v.bonus)+'</div></div>'
+      + Object.entries(VERW).filter(([k,v]) => (v.tsk||'heer') === S.tsk).map(([k,v]) => '<div class="row"><div class="info"><div class="title">'+esc(v.name)+'</div><div class="desc">'+esc(v.desc)+'</div><div class="meta">'+esc(v.bonus)+'</div></div>'
         + '<button class="btn" data-act="verw" data-id="'+k+'">Wählen</button></div>').join('') + '</div>';
   }
   return h;
 }
 
+/* ---------- Teilstreitkr\u00e4fte: eigene Verwendungen und Dienste ---------- */
+Object.assign(VERW, {
+  lw_obj:  {tsk:'lw', as:'inf',  name:'Objektschutz', desc:'Bewacht Fliegerh\u00f6rste, damit niemand mit einem Eurofighter nach Hause f\u00e4hrt.', bonus:'Schie\u00dfen-Ausbildung 20 % schneller, Gel\u00e4ndedienst und Truppen\u00fcbung bringen 15 % mehr Geld.'},
+  lw_flug: {tsk:'lw', as:'kfz',  name:'Flugbetrieb', desc:'Schleppen, betanken, einweisen. Mit Leuchtstab und Geh\u00f6rschutz.', bonus:'Alle Dienste kosten 20 % weniger Ausdauer.'},
+  lw_mech: {tsk:'lw', as:'inst', name:'Flugger\u00e4tmechaniker', desc:'Repariert Dinge, die sehr schnell sehr hoch fliegen. Keine Fehler erlaubt.', bonus:'Fachwissen-Ausbildung 20 % schneller, 10 % mehr Geld bei allen Diensten.'},
+  lw_san:  {tsk:'lw', as:'san',  name:'Fliegerarztgruppe', desc:'Kontrolliert Piloten, Ohren und Nerven.', bonus:'20 Punkte mehr maximale Ausdauer.'},
+  lw_radar:{tsk:'lw', as:'fm',   name:'Radarf\u00fchrung', desc:'Ein Punkt auf dem Bildschirm. Ist es ein Flugzeug? Ein Vogel? Kaffeepause?', bonus:'10 % mehr Beurteilungspunkte.'},
+  lw_koch: {tsk:'lw', as:'koch', name:'Truppenk\u00fcche Fliegerhorst', desc:'Kocht f\u00fcr Leute, die nach dem Essen mit 2 g fliegen. Also leicht.', bonus:'Ansehen bei allen steigt um 50 % st\u00e4rker.'},
+  m_seebtl:{tsk:'marine', as:'inf',  name:'Seebataillon', desc:'Marineinfanterie: nass, schnell und immer irgendwo zwischen Boot und Strand.', bonus:'Schie\u00dfen-Ausbildung 20 % schneller, Gel\u00e4ndedienst und Truppen\u00fcbung bringen 15 % mehr Geld.'},
+  m_deck:  {tsk:'marine', as:'kfz',  name:'Decksdienst', desc:'Leinen, Knoten, Farbe. Ein Schiff rostet schneller, als man streichen kann.', bonus:'Alle Dienste kosten 20 % weniger Ausdauer.'},
+  m_masch: {tsk:'marine', as:'inst', name:'Maschinist', desc:'Ganz unten im Schiff, wo es laut, warm und nach Diesel riecht.', bonus:'Fachwissen-Ausbildung 20 % schneller, 10 % mehr Geld bei allen Diensten.'},
+  m_san:   {tsk:'marine', as:'san',  name:'Sanit\u00e4ter an Bord', desc:'Pflaster bei Seegang kleben ist eine Kunst.', bonus:'20 Punkte mehr maximale Ausdauer.'},
+  m_funk:  {tsk:'marine', as:'fm',   name:'Funker', desc:'\u201eHier spricht die Fregatte.\u201c Rauschen. \u201eHier spricht die Fregatte!\u201c', bonus:'10 % mehr Beurteilungspunkte.'},
+  m_smut:  {tsk:'marine', as:'koch', name:'Smut', desc:'Herr der Komb\u00fcse. Wer den Smut \u00e4rgert, isst Zwieback.', bonus:'Ansehen bei allen steigt um 50 % st\u00e4rker.'},
+});
+for(const k of ['inf','kfz','inst','san','fm','koch']) VERW[k].tsk = 'heer';
+DIENSTE.push(
+  {id:'lw_vorfeld',   name:'Dienst auf dem Vorfeld', min:45,  st:15, pay:110, bp:5,  t:1, tsk:'lw', desc:'Fremdk\u00f6rper vom Rollfeld sammeln, bevor ein Triebwerk sie findet.'},
+  {id:'lw_flugplatz', name:'Flugplatzwache',         min:60,  st:20, pay:150, bp:7,  t:1, tsk:'lw', desc:'Am Zaun entlang bis zum Ende der Startbahn. Und wieder zur\u00fcck.'},
+  {id:'lw_radar_d',   name:'Radar\u00fcberwachung',  min:90,  st:15, pay:220, bp:9,  t:2, tsk:'lw', desc:'Stundenlang auf einen Bildschirm schauen. Manchmal ist es ein Flugzeug, meistens ein Vogelschwarm.'},
+  {id:'m_reinschiff', name:'Reinschiff',             min:20,  st:10, pay:45,  bp:3,  t:0, tsk:'marine', desc:'Deck schrubben, bis es gl\u00e4nzt. Dann kommt eine Welle.'},
+  {id:'m_hafenwache', name:'Hafenwache',             min:45,  st:15, pay:110, bp:5,  t:1, tsk:'marine', desc:'An der Gangway stehen und alle gr\u00fc\u00dfen, die an Bord wollen. Auch die M\u00f6wen.'},
+  {id:'m_seewache',   name:'Seewache',               min:120, st:30, pay:330, bp:12, t:2, tsk:'marine', desc:'Vier Stunden auf der Br\u00fccke mit Kaffee und Horizont. Der Horizont bewegt sich mehr als gedacht.'},
+  {id:'v_lw_obj',  name:'Streife am Fliegerhorst', min:75, st:25, pay:200, bp:9, t:1, verw:'lw_obj',  desc:'Zaun, Hangar, Zaun. Und der Fuchs, der jede Nacht vorbeischaut.'},
+  {id:'v_lw_flug', name:'Betankung auf dem Vorfeld', min:90, st:20, pay:230, bp:8, t:1, verw:'lw_flug', desc:'Zwanzig Tonnen Kerosin und kein Rauchen weit und breit.'},
+  {id:'v_lw_mech', name:'Inspektion am Flugzeug',  min:90, st:25, pay:240, bp:9, t:1, verw:'lw_mech', desc:'Jede Schraube z\u00e4hlt. Wirklich jede. Es gibt Listen.'},
+  {id:'v_lw_san',  name:'Fliegerarzt-Sprechstunde', min:60, st:15, pay:160, bp:8, t:1, verw:'lw_san', desc:'Piloten, die sagen, dass sie topfit sind. Sind sie meistens nicht.'},
+  {id:'v_lw_radar',name:'Luftlagebild erstellen',  min:60, st:15, pay:170, bp:9, t:1, verw:'lw_radar', desc:'Punkte auf dem Schirm einordnen: Freund, Fremd oder Kranich.'},
+  {id:'v_lw_koch', name:'K\u00fcche Fliegerhorst', min:75, st:25, pay:190, bp:7, t:1, verw:'lw_koch', desc:'Leichte Kost f\u00fcr schwere Jungs und M\u00e4dels mit Fliegerkombi.'},
+  {id:'v_m_seebtl',name:'Boarding\u00fcbung',      min:75, st:25, pay:200, bp:9, t:1, verw:'m_seebtl', desc:'Vom Schnellboot an die Bordwand und hoch. Nass wird man immer.'},
+  {id:'v_m_deck',  name:'Leinen klarmachen',       min:90, st:20, pay:230, bp:8, t:1, verw:'m_deck', desc:'Palstek, Webeleinstek, und dann alles nochmal, weil der Bootsmann zuschaut.'},
+  {id:'v_m_masch', name:'Maschinenwache',          min:90, st:25, pay:240, bp:9, t:1, verw:'m_masch', desc:'Diesel, Hitze, L\u00e4rm. Gehörschutz ist Pflicht und trotzdem zu leise.'},
+  {id:'v_m_san',   name:'Bordlazarett',            min:60, st:15, pay:160, bp:8, t:1, verw:'m_san', desc:'Seekranke trösten und Zwieback verteilen.'},
+  {id:'v_m_funk',  name:'Funkwache',               min:60, st:15, pay:170, bp:9, t:1, verw:'m_funk', desc:'Kopfh\u00f6rer auf, Block bereit, und immer die richtige Frequenz.'},
+  {id:'v_m_smut',  name:'Komb\u00fcse',            min:75, st:25, pay:190, bp:7, t:1, verw:'m_smut', desc:'Labskaus f\u00fcr zweihundert. Bei Windst\u00e4rke sieben.'},
+);
 const D = Object.fromEntries(DIENSTE.map(d=>[d.id,d]));
 D.uvd.hideFor = ['A','O','G']; D.spez.hideFor = ['U','F','A','O','G'];
 D.innen.hideFor = ['O','G']; D.wache.hideFor = ['O','G']; D.formal.hideFor = ['G'];
@@ -1265,6 +1386,7 @@ function migrate(){
   S.flags = S.flags || {}; S.pending = S.pending || []; S.seen = S.seen || {};
   S.stube = Object.assign({bett:0,spind:0,kaffee:0,kuehl:0,hantel:0}, S.stube||{});
   if(S.verw === undefined) S.verw = null;
+  if(!S.tsk) S.tsk = 'heer';
   if(!S.start) S.start = (S.history && S.history[0] && S.history[0].ts) || now();
   if(S.gaDone === undefined) S.gaDone = S.rank !== 'sdt';
   if(!S.verpfl){
@@ -1379,7 +1501,81 @@ const EVENTS = [
      fail:{t:'Der Kasten ist ein Chaos aus hundert unbeschrifteten Schlüsseln. Es wird Morgen.', fx:{st:-15, bp:-2}}},
    {t:'Den Rekruten auf dem Flur schlafen lassen', out:{t:'Am Morgen fragt Brockmann, warum ein Rekrut im Flur liegt.', fx:{bp:-5, rel:{spiess:-4}}}},
   ]},
- // Ereignisse für höhere Dienstgradgruppen
+ // Teilstreitkr\u00e4fte
+ {id:'lw_kranich', who:'spiess', tsk:'lw', ctx:['lw_vorfeld','lw_flugplatz'], text:'Ein Kranich steht mitten auf der Startbahn. In zehn Minuten landet eine Maschine. Der Kranich sieht nicht aus, als h\u00e4tte er Termine.',
+  ch:[
+   {t:'Vorsichtig verscheuchen', roll:{stat:'fitness', base:45},
+     ok:{t:'Mit ausgebreiteten Armen und viel W\u00fcrde. Der Kranich geht, die W\u00fcrde bleibt.', fx:{bp:5}},
+     fail:{t:'Der Kranich verscheucht dich.', fx:{bp:-2, rel:{kalle:2}}}},
+   {t:'Den Tower informieren', out:{t:'Die Landung wird verschoben, der Kranich bekommt eine Eskorte und du ein Lob.', fx:{bp:3, rel:{spiess:2}}}},
+   {t:'Ein Foto machen', out:{t:'Das Foto geht durch die ganze Staffel. Der Kranich ist jetzt Maskottchen.', fx:{rel:{kalle:3, dennis:2}}}},
+  ]},
+ {id:'lw_laerm', who:'chef', tsk:'lw', text:'Eine Anwohnerin steht am Tor und beschwert sich \u00fcber Flugl\u00e4rm. Sie hat eine Liste mitgebracht. Mit Uhrzeiten.',
+  ch:[
+   {t:'Geduldig zuh\u00f6ren', roll:{stat:'fuehrung', base:35},
+     ok:{t:'Nach einer Stunde ist sie bes\u00e4nftigt und l\u00e4dt dich zum Kuchen ein.', fx:{bp:5, rel:{chef:3}}},
+     fail:{t:'Nach einer Stunde hat sie eine zweite Liste.', fx:{bp:1}}},
+   {t:'An die Pressestelle verweisen', out:{t:'Korrekt und folgenlos. Sie kommt n\u00e4chste Woche wieder.', fx:{bp:1}}},
+  ]},
+ {id:'m_seekrank', who:'dennis', tsk:'marine', ctx:['m_seewache'], text:'Erste Seewache bei Windst\u00e4rke sieben. Dein Magen ist mit der Gesamtsituation nicht einverstanden.',
+  ch:[
+   {t:'Tapfer durchhalten', roll:{stat:'fitness', base:40},
+     ok:{t:'Du stehst die ganze Wache durch. Der Kommandant nickt dir zu.', fx:{bp:6}},
+     fail:{t:'Die Reling und du, ihr seid jetzt eng befreundet.', fx:{st:-20}}},
+   {t:'Zwieback aus der Komb\u00fcse holen', out:{t:'Hilft. Ein bisschen. Dennis isst daneben ein Mettbr\u00f6tchen.', fx:{bp:2, st:5}}},
+  ]},
+ {id:'m_moewe', who:'kalle', tsk:'marine', ctx:['m_hafenwache','m_reinschiff'], text:'Eine M\u00f6we landet neben dir an der Gangway und schaut sehr interessiert auf dein Fischbr\u00f6tchen.',
+  ch:[
+   {t:'Das Br\u00f6tchen verteidigen', roll:{stat:'fitness', base:40},
+     ok:{t:'Gewonnen. Die M\u00f6we merkt sich dein Gesicht.', fx:{bp:1}},
+     fail:{t:'Die M\u00f6we ist schneller. Kalle hat alles gefilmt.', fx:{rel:{kalle:3}}}},
+   {t:'Teilen', out:{t:'Die M\u00f6we kommt ab jetzt jeden Tag. Mit Freunden.', fx:{st:5}}},
+  ]},
+ {id:'m_landgang', who:'lena', tsk:'marine', text:'Landgang in einem fremden Hafen. Lena will ins Museum, Kalle in die Hafenkneipe.',
+  ch:[
+   {t:'Mit Lena ins Museum', out:{t:'Seefahrt im 17. Jahrhundert. Lena ist begeistert, du ehrlich gesagt auch.', fx:{bp:2, rel:{lena:6}}}},
+   {t:'Mit Kalle in die Hafenkneipe', roll:{stat:'vitaminb', base:45},
+     ok:{t:'Kalle kennt den Wirt. Nat\u00fcrlich.', fx:{money:-40, rel:{kalle:6}}},
+     fail:{t:'Die Rechnung ist h\u00f6her als gedacht.', fx:{money:-80, rel:{kalle:2}}}},
+  ]},
+ {id:'mx_sturm', who:'chef', ctx:['ex'], text:'Sturm im Einsatzgebiet. Das Schiff stampft, in der Messe fliegt das Geschirr.',
+  ch:[
+   {t:'Alles seefest zurren', roll:{stat:'fachwissen', base:40},
+     ok:{t:'Nichts geht zu Bruch. Der Smut ist dir ewig dankbar.', fx:{ep:4}},
+     fail:{t:'Die Kaffeemaschine geht fast \u00fcber Bord.', fx:{ep:1}}},
+   {t:'In die Koje und abwarten', out:{t:'Du schl\u00e4fst erstaunlich gut. Wie in einer Wiege, nur lauter.', fx:{ep:1, st:10}}},
+  ]},
+ {id:'mx_kombuese', who:'kalle', ctx:['ex'], text:'Der Smut ist krank, und irgendwer muss f\u00fcr zweihundert Leute kochen.',
+  ch:[
+   {t:'Den Kochl\u00f6ffel \u00fcbernehmen', roll:{stat:'fachwissen', base:35},
+     ok:{t:'Labskaus f\u00fcr alle, und es gibt Schlangen f\u00fcr Nachschlag.', fx:{ep:4, rel:{kalle:3}}},
+     fail:{t:'Die Nudeln sind al dente. Sehr al dente.', fx:{ep:1}}},
+   {t:'Dennis vorschlagen', out:{t:'Dennis kocht Ravioli aus der Dose. F\u00fcr zweihundert.', fx:{ep:1, rel:{dennis:-4}}}},
+  ]},
+ {id:'mx_mann', who:'spiess', ctx:['ex'], text:'\u00dcbung \u201eMann \u00fcber Bord\u201c. Die Puppe hei\u00dft Oskar und ist diese Woche schon zum dritten Mal im Wasser.',
+  ch:[
+   {t:'Als Erster am Rettungsring', roll:{stat:'fitness', base:40},
+     ok:{t:'Oskar ist gerettet. Wieder.', fx:{ep:3}},
+     fail:{t:'Du wirfst den Ring zielsicher neben Oskar.', fx:{ep:1}}},
+   {t:'Ausguck halten und melden', out:{t:'Saubere Meldung, saubere Peilung. Lehrbuch.', fx:{ep:2}}},
+  ]},
+ {id:'mx_heim', who:'spiess', ctx:['ex'], einsatzEnd:true, text:'Einlaufen in den Heimathafen. Auf der Pier stehen Familien, ein Musikkorps und ganz vorne Brockmann.',
+  ch:[
+   {t:'Brockmann die Hand geben', out:{t:'Ein fester H\u00e4ndedruck. \u201eGut, dass Sie wieder da sind.\u201c', fx:{ep:2, rel:{spiess:6}}}},
+   {t:'Erst mal ausschlafen, ohne Seegang', out:{t:'Vierzehn Stunden. Das Bett schwankt trotzdem noch.', fx:{ep:1, st:30}}},
+   {t:'Allen ein Andenken mitbringen', out:{t:'Kalle bekommt eine Buddel, Lena ein Fernglas, Dennis ein Kissen in Fischform.', fx:{ep:2, money:-60, rel:{kalle:4, lena:4, dennis:4}}}},
+  ]},
+ {id:'lx_alarm', who:'chef', ctx:['ex'], text:'Alarmrotte! Zwei Maschinen m\u00fcssen in Minuten in der Luft sein, und du stehst am Vorfeld.',
+  ch:[
+   {t:'Ruhig die Checkliste abarbeiten', roll:{stat:'fachwissen', base:40},
+     ok:{t:'Beide Maschinen starten p\u00fcnktlich. Der Kommodore hat es gesehen.', fx:{ep:4}},
+     fail:{t:'Ein Bremskeil liegt noch da. Gerade noch gesehen.', fx:{ep:1}}},
+   {t:'Rennen', roll:{stat:'fitness', base:45},
+     ok:{t:'Du bist \u00fcberall gleichzeitig. Startfreigabe in Rekordzeit.', fx:{ep:3}},
+     fail:{t:'Du stolperst \u00fcber ein Kabel. Die Maschinen starten trotzdem.', fx:{ep:0}}},
+  ]},
+
+ // Ereignisse f\u00fcr h\u00f6here Dienstgradgruppen
  {id:'u_heimweh', who:'spiess', groups:['U','F'], text:'Ein Rekrut aus deiner Gruppe sitzt abends allein auf der Treppe. Heimweh. Er will hinschmeißen.',
   ch:[
    {t:'Zuhören und ihm Mut machen', roll:{stat:'fuehrung', base:40},
@@ -1752,6 +1948,7 @@ function maybeEvent(ctx, chance){
   const ok = EVENTS.filter(e => !S.pending.includes(e.id)
     && (!e.minT || t >= e.minT)
     && (!e.groups || e.groups.includes(R[S.rank].g))
+    && (!e.tsk || e.tsk === S.tsk)
     && (!e.ctx || e.ctx.includes(ctx))
     && (!e.need || S.flags[e.need])
     && (!e.blockIf || !S.flags[e.blockIf])
@@ -1770,7 +1967,7 @@ function applyFx(fx){
   if(fx.money){ S.money = Math.max(0, S.money+fx.money); chips.push((fx.money>0?'+':'−')+eur(Math.abs(fx.money))); }
   if(fx.bp){ if(fx.bp>0) G.addPoints(fx.bp); else S.log.push({ts:now(), p:fx.bp}); chips.push((fx.bp>0?'+':'−')+Math.abs(fx.bp)+' Beurteilung'); }
   if(fx.st){ G.normStamina(); S.stamina = Math.max(0, Math.min(G.maxStamina(), S.stamina+fx.st)); chips.push((fx.st>0?'+':'−')+Math.abs(fx.st)+' Ausdauer'); }
-  for(const [k,v0] of Object.entries(fx.rel||{})){ const v = (v0>0 && S.verw==='koch') ? Math.round(v0*1.5) : v0; S.rel[k] = Math.max(-100, Math.min(100, S.rel[k]+v)); chips.push(NPCS[k].short+' '+(v>0?'+':'−')+Math.abs(v)); }
+  for(const [k,v0] of Object.entries(fx.rel||{})){ const v = (v0>0 && vb()==='koch') ? Math.round(v0*1.5) : v0; S.rel[k] = Math.max(-100, Math.min(100, S.rel[k]+v)); chips.push(NPCS[k].short+' '+(v>0?'+':'−')+Math.abs(v)); }
   if(fx.lg && S.ausb && S.ausb.type==='lehrgang'){
     let v = fx.lg; if(v>0 && rel('krueger')>=30) v += 1;
     S.ausb.score = (S.ausb.score||0) + v; chips.push('Lehrgang '+(v>0?'+':'−')+Math.abs(v));
@@ -1838,7 +2035,7 @@ const now = () => Date.now();
 function dateStr(d=new Date()){ const p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
 function daysBetween(a,b){ return Math.round((new Date(b+'T12:00:00') - new Date(a+'T12:00:00'))/864e5); }
 
-function newGame(name, res=0){
+function newGame(name, res=0, tsk){
   S = {
     v:1, name, rank:'sdt', money:150,
     stats:{fitness:0,schiessen:0,fachwissen:0,fuehrung:0,vitaminb:0},
@@ -1847,7 +2044,7 @@ function newGame(name, res=0){
     lastPromo:now(), lastPay:dateStr(), speed:1, theme:'system',
     history:[{rank:'sdt', ts:now()}], dienstCount:0,
     rel:{spiess:0,chef:0,kalle:0,lena:0,dennis:0,krueger:0}, flags:{}, pending:[], seen:{}, lgNote:{}, lgRetry:{},
-    verw:null, stube:{bett:0,spind:0,kaffee:0,kuehl:0,hantel:0},
+    tsk: tsk || CREATE_TSK, verw:null, stube:{bett:0,spind:0,kaffee:0,kuehl:0,hantel:0},
     start:now(), gaDone:false, verpfl:'FWD', dc:{}, gear:{}, einsatz:null, einsaetze:[], album:{}, pakete:1, sr:null, res
   };
   save();
@@ -1876,7 +2073,7 @@ const G = {
     if(k==='BS'){ out.push({label:'Dienstgrad Oberfeldwebel oder Leutnant und höher', ok:(r.g==='F'&&r.t>=7)||r.g==='O'||r.g==='G'}); out.push({label:'Beurteilung mindestens „gut“', ok:G.note()<=2}); }
     return out;
   },
-  maxStamina(){ return 100 + 5*S.stats.fitness + 10*S.stube.kaffee + (S.verw==='san' ? 20 : 0) + (hasGear('rucksack') ? 15 : 0) + (albumSet('s') ? 10 : 0) + 2*kStufe('truppenkueche') + 3*kpStufe('kantine'); },
+  maxStamina(){ return 100 + 5*S.stats.fitness + 10*S.stube.kaffee + (vb()==='san' ? 20 : 0) + (hasGear('rucksack') ? 15 : 0) + (albumSet('s') ? 10 : 0) + 2*kStufe('truppenkueche') + 3*kpStufe('kantine'); },
   regenMs(){ return 120000 / S.speed / (rel('dennis')>=30 ? 1.15 : 1) / (1 + .05*S.stube.bett) / (hasGear('wagen') ? 1.2 : 1) / (1 + .02*kStufe('sanbereich')); }, // 1 Ausdauer alle 2 Minuten
   normStamina(){
     const max = G.maxStamina(), rg = G.regenMs();
@@ -1887,10 +2084,10 @@ const G = {
       S.staminaTs = S.stamina >= max ? now() : S.staminaTs + gained*rg;
     }
   },
-  payMult(){ return (G.rank().sold/40) * (1 + .03*S.stats.fachwissen) * (1 + .02*S.stats.vitaminb) * (S.verw==='inst' ? 1.1 : 1) * (1 + .05*Math.min(5, S.res||0)) * (hasGear('stander') ? 1.1 : 1) * (albumSet('g') ? 1.05 : 1) * (albumSet('l') ? 1.1 : 1) * (1 + .01*kStufe('betreuung') + .02*kpStufe('mannschaftsheim')); },
-  bpMult(){ return Math.max(.2, 1 + .01*medalCount() + .03*S.stats.vitaminb + .02*S.stats.fuehrung + rel('spiess')/500 + Math.max(0,rel('chef'))/1000 + .04*S.stube.spind + (S.verw==='fm' ? .1 : 0) + (hasGear('kalender') ? .05 : 0) + (albumSet('e') ? .05 : 0) + .02*kpStufe('geschaeftszimmer')); },
-  dienstPay(d){ return Math.round(d.pay * G.payMult() * ((S.verw==='inf' && (d.id==='gelaende'||d.id==='uebung')) ? 1.15 : 1)); },
-  dienstSt(d){ return Math.round(d.st * (S.verw==='kfz' ? .8 : 1) * (hasGear('stiefel') ? .95 : 1) * (1 - .02*kpStufe('fahrzeughalle'))); },
+  payMult(){ return (G.rank().sold/40) * (1 + .03*S.stats.fachwissen) * (1 + .02*S.stats.vitaminb) * (vb()==='inst' ? 1.1 : 1) * (1 + .05*Math.min(5, S.res||0)) * (hasGear('stander') ? 1.1 : 1) * (albumSet('g') ? 1.05 : 1) * (albumSet('l') ? 1.1 : 1) * (1 + .01*kStufe('betreuung') + .02*kpStufe('mannschaftsheim')); },
+  bpMult(){ return Math.max(.2, 1 + .01*medalCount() + .03*S.stats.vitaminb + .02*S.stats.fuehrung + rel('spiess')/500 + Math.max(0,rel('chef'))/1000 + .04*S.stube.spind + (vb()==='fm' ? .1 : 0) + (hasGear('kalender') ? .05 : 0) + (albumSet('e') ? .05 : 0) + .02*kpStufe('geschaeftszimmer')); },
+  dienstPay(d){ return Math.round(d.pay * G.payMult() * ((vb()==='inf' && (d.id==='gelaende'||d.id==='uebung')) ? 1.15 : 1)); },
+  dienstSt(d){ return Math.round(d.st * (vb()==='kfz' ? .8 : 1) * (hasGear('stiefel') ? .95 : 1) * (1 - .02*kpStufe('fahrzeughalle'))); },
   dienstMin(d){ return d.min * (hasGear('uhr') ? .95 : 1); },
   addPoints(p){ S.log.push({ts:now(), p: p>0 ? Math.round(p*G.bpMult()*10)/10 : p}); },
   points(){
@@ -1903,6 +2100,7 @@ const G = {
     const r = G.rank();
     if(S.einsatz && !d.einsatz) return 'im Auslandseinsatz';
     if(d.einsatz && !S.einsatz) return 'nur im Auslandseinsatz';
+    if(d.tsk && d.tsk !== S.tsk) return 'nur '+TSK[d.tsk].name;
     if(d.verw && S.verw !== d.verw) return 'nur für ' + VERW[d.verw].name;
     if(G.dzOver()) return 'Dienstzeitende';
     if(d.ga && S.gaDone) return 'nur in der Grundausbildung';
@@ -1919,7 +2117,7 @@ const G = {
     if(id==='fitness') f *= (1 - .08*S.stube.hantel) * (1 - .03*kStufe('sporthalle'));
     if(id==='schiessen') f *= 1 - .03*kStufe('schiessanlage');
     f *= 1 - .02*kpStufe('trainingsraum');
-    if((id==='schiessen' && S.verw==='inf') || (id==='fachwissen' && S.verw==='inst')) f *= .8;
+    if((id==='schiessen' && vb()==='inf') || (id==='fachwissen' && vb()==='inst')) f *= .8;
     if(id==='fuehrung' && hasGear('pfeife')) f *= .9;
     return Math.max(1, Math.round(4*(l+1)**1.7 * f));
   },
@@ -2028,7 +2226,7 @@ const G = {
         a.next++; changed = true; events.push('Auslandseinsatz: neue Lage');
       }
       if(now() >= a.end && !a.fin){
-        a.fin = true; S.pending.push('ex_heim'); changed = true; events.push('Rückverlegung steht an');
+        a.fin = true; S.pending.push(S.tsk==='marine' ? 'mx_heim' : 'ex_heim'); changed = true; events.push('Rückverlegung steht an');
       }
     }
     if(S.ausb && now() >= S.ausb.end && !S.ausb.cps){
@@ -2067,6 +2265,8 @@ function toast(msg){
 function applyTheme(){
   const el = document.documentElement;
   if(S && S.theme && S.theme !== 'system') el.dataset.theme = S.theme; else delete el.dataset.theme;
+  el.dataset.tsk = (S && S.tsk) || CREATE_TSK;
+  applyTsk();
 }
 
 /* Schulterklappe: eigene, vereinfachte Darstellung je Dienstgradgruppe */
@@ -2218,6 +2418,7 @@ function renderDienst(){
   h += '<div class="cards">' + DIENSTE.map(d => {
     const lock = G.dienstLock(d);
     if(!!d.einsatz !== !!S.einsatz) return '';
+    if(d.tsk && d.tsk !== S.tsk) return '';
     if(d.verw && d.verw !== S.verw) return '';
     if(d.ga && S.gaDone) return '';
     if(d.hideFor && d.hideFor.includes(G.rank().g)) return '';
@@ -2269,7 +2470,7 @@ function renderAusb(){
 }
 
 function reqList(reqs){
-  return '<ul class="req">'+reqs.map(r=>'<li class="'+(r.ok?'ok':'no')+'"><b>'+(r.ok?'✓':'✗')+'</b><span>'+esc(r.label)+'</span></li>').join('')+'</ul>';
+  return '<ul class="req">'+reqs.map(r=>'<li class="'+(r.ok?'ok':'no')+'"><b>'+(r.ok?'✓':'✗')+'</b><span>'+esc(tskText(r.label))+'</span></li>').join('')+'</ul>';
 }
 
 function renderLaufbahn(){
@@ -2293,6 +2494,7 @@ function renderLaufbahn(){
         + '<button class="btn wide" data-act="promote" data-id="'+id+'" '+(ok?'':'disabled')+'>Beförderung beantragen</button></div>';
     }).join('') + '</div>';
   }
+  h += renderTsk();
   h += renderDZ();
   h += renderVerw();
   h += renderStandort();
@@ -2307,6 +2509,7 @@ function renderCreate(){
   return '<div class="create"><div>'+insignia('sdt',64)+'</div>'
     + '<div class="hero">Stillgestanden!</div>'
     + '<p>Willkommen in der Kaserne. Noch ist deine Schulterklappe leer. Das ändern wir.</p>'
+    + tskPicker()
     + '<label for="nm">Dein Name in der Truppe</label><input id="nm" maxlength="24" autocomplete="off" placeholder="z. B. Krause">'
     + '<p class="small muted" style="margin-top:8px">Ein Spielname reicht, bitte keinen echten Namen.</p>'
     + '<div style="margin-top:6px">'+standortPicker('Baden-Württemberg')+'<p class="small muted" style="margin-top:8px">Der Standort ist frei wählbar und lässt sich später ändern.</p></div>'
@@ -2409,11 +2612,11 @@ const ACT = {
     if(!G.dzOver()) return;
     if(!ok) return ask('Wirklich ausscheiden? Du beginnst neu als Soldat und behältst deinen Wiedereinsteller-Bonus.', ()=>ACT.ausscheiden(null, true), 'Ausscheiden');
     const name = S.name, res = (S.res||0)+1, theme = S.theme, speed = S.speed, spar = S.spar;
-    newGame(name, res); S.theme = theme; S.speed = speed; if(spar) S.spar = spar; save(); tab = 'stube'; render();
+    newGame(name, res, S.tsk); S.theme = theme; S.speed = speed; if(spar) S.spar = spar; save(); tab = 'stube'; render();
     toast('Willkommen zurück, Wiedereinsteller.');
   },
   verw(id){
-    if(S.verw || G.rank().t < 1 || !VERW[id]) return;
+    if(S.verw || G.rank().t < 1 || !VERW[id] || (VERW[id].tsk||'heer') !== S.tsk) return;
     S.verw = id; save(); toast('Verwendung: ' + VERW[id].name); render();
   },
   umschulung(_, ok){
@@ -2447,6 +2650,21 @@ const ACT = {
     toast(first ? 'Heimatstandort: '+neu.ort : 'Versetzung genehmigt: '+neu.ort); render();
   },
   paket(){ openPaket(); },
+  tsk_pick(v){
+    if(!TSK[v]) return; CREATE_TSK = v;
+    document.documentElement.dataset.tsk = v;
+    document.querySelectorAll('[data-act="tsk_pick"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === v)));
+    const h = document.getElementById('tskhint'); if(h) h.innerHTML = tskHint(v);
+  },
+  tsk_wechsel(v, ok){
+    if(!TSK[v] || v === S.tsk) return;
+    const cost = 20*G.rank().sold;
+    if(S.money < cost){ toast('Zu wenig Geld.'); return; }
+    if(S.dienst && D[S.dienst.id].verw){ toast('Erst den laufenden Fachdienst beenden.'); return; }
+    if(!ok) return ask('Zur '+TSK[v].name+' wechseln? Kosten '+eur(cost)+', die Verwendung wählst du neu.', ()=>ACT.tsk_wechsel(v, true), 'Wechseln');
+    S.money -= cost; S.tsk = v; S.verw = null; save(); applyTheme();
+    toast('Willkommen bei der '+TSK[v].name+', '+G.rank().name+'.'); render();
+  },
   pf_run(id){ const e = pfStart(id); if(e){ toast(e); return; } save(); render(); },
   pf_auto(){
     fe(); const v = pfWert(); if(!v) return;
@@ -2466,7 +2684,7 @@ const ACT = {
   car_insp(uid){
     const c = marktOffers().find(x=>x.uid===uid); if(!c || c.insp) return;
     c.insp = true; const found = [];
-    for(const d of c.defs) if(d.hidden && Math.random()*100 < Math.min(90, 35 + 3*S.stats.fachwissen + (S.verw==='inst' ? 20 : 0))){ d.hidden = false; found.push(d.id); }
+    for(const d of c.defs) if(d.hidden && Math.random()*100 < Math.min(90, 35 + 3*S.stats.fachwissen + (vb()==='inst' ? 20 : 0))){ d.hidden = false; found.push(d.id); }
     if(found.length){ c.price = Math.round(c.price * Math.max(.3, 1 - found.reduce((a,id)=>a+DEF_I[id].loss, 0)) / 10) * 10; toast('Bei der Besichtigung entdeckt: '+found.map(id=>DEF_I[id].name).join(', ')+'. Der Verkäufer geht mit dem Preis runter.'); }
     else toast('Du findest nichts Neues. Das muss nichts heißen.');
     save(); render();
@@ -2566,7 +2784,7 @@ const ACT = {
     if(!ok) return ask('Wirklich neu anfangen? Dein Spielstand wird gelöscht.', ()=>ACT.reset(null, true), 'Löschen');
     try{ localStorage.removeItem(KEY); }catch(e){}
     const p = ONLINE.profile, theme = S.theme;
-    newGame(p.name); S.theme = theme;
+    newGame(p.name, 0, S.tsk); S.theme = theme;
     if(p.standort && p.bundesland) S.standort = {bl:p.bundesland, ort:p.standort};
     save(); cloudPush(true); tab='stube'; render();
   },
@@ -2727,7 +2945,7 @@ function punkte(){
 }
 function profilePayload(){
   return {
-    name:S.name, rang:S.rank, rang_stufe:G.rank().t, verwendung:S.verw,
+    name:S.name, rang:S.rank, rang_stufe:G.rank().t, verwendung:S.verw, tsk:S.tsk || 'heer',
     standort:S.standort ? S.standort.ort : null, bundesland:S.standort ? S.standort.bl : null,
     dienstwochen:Math.floor(G.weeks()), einsaetze:S.einsaetze.length,
     album:ITEMS.filter(i=>S.album[i.id]).length, punkte:punkte(), updated_at:new Date().toISOString()
@@ -2849,6 +3067,7 @@ function renderCreate(){
   return '<div class="create"><div>'+insignia('sdt',64)+'</div>'
     + '<div class="hero">Stillgestanden!</div>'
     + '<p>Willkommen in der Kaserne. Noch ist deine Schulterklappe leer. Das ändern wir.</p>'
+    + (S ? '' : tskPicker())
     + '<label for="nm">Dein Name in der Truppe</label><input id="nm" maxlength="20" autocomplete="off" placeholder="z. B. Krause" value="'+esc(S ? S.name : '')+'">'
     + '<p class="small muted" style="margin-top:8px">Dieser Name ist in den Ranglisten für alle sichtbar. Bitte keinen echten Namen.</p>'
     + '<div style="margin-top:6px">'+standortPicker(S && S.standort ? S.standort.bl : 'Baden-Württemberg', S && S.standort ? S.standort.ort : null)
@@ -2926,7 +3145,7 @@ function renderTruppe(){
             + '</select><button class="btn danger" style="min-height:36px;padding:4px 10px" data-act="kp_entlassen" data-id="'+esc(m.name)+'">Entlassen</button></div>';
         }
         return '<li><span class="pos">'+(i+1)+'</span><span class="who'+(ich?' me':'')+'">'+esc(m.name)+' <span class="tag">'+ROLLEN[m.rolle||'soldat']+'</span>'
-          + '<br><span class="small muted">'+esc(R[m.rang] ? R[m.rang].name : m.rang)+'</span>'+ctl+'</span><span class="num">'+Number(m.punkte).toLocaleString('de-DE')+'</span></li>';
+          + '<br><span class="small muted">'+esc(rankNameFor(m.tsk, m.rang))+(m.tsk && m.tsk !== 'heer' ? ', '+TSK[m.tsk].name : '')+'</span>'+ctl+'</span><span class="num">'+Number(m.punkte).toLocaleString('de-DE')+'</span></li>';
       }).join('') + '</ul></div>';
 
     // Kassenbuch
@@ -2961,7 +3180,7 @@ function renderTruppe(){
   else if(ONLINE.rl && ONLINE.rl.length){
     h += '<div class="panel"><ul class="rl">' + ONLINE.rl.map((r,i) => {
       let who, val;
-      if(ONLINE.rlTab==='spieler'){ who = '<span class="'+(r.name===S.name?'me':'')+'">'+esc(r.name)+'</span>'+(r.kompanie?' <span class="tag">'+esc(r.kompanie)+'</span>':'')+'<br><span class="small muted">'+esc(R[r.rang] ? R[r.rang].name : r.rang)+'</span>'; val = Number(r.punkte).toLocaleString('de-DE'); }
+      if(ONLINE.rlTab==='spieler'){ who = '<span class="'+(r.name===S.name?'me':'')+'">'+esc(r.name)+'</span>'+(r.kompanie?' <span class="tag">'+esc(r.kompanie)+'</span>':'')+'<br><span class="small muted">'+esc(rankNameFor(r.tsk, r.rang))+(r.tsk && r.tsk !== 'heer' ? ', '+TSK[r.tsk].name : '')+'</span>'; val = Number(r.punkte).toLocaleString('de-DE'); }
       else if(ONLINE.rlTab==='kompanien'){ who = esc(r.name)+' <span class="tag">'+esc(r.kuerzel)+'</span><br><span class="small muted">'+r.mitglieder+' Mitglieder</span>'; val = Number(r.punkte).toLocaleString('de-DE'); }
       else { const [bl, ort] = String(r.standort).split('/'); who = '<span class="'+(r.standort===key?'me':'')+'">'+esc(ort||r.standort)+'</span><br><span class="small muted">'+esc(bl||'')+'</span>'; val = 'Ausbau '+r.ausbau; }
       return '<li><span class="pos">'+(i+1)+'</span><span class="who">'+who+'</span><span class="num">'+val+'</span></li>';
