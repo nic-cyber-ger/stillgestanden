@@ -170,6 +170,11 @@ p{margin:0 0 10px}
 .code{font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:700;font-size:26px;letter-spacing:.12em;padding:8px 12px;background:var(--surface2);border-radius:4px;display:inline-block;user-select:all}
 .mapwrap{height:min(60vh,380px);border:1px solid var(--line);border-radius:6px;overflow:hidden;position:relative;z-index:0;isolation:isolate}
 .linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;font:500 15px 'Barlow',sans-serif;cursor:pointer;padding:8px 0}
+.slot{border-top:4px solid var(--signal)}
+.reels{display:flex;gap:8px;justify-content:center}
+.reel{flex:1;max-width:100px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:clamp(32px,10vw,48px);background:var(--surface2);border:2px solid var(--line);border-radius:8px}
+.reel.spin{filter:blur(1.5px)}
+.slmsg{text-align:center;font-weight:700;margin:12px 0;min-height:1.4em}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 </head>
@@ -740,6 +745,7 @@ function renderRaum(){
   }).join('') + '</div>';
   h += renderAlbum();
   h += '<h2>Stubenrunde</h2><div class="panel pad"><p>Kalle hat Karten. Siebzehn und Vier um Spielgeld, höchstens '+SR_MAX+' Runden am Tag. Noch '+srLeft()+' heute.</p><button class="btn" data-act="sr_open">Mitspielen</button></div>';
+  h += renderSpielothek();
   h += '<h2>Ausrüstung</h2><p class="small muted">Eigene Ausrüstung kaufst du einmal, sie wirkt dauerhaft. Neue Stücke gibt es mit höheren Dienstgraden.</p><div class="panel">' + GEAR.map(g => {
     const own = hasGear(g.id), open = g.req(G.rank());
     return '<div class="row"><div class="info"><div class="title">'+esc(g.name)+(own?' <span class="tag">vorhanden</span>':'')+'</div>'
@@ -2070,6 +2076,8 @@ const ACT = {
     S.money -= cost; S.standort = {bl, ort}; save();
     cloudPush(true).then(loadOnline).then(loadKarte).then(() => { styleMarkers(); toast('Versetzung genehmigt: '+ort); render(); });
   },
+  sl_bet(i){ if(!SL.spinning){ SL.bet = Number(i); render(); } },
+  sl_spin(){ slSpin(); },
   ask_yes(){ const f = askFn; askFn = null; ACT.close(); if(f) f(); },
 };
 
@@ -2495,6 +2503,81 @@ function renderKarteInfo(){
     h += '<button class="btn wide" data-act="versetzen" data-id="'+esc(key)+'" '+(S.money < cost ? 'disabled' : '')+'>Hierhin versetzen lassen'+(cost ? ' ('+eur(cost)+')' : '')+'</button>';
   }
   return h + '</div>';
+}
+
+/* =========================================================
+   SPIELOTHEK „Zum goldenen Spaten“
+   Nur Spielgeld, Auszahlungsquote rund 93 %, höchstens SL_MAX Spiele am Tag.
+   Wichtig für später: Diese Maschine darf nie mit Echtgeld oder einer
+   kaufbaren Währung bespielbar werden.
+   ========================================================= */
+const SL_SYM = [
+  {id:'epa',     icon:'🥫', name:'EPa-Dose',       w:7},
+  {id:'stiefel', icon:'🥾', name:'Kampfstiefel',   w:6},
+  {id:'bier',    icon:'🍺', name:'Feierabendbier', w:5},
+  {id:'helm',    icon:'🪖', name:'Gefechtshelm',   w:4},
+  {id:'orden',   icon:'🎖️', name:'Orden',          w:2},
+  {id:'stern',   icon:'⭐', name:'Generalsstern',  w:1},
+];
+const SYMI = Object.fromEntries(SL_SYM.map(s=>[s.id,s]));
+const SL_P3 = {epa:8, stiefel:12, bier:18, helm:25, orden:80, stern:400};
+const SL_P2 = {bier:2, helm:2, orden:4, stern:20};
+const SL_MAX = 100;
+const SL_NIETE = ['Nix. Der Automat grinst dich an.', 'Daneben. Kalle am Nachbarautomaten hat schon wieder gewonnen.',
+  'Nichts. So leer wie die Kantine am Freitagnachmittag.', 'Leider nur Schrott. Die EPa-Dose lacht dich aus.'];
+const SL = {spinning:false, reels:['helm','stern','helm'], msg:'', bet:1};
+
+function slPick(){ const t = SL_SYM.reduce((a,s)=>a+s.w, 0); let x = Math.random()*t; for(const s of SL_SYM){ x -= s.w; if(x < 0) return s.id; } return 'epa'; }
+function slPay(r){ const [a,b,c] = r; if(a===b && b===c) return SL_P3[a]; if(a===b && SL_P2[a]) return SL_P2[a]; return r.includes('stern') ? 1 : 0; }
+function slBets(){ const s = G.rank().sold; return [.1, .5, 1, 5].map(f => Math.max(1, Math.round(s*f))); }
+function slLeft(){ return (!S.sl || S.sl.day !== dateStr()) ? SL_MAX : SL_MAX - S.sl.n; }
+function slOpen(){ return !S.dienst && !S.einsatz; }
+
+function renderSpielothek(){
+  let h = '<h2>Spielothek „Zum goldenen Spaten“</h2><div class="panel pad slot">';
+  if(!slOpen()) return h + '<p style="margin:0">' + (S.einsatz
+    ? 'Im Feldlager gibt es keine Spielothek. Die Daddelkiste im Betreuungscontainer ist seit Wochen kaputt.'
+    : 'Erst Dienstschluss, dann Spielothek. Brockmann sieht alles.') + '</p></div>';
+  const left = slLeft(), bets = slBets(), bet = bets[SL.bet];
+  h += '<div class="reels">' + SL.reels.map((r,i)=>'<div class="reel" id="reel'+i+'" aria-label="'+SYMI[r].name+'">'+SYMI[r].icon+'</div>').join('') + '</div>'
+    + '<p class="slmsg" id="slmsg" aria-live="polite">' + esc(SL.msg || 'Drei Gleiche gewinnen. Ein Stern gibt den Einsatz zurück.') + '</p>'
+    + '<div class="seg" role="group" aria-label="Einsatz">' + bets.map((b,i)=>'<button data-act="sl_bet" data-id="'+i+'" aria-pressed="'+(SL.bet===i)+'">'+eur(b)+'</button>').join('') + '</div>'
+    + '<button class="btn wide" style="margin-top:10px" data-act="sl_spin" '+((SL.spinning || left<=0 || S.money<bet) ? 'disabled' : '')+'>'
+    + (left > 0 ? 'Hebel ziehen ('+eur(bet)+')' : 'Für heute geschlossen') + '</button>'
+    + '<p class="small muted" style="margin:10px 0 0">Noch '+left+' von '+SL_MAX+' Spielen heute. Gespielt wird nur mit Spielgeld.</p>'
+    + '<details class="small" style="margin-top:8px"><summary>Gewinntabelle</summary><ul class="req" style="margin:6px 0 0">'
+    + SL_SYM.slice().reverse().map(s => '<li class="ok"><b>'+s.icon+'</b><span>3× '+s.name+': '+SL_P3[s.id]+'-fach'+(SL_P2[s.id] ? ', 2× von links: '+SL_P2[s.id]+'-fach' : '')+'</span></li>').join('')
+    + '<li class="ok"><b>⭐</b><span>Mindestens ein Stern: Einsatz zurück</span></li></ul></details>';
+  return h + '</div>';
+}
+
+function slSpin(){
+  if(SL.spinning || !slOpen() || slLeft() <= 0) return;
+  const bet = slBets()[SL.bet];
+  if(S.money < bet){ toast('Zu wenig Geld.'); return; }
+  // Ergebnis wird vor der Animation gespeichert, damit Neuladen nichts ändert
+  const res = [slPick(), slPick(), slPick()], x = slPay(res), win = bet * x;
+  S.money += win - bet;
+  if(!S.sl || S.sl.day !== dateStr()) S.sl = {day:dateStr(), n:0};
+  S.sl.n++; save();
+  SL.spinning = true; SL.msg = '…'; render(); renderRes();
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stops = reduce ? [0,0,0] : [700, 1100, 1500], t0 = Date.now();
+  const iv = setInterval(() => {
+    const t = Date.now() - t0;
+    for(let i=0;i<3;i++){
+      const el = document.getElementById('reel'+i); if(!el) continue;
+      if(t < stops[i]){ el.textContent = SL_SYM[Math.floor(Math.random()*SL_SYM.length)].icon; el.classList.add('spin'); }
+      else { el.textContent = SYMI[res[i]].icon; el.classList.remove('spin'); }
+    }
+    if(t >= stops[2]){
+      clearInterval(iv); SL.spinning = false; SL.reels = res;
+      SL.msg = x >= 400 ? 'JACKPOT! Drei Generalssterne: +'+eur(win)+'!'
+        : x > 1 ? 'Gewonnen: '+eur(win)+'.'
+        : x === 1 ? 'Einsatz zurück.' : pick(SL_NIETE);
+      render(); renderRes();
+    }
+  }, 70);
 }
 
 /* =========================================================
