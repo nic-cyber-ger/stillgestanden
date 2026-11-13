@@ -108,8 +108,8 @@ p{margin:0 0 10px}
 .seg button[aria-pressed="true"]{background:var(--olive);color:var(--olive-ink)}
 
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:9;background:var(--surface);border-top:1px solid var(--line);
-  display:grid;grid-template-columns:repeat(6,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
-.nav button{background:transparent;border:0;color:var(--muted);font:600 11px 'Barlow',sans-serif;padding:8px 1px 10px;
+  display:grid;grid-template-columns:repeat(7,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav button{background:transparent;border:0;color:var(--muted);font:600 10.5px 'Barlow',sans-serif;padding:8px 0 10px;
   display:flex;flex-direction:column;align-items:center;gap:3px;min-height:60px;cursor:pointer}
 .nav button[aria-current="page"]{color:var(--ink)}
 .nav button[aria-current="page"] svg{color:var(--signal)}
@@ -806,6 +806,11 @@ const ARTS = {
   whistle: '<path d="M38 30a12 12 0 1 0 22 6h22V24H46a12 12 0 0 0-8 6z" fill="var(--metal)" stroke="#1C2217" stroke-width="1.5"/><path d="M82 30c8 0 14 8 14 18" stroke="var(--signal)" stroke-width="2.5" fill="none"/>',
   tablet: '<rect x="40" y="8" width="40" height="44" rx="4" fill="#1C2217"/><rect x="44" y="12" width="32" height="34" fill="#BCD1DC"/><path d="M48 20h24M48 26h24M48 32h16" stroke="var(--olive)" stroke-width="2"/>',
   flag: '<path d="M44 52V10" stroke="var(--metal)" stroke-width="3"/><path d="M46 12h30l-6 8 6 8H46z" fill="var(--signal)" stroke="var(--olive)" stroke-width="1.5"/>',
+  bottles: '<rect x="32" y="34" width="56" height="18" fill="var(--olive)"/><path d="M38 34v18M50 34v18M62 34v18M74 34v18" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>'
+    + [38,50,62,74].map(x => '<rect x="'+(x+1)+'" y="16" width="9" height="20" rx="2" fill="#5B7A46"/><rect x="'+(x+3.5)+'" y="8" width="4" height="9" fill="#5B7A46"/>').join('')
+    + '<rect x="94" y="38" width="10" height="14" rx="2" fill="var(--metal)"/><rect x="18" y="40" width="9" height="12" rx="2" fill="#BCD1DC" opacity=".8"/>',
+  carfix: '<rect x="14" y="32" width="64" height="14" rx="5" fill="var(--olive)"/><path d="M26 32l8-10h24l8 10z" fill="var(--olive)"/><path d="M36 24h20l5 8H31z" fill="#BCD1DC"/><circle cx="30" cy="47" r="6" fill="#1C2217"/><circle cx="64" cy="47" r="6" fill="#1C2217"/>'
+    + '<path d="M84 48l16-16a7 7 0 1 1 4 4L88 52z" fill="var(--metal)" stroke="#1C2217" stroke-width="1.2"/>',
 };
 function art(kind){
   return '<svg viewBox="0 0 120 64" aria-hidden="true"><rect width="120" height="64" fill="var(--wall)"/><rect y="52" width="120" height="12" fill="var(--floor)"/>'+(ARTS[kind] || ARTS.star)+'</svg>';
@@ -815,6 +820,272 @@ const DIENST_ART = {innen:'desk', formal:'formal', wache:'tower', gelaende:'fiel
   v_inf:'binoc', v_kfz:'truck', v_inst:'wrench', v_san:'medbag', v_fm:'radio', v_koch:'pot',
   e_patr:'binoc', e_wache:'tower', e_konvoi:'truck', e_betreu:'ball'};
 const GEAR_ART = {stiefel:'boot', uhr:'watch', rucksack:'backpack', kalender:'calendar', pfeife:'whistle', tablet:'tablet', wagen:'car', stander:'flag'};
+
+/* =========================================================
+   FEIERABEND: Leergut sammeln und Schrauben
+   Feierabend und Dienst schließen sich aus. Feierabend kostet keine Ausdauer.
+   ========================================================= */
+function ri(a, b){ return a + Math.floor(Math.random()*(b-a+1)); }
+function hnoise(n){ const x = Math.sin(n*127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+function ct(v){ return Math.round(v*100)/100; }
+function fe(){
+  if(!S.pfand) S.pfand = {ew:0, mw:0, trans:0, lager:0};
+  if(!S.garage) S.garage = {cars:[], markt:null, up:{werkzeug:0, buehne:0, platz:0, teile:0}, sales:[]};
+  if(!S.ntg) S.ntg = {status:'none', ts:0, until:0};
+  if(S.fa === undefined) S.fa = null;
+}
+function feOpen(){ return !S.dienst && !S.einsatz && !S.fa; }
+
+// ---------- Leergut ----------
+const PF_EW = 0.25, PF_MW = 0.08;
+const PF_ROUTES = [
+  {id:'stube', name:'Stuben und Flure',          min:10,  ew:[4,10],    mw:[2,6],     req:0, desc:'Dosen unterm Bett, Flaschen im Flur. Dennis hat schon vorsortiert, also nur die Reste.'},
+  {id:'mheim', name:'Mannschaftsheim',           min:30,  ew:[14,30],   mw:[10,24],   req:0, desc:'Nach dem Kickerturnier steht auf jedem Tisch etwas Leeres.'},
+  {id:'sport', name:'Sportplatz nach dem Spiel', min:60,  ew:[40,80],   mw:[20,50],   req:2, desc:'Standortpokal gegen die Nachbarkompanie. Durst hatten beide Mannschaften.'},
+  {id:'fest',  name:'Kasernenfest',              min:120, ew:[110,220], mw:[80,160],  req:3, desc:'Tag der offenen Tür, Erbsensuppe und Getränkewagen. Ein Paradies.'},
+  {id:'volk',  name:'Volksfest in der Stadt',    min:180, ew:[260,520], mw:[160,320], req:5, desc:'Drei Festzelte, eine Kirmes und du mit deinem Anhänger.'},
+];
+const PF_TRANS = [
+  {name:'Hände', cap:20, cost:0}, {name:'Plastiktüte', cap:50, cost:30}, {name:'Rucksack', cap:120, cost:150},
+  {name:'Einkaufswagen', cap:300, cost:600}, {name:'Bollerwagen', cap:600, cost:1500}, {name:'Anhänger', cap:1200, cost:4000},
+];
+const PF_LAGER = [
+  {name:'Spindfach', cap:150, cost:0}, {name:'Unterm Bett', cap:400, cost:100}, {name:'Kellerverschlag', cap:1200, cost:800},
+  {name:'Garage', cap:4000, cost:3000}, {name:'Container', cap:12000, cost:10000},
+];
+function pfStock(){ return S.pfand.ew + S.pfand.mw; }
+function pfWert(){ return ct(S.pfand.ew*PF_EW + S.pfand.mw*PF_MW); }
+// Kalles Ankaufskurs: für alle Spieler gleich, ändert sich stündlich
+function kalleKurs(h){
+  if(h === undefined) h = Math.floor(Date.now()/36e5);
+  return clamp(1.05 + .22*Math.sin(h/6.3) + .12*Math.sin(h/2.1 + 1.3) + (hnoise(h) - .5)*.16, .7, 1.5);
+}
+function kurvenSvg(){
+  const h0 = Math.floor(Date.now()/36e5), pts = [];
+  for(let i=23;i>=0;i--) pts.push(kalleKurs(h0-i));
+  const x = i => 4 + i*(232/23), y = v => 54 - (v-.7)/(.8)*48;
+  const d = pts.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join('');
+  return '<svg viewBox="0 0 240 60" width="100%" height="60" role="img" aria-label="Kurs der letzten 24 Stunden" style="display:block">'
+    + '<path d="M4 '+y(1).toFixed(1)+'H236" stroke="var(--line)" stroke-dasharray="3 3"/>'
+    + '<path d="'+d+'" fill="none" stroke="var(--signal)" stroke-width="2.5" stroke-linejoin="round"/>'
+    + '<circle cx="'+x(23)+'" cy="'+y(pts[23]).toFixed(1)+'" r="4" fill="var(--stamp)"/></svg>';
+}
+function pfStart(id){
+  fe(); const r = PF_ROUTES.find(x=>x.id===id);
+  if(!r) return;
+  if(!feOpen()) return 'Erst Dienstschluss, dann Feierabend.';
+  if(S.pfand.trans < r.req) return 'Dafür brauchst du mindestens: '+PF_TRANS[r.req].name+'.';
+  S.fa = {type:'pfand', route:id, start:now(), end:now()+r.min*60000/S.speed};
+  return null;
+}
+function pfFinish(a, events){
+  const r = PF_ROUTES.find(x=>x.id===a.route), f = 1 + .02*S.stats.fitness;
+  let ew = Math.round(ri(r.ew[0], r.ew[1])*f), mw = Math.round(ri(r.mw[0], r.mw[1])*f);
+  let note = '';
+  const x = Math.random();
+  if(x < .06){ ew = Math.round(ew/2); mw = Math.round(mw/2); note = ' Dennis war schneller und hat die Hälfte schon abgeräumt.'; }
+  else if(x < .12){ mw += 24; note = ' Brockmann drückt dir wortlos einen Kasten aus dem Geschäftszimmer in die Hand.'; }
+  else if(x < .17){ const g = ri(5, 40); S.money += g; note = ' Zwischen den Flaschen lagen '+eur(g)+'. Finderlohn, sagst du dir.'; }
+  const cap = PF_TRANS[S.pfand.trans].cap;
+  if(ew + mw > cap){ const k = cap/(ew+mw); ew = Math.floor(ew*k); mw = Math.floor(mw*k); note += ' Mehr konntest du nicht tragen, für mehr brauchst du besseren Transport.'; }
+  const frei = PF_LAGER[S.pfand.lager].cap - pfStock();
+  let lost = 0;
+  if(ew + mw > frei){ lost = ew + mw - Math.max(0, frei); const k = Math.max(0, frei)/(ew+mw); ew = Math.floor(ew*k); mw = Math.floor(mw*k); }
+  S.pfand.ew += ew; S.pfand.mw += mw;
+  events.push(r.name+': '+(ew+mw)+' Flaschen gesammelt.'+note+(lost ? ' '+lost+' musstest du stehen lassen, das Lager ist voll.' : ''));
+}
+
+// ---------- Schrauben ----------
+const CAR_MODELS = [
+  {id:'polo',    name:'VW Polo',            cat:'klein',       base:[1800,3200]},
+  {id:'corsa',   name:'Opel Corsa',         cat:'klein',       base:[1500,2800]},
+  {id:'fiesta',  name:'Ford Fiesta',        cat:'klein',       base:[1600,3000]},
+  {id:'golf',    name:'VW Golf',            cat:'kompakt',     base:[2500,4500]},
+  {id:'astra',   name:'Opel Astra Caravan', cat:'kombi',       base:[2600,4600]},
+  {id:'passat',  name:'VW Passat Variant',  cat:'kombi',       base:[3500,6500]},
+  {id:'focus',   name:'Ford Focus Turnier', cat:'kombi',       base:[3000,5500]},
+  {id:'transit', name:'Ford Transit',       cat:'transporter', base:[4500,8000]},
+  {id:'ducato',  name:'Fiat Ducato',        cat:'transporter', base:[4000,7500]},
+  {id:'wolf',    name:'„Wolf“ aus der Aussonderung', cat:'kult', base:[12000,20000], rare:true},
+  {id:'golf2',   name:'VW Golf II, Youngtimer', cat:'kult',     base:[6000,11000],  rare:true},
+];
+const CAR_I = Object.fromEntries(CAR_MODELS.map(m=>[m.id,m]));
+const CATS = ['klein','kompakt','kombi','transporter','kult'];
+const CAT_NAME = {klein:'Kleinwagen', kompakt:'Kompaktwagen', kombi:'Kombis', transporter:'Transporter', kult:'Klassiker'};
+const DEFECTS = [
+  {id:'bremsen',    name:'Bremsen verschlissen',    min:60,  parts:180, loss:.18},
+  {id:'zahnriemen', name:'Zahnriemen fällig',       min:120, parts:250, loss:.22},
+  {id:'rost',       name:'Rost an den Schwellern',  min:180, parts:120, loss:.20},
+  {id:'kupplung',   name:'Kupplung rutscht',        min:150, parts:300, loss:.22},
+  {id:'elektrik',   name:'Elektrik spinnt',         min:90,  parts:80,  loss:.12},
+  {id:'auspuff',    name:'Auspuff durchgerostet',   min:45,  parts:140, loss:.10},
+  {id:'oel',        name:'Ölverlust',               min:60,  parts:60,  loss:.12},
+  {id:'delle',      name:'Delle in der Tür',       min:40,  parts:50,  loss:.07},
+  {id:'innen',      name:'Innenraum vermüllt',      min:30,  parts:20,  loss:.06},
+  {id:'tuev',       name:'TÜV abgelaufen',          min:60,  parts:120, loss:.15},
+];
+const DEF_I = Object.fromEntries(DEFECTS.map(d=>[d.id,d]));
+const GAR_UP = {
+  werkzeug:{name:'Werkzeug', lv:['Bordwerkzeug','Werkzeugkoffer','Profi-Werkzeugwagen'], cost:[0,400,2000], f:[1,.9,.8], fx:'Reparaturen gehen schneller'},
+  buehne:  {name:'Arbeitsplatz', lv:['Kasernenparkplatz','Wagenheber und Böcke','Grube in der Garage','Hebebühne'], cost:[0,300,2500,8000], f:[1,.9,.8,.65], fx:'Reparaturen gehen schneller'},
+  platz:   {name:'Stellplätze', lv:['1 Stellplatz','2 Stellplätze, Garage gemietet','3 Stellplätze, eigene Halle'], cost:[0,1500,6000], cap:[1,2,3], fx:'Mehr Autos gleichzeitig'},
+  teile:   {name:'Teilebeschaffung', lv:['Teile aus dem Laden','Kontakt zum Teilehändler','Kontakt zum Schrottplatz'], cost:[0,800,3000], f:[1,.8,.65], fx:'Günstigere Ersatzteile'},
+};
+const NTG_FREI = 2;   // private Verkäufe in 30 Tagen ohne Genehmigung
+function nachfrage(cat){
+  const d = Math.floor(Date.now()/864e5), i = CATS.indexOf(cat);
+  return clamp(1 + .15*Math.sin(d/3 + i*1.7) + (hnoise(d*7 + i) - .5)*.12, .8, 1.25);
+}
+function nachfrageText(f){ return f >= 1.1 ? 'hoch' : f <= .92 ? 'niedrig' : 'normal'; }
+function carLoss(c, onlyVisible){ return c.defs.filter(x => !x.done && (!onlyVisible || !x.hidden)).reduce((a,x)=>a + DEF_I[x.id].loss, 0); }
+function carValue(c){ return Math.round(c.wert * Math.max(.2, 1 - carLoss(c)) * nachfrage(CAR_I[c.model].cat) / 10) * 10; }
+function carCap(){ return GAR_UP.platz.cap[S.garage.up.platz]; }
+function fixMin(d){ return Math.max(5, Math.round(DEF_I[d].min * GAR_UP.werkzeug.f[S.garage.up.werkzeug] * GAR_UP.buehne.f[S.garage.up.buehne] * (S.verw==='inst' ? .75 : 1) * (1 - .01*Math.min(40, S.stats.fachwissen)))); }
+function fixCost(d){ return Math.round(DEF_I[d].parts * GAR_UP.teile.f[S.garage.up.teile]); }
+function genCar(){
+  const rare = Math.random() < .05, m = pick(CAR_MODELS.filter(x => !!x.rare === rare));
+  const year = m.id==='wolf' ? ri(1990,2000) : m.id==='golf2' ? ri(1985,1991) : ri(2003,2015);
+  const wert = Math.round(ri(m.base[0], m.base[1])/50)*50;
+  const defs = shuffle(DEFECTS).slice(0, ri(2,5)).map(d => ({id:d.id, hidden:Math.random() < .35, done:false}));
+  const c = {uid:'c'+Date.now().toString(36)+ri(100,999), model:m.id, year, wert, defs, insp:false};
+  c.price = Math.round(wert * Math.max(.25, 1 - carLoss(c, true)) * (.72 + Math.random()*.18) / 10) * 10;
+  return c;
+}
+function marktOffers(){
+  fe();
+  if(!S.garage.markt || now() > S.garage.markt.until){
+    S.garage.markt = {until: now() + 4*36e5/S.speed, offers: [genCar(), genCar(), genCar(), genCar()]};
+    save();
+  }
+  return S.garage.markt.offers;
+}
+function salesRecent(){ const cut = now() - 30*864e5/S.speed; S.garage.sales = S.garage.sales.filter(t => t >= cut); return S.garage.sales.length; }
+function darfVerkaufen(){ return S.ntg.status === 'ok' || salesRecent() < NTG_FREI; }
+function fixFinish(a, events){
+  const c = S.garage.cars.find(x => x.uid === a.uid); if(!c) return;
+  const d = c.defs.find(x => x.id === a.def); if(d) d.done = true;
+  events.push(CAR_I[c.model].name+': '+DEF_I[a.def].name+' erledigt.');
+}
+function ntgTick(events){
+  const n = S.ntg;
+  if(n.status === 'pending' && now() >= n.until){
+    const chance = clamp(40 + rel('chef') + (4 - G.note())*15, 10, 95);
+    if(Math.random()*100 < chance){ n.status = 'ok'; events.push('Hauptmann von Ahlen hat deine Nebentätigkeit genehmigt.'); }
+    else { n.status = 'abgelehnt'; n.until = now() + 3*864e5/S.speed; events.push('Nebentätigkeit abgelehnt: „Konzentrieren Sie sich erst mal auf Ihren Dienst.“'); }
+    n.ts = now();
+  }
+  if(n.status === 'ok' && G.note() >= 4){
+    n.status = 'widerrufen'; n.ts = now(); n.until = now() + 3*864e5/S.speed;
+    applyFx({rel:{chef:-3}});
+    events.push('Deine Nebentätigkeitsgenehmigung wurde widerrufen. Die Beurteilung ist zu schlecht.');
+  }
+}
+
+function renderFeier(){
+  fe();
+  let h = '<h2>Feierabend</h2>';
+  if(S.einsatz) return h + '<div class="panel pad"><p style="margin:0">Im Feldlager gibt es keinen richtigen Feierabend. Nach der Rückkehr geht es hier weiter.</p></div>' + renderStubenrundeBox();
+  if(S.dienst) h += '<div class="panel pad" style="margin-bottom:12px"><p style="margin:0"><b>Du bist noch im Dienst.</b> Feierabend gibt es erst danach.</p></div>';
+  else if(S.fa){
+    const t = S.fa.type === 'pfand' ? 'Leergut sammeln: '+PF_ROUTES.find(r=>r.id===S.fa.route).name
+      : (()=>{ const c = S.garage.cars.find(x=>x.uid===S.fa.uid); return 'Schrauben: '+(c ? CAR_I[c.model].name+', ' : '')+DEF_I[S.fa.def].name; })();
+    h += '<div class="panel" style="margin-bottom:12px"><div class="active"><div class="head"><span>'+esc(t)+'</span><span class="num" data-left="fa"></span></div><div class="prog"><i data-prog="fa"></i></div></div></div>';
+  } else h += '<p class="small muted">Feierabend kostet keine Ausdauer. Während du hier beschäftigt bist, kannst du keinen Dienst antreten.</p>';
+
+  // Leergut
+  const kurs = kalleKurs(), stock = pfStock(), lagerCap = PF_LAGER[S.pfand.lager].cap;
+  h += '<h2>Leergut</h2><div class="panel pad"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+    + '<div><div class="small muted">Im Lager ('+esc(PF_LAGER[S.pfand.lager].name)+')</div><div class="num" style="font-size:24px">'+stock+' / '+lagerCap+'</div>'
+    + '<div class="small muted">'+S.pfand.ew+' Einweg zu 0,25 €, '+S.pfand.mw+' Mehrweg zu 0,08 €</div></div>'
+    + '<div style="text-align:right"><div class="small muted">Wert am Automaten</div><div class="num" style="font-size:24px">'+eur2(pfWert())+'</div></div></div>'
+    + '<div class="bar2"><i style="width:'+Math.min(100, stock/lagerCap*100)+'%;background:var(--signal)"></i></div>'
+    + '<button class="btn wide" style="margin-top:10px" data-act="pf_auto" '+(stock ? '' : 'disabled')+'>Am Pfandautomaten abgeben ('+eur2(pfWert())+')</button>'
+    + '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>Kalles Großankauf</b><span class="num" style="font-size:20px;color:'+(kurs>=1?'var(--ok)':'var(--bad)')+'">'+Math.round(kurs*100)+' %</span></div>'
+    + '<p class="small muted" style="margin:2px 0 6px">Kalle zahlt einen Tageskurs auf das Pfand, der sich jede Stunde ändert. Er nimmt erst ab 300 Flaschen.</p>'
+    + kurvenSvg()
+    + '<button class="btn ghost wide" style="margin-top:8px" data-act="pf_kalle" '+(stock >= 300 ? '' : 'disabled')+'>An Kalle verkaufen ('+eur2(ct(pfWert()*kurs))+')</button></div></div>';
+  h += '<div class="cards" style="margin-top:12px">' + PF_ROUTES.map(r => {
+    const ok = S.pfand.trans >= r.req, run = S.fa && S.fa.type==='pfand' && S.fa.route===r.id;
+    const inner = '<p class="flv">'+esc(r.desc)+'</p>' + facts([['Dauer', fmtMin(r.min/S.speed)], ['Ausbeute', 'bis '+Math.round((r.ew[1]+r.mw[1])*(1+.02*S.stats.fitness))]])
+      + (run ? '<div class="small">Zurück in <span class="num" data-left="fa"></span></div><div class="prog" style="margin:0"><i data-prog="fa"></i></div>'
+        : !ok ? '<div class="lock">Braucht: '+esc(PF_TRANS[r.req].name)+'</div>'
+        : '<button class="btn wide" data-act="pf_run" data-id="'+r.id+'" '+(feOpen()?'':'disabled')+'>Losziehen</button>');
+    return acard(r.name, 'bottles', inner, run);
+  }).join('') + '</div>';
+  const tN = PF_TRANS[S.pfand.trans+1], lN = PF_LAGER[S.pfand.lager+1];
+  h += '<div class="panel" style="margin-top:12px">'
+    + '<div class="row"><div class="info"><div class="title">Transport: '+esc(PF_TRANS[S.pfand.trans].name)+'</div><div class="meta">Bis '+PF_TRANS[S.pfand.trans].cap+' Flaschen pro Runde'+(tN ? '. Als Nächstes: '+esc(tN.name)+' ('+tN.cap+') für '+eur(tN.cost) : '')+'</div></div>'
+    + (tN ? '<button class="btn" data-act="pf_up" data-id="trans" '+(S.money<tN.cost?'disabled':'')+'>Kaufen</button>' : '<span class="small muted">fertig</span>')+'</div>'
+    + '<div class="row"><div class="info"><div class="title">Lager: '+esc(PF_LAGER[S.pfand.lager].name)+'</div><div class="meta">Platz für '+lagerCap+' Flaschen'+(lN ? '. Als Nächstes: '+esc(lN.name)+' ('+lN.cap+') für '+eur(lN.cost) : '')+'</div></div>'
+    + (lN ? '<button class="btn" data-act="pf_up" data-id="lager" '+(S.money<lN.cost?'disabled':'')+'>Kaufen</button>' : '<span class="small muted">fertig</span>')+'</div></div>';
+
+  // Schrauben
+  h += '<h2>Schrauben</h2>';
+  const n = S.ntg, rest = Math.max(0, NTG_FREI - salesRecent());
+  h += '<div class="panel pad"><p style="margin:0 0 6px"><b>Nebentätigkeit:</b> '
+    + (n.status==='ok' ? 'genehmigt von Hauptmann von Ahlen. Du kannst so viele Autos verkaufen, wie du willst, solange deine Beurteilung mindestens „befriedigend“ bleibt.'
+      : n.status==='pending' ? 'Antrag liegt beim Kompaniechef, Entscheidung in '+fmtRest(n.until - now())+'.'
+      : 'nicht genehmigt. Privat darfst du '+NTG_FREI+' Autos in 30 Tagen verkaufen, noch '+rest+'. Wer regelmäßig handelt, braucht eine Genehmigung vom Kompaniechef.')
+    + (n.status==='abgelehnt' || n.status==='widerrufen' ? ' Zuletzt '+n.status+'.' : '') + '</p>'
+    + (n.status!=='ok' && n.status!=='pending'
+      ? '<button class="btn ghost" data-act="ntg" '+((G.note() > 3 || (n.until && now() < n.until)) ? 'disabled' : '')+'>Nebentätigkeit beantragen</button>'
+        + (G.note() > 3 ? '<span class="small muted"> Erst ab Beurteilung „befriedigend“.</span>' : (n.until && now() < n.until) ? '<span class="small muted"> Neuer Antrag in '+fmtRest(n.until - now())+'.</span>' : '')
+      : '')
+    + '</div>';
+
+  // Eigene Autos
+  h += '<p class="small muted" style="margin-top:12px">Deine Stellplätze: '+S.garage.cars.length+' von '+carCap()+'. Nachfrage heute: '+CATS.map(c=>CAT_NAME[c]+' '+nachfrageText(nachfrage(c))).join(', ')+'.</p>';
+  if(S.garage.cars.length){
+    h += '<div class="cards">' + S.garage.cars.map(c => {
+      const m = CAR_I[c.model], wert = carValue(c), offen = c.defs.filter(x=>!x.done);
+      let inner = facts([['Baujahr', c.year], ['Eingesetzt', eur(c.invest)], ['Wert jetzt', eur(wert)]]);
+      inner += '<ul class="reqmini">' + c.defs.map(x => {
+        const run = S.fa && S.fa.type==='fix' && S.fa.uid===c.uid && S.fa.def===x.id;
+        return '<li class="'+(x.done?'ok':'no')+'"><b>'+(x.done?'✓':'✗')+'</b><span>'+esc(DEF_I[x.id].name)
+          + (x.done ? '' : run ? ' <span class="num" data-left="fa"></span>'
+            : ' <button class="linkbtn" style="padding:0;font-size:12px" data-act="car_fix" data-id="'+c.uid+':'+x.id+'" '+((!feOpen() || S.money < fixCost(x.id) || c.listed) ? 'disabled' : '')+'>reparieren ('+fmtMin(fixMin(x.id)/S.speed)+', '+eur(fixCost(x.id))+')</button>')
+          + '</span></li>';
+      }).join('') + '</ul>';
+      if(!c.listed) inner += '<button class="btn wide" data-act="car_list" data-id="'+c.uid+'">Inserieren für rund '+eur(wert)+'</button>'
+        + (offen.length ? '<div class="small muted">Jeder reparierte Mangel steigert den Preis.</div>' : '');
+      else {
+        const vis = (c.offers||[]).filter(o => o.t <= now() && !o.gone);
+        inner += '<div class="small"><b>Inseriert.</b> '+(vis.length ? 'Angebote:' : 'Noch keine Angebote, warte etwas.')+'</div>'
+          + vis.map((o,i) => '<div style="display:flex;gap:6px;align-items:center;justify-content:space-between"><span class="small">'+esc(o.who)+': <b>'+eur(o.amount)+'</b></span>'
+            + '<span style="display:flex;gap:4px"><button class="btn" style="min-height:34px;padding:4px 10px" data-act="car_sell" data-id="'+c.uid+':'+o.k+'" '+(darfVerkaufen()?'':'disabled')+'>Annehmen</button>'
+            + (o.h ? '' : '<button class="btn ghost" style="min-height:34px;padding:4px 8px" data-act="car_haggle" data-id="'+c.uid+':'+o.k+'">Mehr?</button>')+'</span></div>').join('')
+          + (darfVerkaufen() ? '' : '<div class="lock">Für einen weiteren Verkauf brauchst du die Nebentätigkeitsgenehmigung.</div>')
+          + '<button class="linkbtn" style="padding:2px 0" data-act="car_unlist" data-id="'+c.uid+'">Inserat zurückziehen</button>';
+      }
+      return acard(m.name, 'carfix', inner, S.fa && S.fa.type==='fix' && S.fa.uid===c.uid);
+    }).join('') + '</div>';
+  }
+
+  // Markt
+  const offers = marktOffers();
+  h += '<h2>Kleinanzeigen</h2><p class="small muted">Neue Angebote in '+fmtRest(S.garage.markt.until - now())+'. Nicht alle Mängel stehen in der Anzeige, eine Besichtigung deckt sie mit etwas Fachwissen auf.</p><div class="cards">'
+    + offers.map(c => {
+      const m = CAR_I[c.model];
+      const inner = facts([['Baujahr', c.year], ['Preis', eur(c.price)], ['Nachfrage', nachfrageText(nachfrage(m.cat))]])
+        + '<div class="small" style="text-align:left"><b>Laut Anzeige:</b> '+(c.defs.filter(x=>!x.hidden).map(x=>esc(DEF_I[x.id].name)).join(', ') || 'angeblich alles in Ordnung')+'</div>'
+        + (c.insp ? '<div class="small muted" style="text-align:left">Besichtigt.</div>' : '<button class="btn ghost wide" data-act="car_insp" data-id="'+c.uid+'">Besichtigen</button>')
+        + '<button class="btn wide" data-act="car_buy" data-id="'+c.uid+'" '+((S.money < c.price || S.garage.cars.length >= carCap()) ? 'disabled' : '')+'>Kaufen<small>'+eur(c.price)+'</small></button>';
+      return acard(m.name+(m.rare ? ' ★' : ''), 'carfix', inner);
+    }).join('') + '</div>';
+
+  // Werkstatt
+  h += '<h2>Werkstatt</h2><div class="panel">' + Object.entries(GAR_UP).map(([k,u]) => {
+    const l = S.garage.up[k], nx = l+1 < u.lv.length;
+    return '<div class="row"><div class="info"><div class="title">'+esc(u.name)+': '+esc(u.lv[l])+'</div><div class="meta">'+esc(u.fx)+(nx ? '. Als Nächstes: '+esc(u.lv[l+1])+' für '+eur(u.cost[l+1]) : '')+'</div></div>'
+      + (nx ? '<button class="btn" data-act="gar_up" data-id="'+k+'" '+(S.money < u.cost[l+1] ? 'disabled' : '')+'>Kaufen</button>' : '<span class="small muted">fertig</span>')+'</div>';
+  }).join('') + '</div>';
+
+  return h + renderSpielothek() + renderStubenrundeBox();
+}
+function renderStubenrundeBox(){
+  return '<h2>Stubenrunde</h2><div class="panel pad"><p>Kalle hat Karten. Siebzehn und Vier um Spielgeld, höchstens '+SR_MAX+' Runden am Tag. Noch '+srLeft()+' heute.</p><button class="btn" data-act="sr_open">Mitspielen</button></div>';
+}
 
 function hasGear(id){ return !!(S && S.gear && S.gear[id]); }
 
@@ -907,8 +1178,6 @@ function renderRaum(){
   }).join('') + '</div>';
   h += renderSpar();
   h += renderAlbum();
-  h += '<h2>Stubenrunde</h2><div class="panel pad"><p>Kalle hat Karten. Siebzehn und Vier um Spielgeld, höchstens '+SR_MAX+' Runden am Tag. Noch '+srLeft()+' heute.</p><button class="btn" data-act="sr_open">Mitspielen</button></div>';
-  h += renderSpielothek();
   h += '<h2>Ausrüstung</h2><p class="small muted">Eigene Ausrüstung kaufst du einmal, sie wirkt dauerhaft. Neue Stücke gibt es mit höheren Dienstgraden.</p><div class="cards">' + GEAR.map(g => {
     const own = hasGear(g.id), open = g.req(G.rank());
     const inner = '<p class="flv">'+esc(g.desc)+'</p><p class="eff">'+esc(g.fx)+'</p>'
@@ -1655,6 +1924,7 @@ const G = {
   startDienst(id){
     const d = D[id];
     if(S.dienst) return 'Du bist schon im Dienst.';
+    if(S.fa) return 'Du bist gerade im Feierabend beschäftigt.';
     if(G.dienstLock(d)) return 'Dieser Dienst ist noch gesperrt.';
     G.normStamina();
     if(S.stamina < G.dienstSt(d)) return 'Zu wenig Ausdauer.';
@@ -1713,6 +1983,12 @@ const G = {
   tick(){
     let events = [], changed = false;
     sparZinsen();
+    fe(); ntgTick(events); if(events.length) changed = true;
+    if(S.fa && now() >= S.fa.end){
+      const a = S.fa; S.fa = null;
+      if(a.type === 'pfand') pfFinish(a, events); else if(a.type === 'fix') fixFinish(a, events);
+      changed = true;
+    }
     G.normStamina();
     // Sold
     const today = dateStr();
@@ -1821,6 +2097,7 @@ function insignia(id, size=56){
    OBERFLÄCHE
    ========================================================= */
 const ICONS = {
+  feier:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2h4v4l2 3v13H8V9l2-3z"/><path d="M8 13h8"/></svg>',
   stube:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.5"/><path d="M14 10h4M14 14h4"/></svg>',
   truppe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M12 20c0-3.3 1.8-6 4-6s6 2.7 6 6"/></svg>',
   raum:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11 12 4l9 7v9H3z"/><path d="M9 20v-6h6v6"/></svg>',
@@ -1828,7 +2105,7 @@ const ICONS = {
   ausb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></svg>',
   laufbahn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/></svg>',
 };
-const TABS = [['stube','Übersicht'],['raum','Stube'],['dienst','Dienst'],['ausb','Ausbildung'],['laufbahn','Laufbahn'],['truppe','Truppe']];
+const TABS = [['stube','Start'],['raum','Stube'],['dienst','Dienst'],['ausb','Ausbildung'],['laufbahn','Laufbahn'],['feier','Feierabend'],['truppe','Truppe']];
 
 function renderNav(){
   const nav = document.getElementById('nav');
@@ -2040,7 +2317,7 @@ function render(){
   if(!USER){ main.innerHTML = renderLogin(); renderNav(); renderRes(); return; }
   if(!S || !ONLINE.profile){ main.innerHTML = renderCreate(); }
   else {
-    main.innerHTML = tab==='stube' ? renderStube() : tab==='raum' ? renderRaum() : tab==='dienst' ? renderDienst() : tab==='ausb' ? renderAusb() : tab==='truppe' ? renderTruppe() : renderLaufbahn();
+    main.innerHTML = tab==='stube' ? renderStube() : tab==='raum' ? renderRaum() : tab==='dienst' ? renderDienst() : tab==='ausb' ? renderAusb() : tab==='feier' ? renderFeier() : tab==='truppe' ? renderTruppe() : renderLaufbahn();
   }
   renderNav(); renderRes(); live();
   if(typeof afterRender === "function") afterRender();
@@ -2048,7 +2325,7 @@ function render(){
 
 function live(){
   if(!S) return;
-  for(const k of ['dienst','ausb','einsatz']){
+  for(const k of ['dienst','ausb','einsatz','fa']){
     const a = S[k]; if(!a) continue;
     const pct = Math.min(100, (now()-a.start)/(a.end-a.start)*100);
     document.querySelectorAll('[data-prog="'+k+'"]').forEach(e=>e.style.width=pct+'%');
@@ -2167,6 +2444,83 @@ const ACT = {
     toast(first ? 'Heimatstandort: '+neu.ort : 'Versetzung genehmigt: '+neu.ort); render();
   },
   paket(){ openPaket(); },
+  pf_run(id){ const e = pfStart(id); if(e){ toast(e); return; } save(); render(); },
+  pf_auto(){
+    fe(); const v = pfWert(); if(!v) return;
+    S.money = ct(S.money + v); S.pfand.ew = 0; S.pfand.mw = 0; save(); toast('Der Automat rattert: '+eur2(v)+'.'); render();
+  },
+  pf_kalle(){
+    fe(); if(pfStock() < 300){ toast('Kalle nimmt erst ab 300 Flaschen.'); return; }
+    const k = kalleKurs(), v = ct(pfWert()*k);
+    S.money = ct(S.money + v); S.pfand.ew = 0; S.pfand.mw = 0; save();
+    toast('Kalle zählt nach und zahlt '+eur2(v)+(k >= 1 ? '. Guter Tag.' : '. Hm, heute war er knausrig.')); render();
+  },
+  pf_up(kind){
+    fe(); const list = kind==='trans' ? PF_TRANS : PF_LAGER, key = kind==='trans' ? 'trans' : 'lager', nx = list[S.pfand[key]+1];
+    if(!nx) return; if(S.money < nx.cost){ toast('Zu wenig Geld.'); return; }
+    S.money -= nx.cost; S.pfand[key]++; save(); toast(nx.name+' gekauft.'); render();
+  },
+  car_insp(uid){
+    const c = marktOffers().find(x=>x.uid===uid); if(!c || c.insp) return;
+    c.insp = true; const found = [];
+    for(const d of c.defs) if(d.hidden && Math.random()*100 < Math.min(90, 35 + 3*S.stats.fachwissen + (S.verw==='inst' ? 20 : 0))){ d.hidden = false; found.push(d.id); }
+    if(found.length){ c.price = Math.round(c.price * Math.max(.3, 1 - found.reduce((a,id)=>a+DEF_I[id].loss, 0)) / 10) * 10; toast('Bei der Besichtigung entdeckt: '+found.map(id=>DEF_I[id].name).join(', ')+'. Der Verkäufer geht mit dem Preis runter.'); }
+    else toast('Du findest nichts Neues. Das muss nichts heißen.');
+    save(); render();
+  },
+  car_buy(uid){
+    fe(); const offers = marktOffers(), c = offers.find(x=>x.uid===uid); if(!c) return;
+    if(S.garage.cars.length >= carCap()){ toast('Kein Stellplatz mehr frei.'); return; }
+    if(S.money < c.price){ toast('Zu wenig Geld.'); return; }
+    S.money -= c.price; offers.splice(offers.indexOf(c), 1);
+    const hid = c.defs.filter(x=>x.hidden).map(x=>DEF_I[x.id].name); c.defs.forEach(x=>x.hidden=false);
+    c.invest = c.price; delete c.insp; S.garage.cars.push(c); save();
+    toast(hid.length ? 'Gekauft. In der Garage fällt dir auf: '+hid.join(', ')+'. Stand nicht in der Anzeige.' : 'Gekauft. Keine bösen Überraschungen.'); render();
+  },
+  car_fix(arg){
+    fe(); const [uid, def] = String(arg).split(':'), c = S.garage.cars.find(x=>x.uid===uid); if(!c) return;
+    const d = c.defs.find(x=>x.id===def); if(!d || d.done) return;
+    if(!feOpen()){ toast('Erst Dienstschluss, dann schrauben.'); return; }
+    const cost = fixCost(def); if(S.money < cost){ toast('Zu wenig Geld für die Teile.'); return; }
+    S.money -= cost; c.invest += cost;
+    S.fa = {type:'fix', uid, def, start:now(), end:now()+fixMin(def)*60000/S.speed}; save(); render();
+  },
+  car_list(uid){
+    const c = S.garage.cars.find(x=>x.uid===uid); if(!c || c.listed) return;
+    const v = carValue(c), who = shuffle(['Ein Fahranfänger','Ein Student','Eine Familie aus dem Nachbardorf','Ein Händler','Ein Kamerad aus der Kompanie','Ein Handwerker']);
+    let t = now(); c.listed = now();
+    c.offers = [0,1,2].map(k => { t += ri(20,90)*60000/S.speed; return {k, t, who:who[k], amount:Math.round(v*(.8 + Math.random()*.26)/10)*10, h:false, gone:false}; });
+    save(); toast('Inserat ist online. Die ersten Anfragen kommen bald.'); render();
+  },
+  car_unlist(uid){ const c = S.garage.cars.find(x=>x.uid===uid); if(!c) return; c.listed = 0; c.offers = []; save(); render(); },
+  car_haggle(arg){
+    const [uid, k] = String(arg).split(':'), c = S.garage.cars.find(x=>x.uid===uid); if(!c) return;
+    const o = (c.offers||[]).find(x=>x.k===Number(k)); if(!o || o.h || o.gone) return;
+    o.h = true;
+    if(Math.random()*100 < rollChance({stat:'vitaminb', base:40})){ o.amount = Math.round(o.amount*1.08/10)*10; toast(o.who+' legt etwas drauf: '+eur(o.amount)+'.'); }
+    else { o.gone = true; toast(o.who+' hat keine Lust mehr zu verhandeln und ist weg.'); }
+    save(); render();
+  },
+  car_sell(arg){
+    fe(); const [uid, k] = String(arg).split(':'), c = S.garage.cars.find(x=>x.uid===uid); if(!c) return;
+    const o = (c.offers||[]).find(x=>x.k===Number(k)); if(!o || o.gone || o.t > now()) return;
+    if(!darfVerkaufen()){ toast('Dafür brauchst du eine Nebentätigkeitsgenehmigung.'); return; }
+    S.money += o.amount; S.garage.cars = S.garage.cars.filter(x=>x!==c); S.garage.sales.push(now());
+    const g = o.amount - c.invest; save();
+    toast(CAR_I[c.model].name+' verkauft für '+eur(o.amount)+'. '+(g >= 0 ? 'Gewinn: '+eur(g)+'.' : 'Verlust: '+eur(-g)+'. Passiert.')); render();
+  },
+  gar_up(kind){
+    fe(); const u = GAR_UP[kind]; if(!u) return; const l = S.garage.up[kind]; if(l+1 >= u.lv.length) return;
+    if(S.money < u.cost[l+1]){ toast('Zu wenig Geld.'); return; }
+    S.money -= u.cost[l+1]; S.garage.up[kind]++; save(); toast(u.lv[l+1]+' ist jetzt deins.'); render();
+  },
+  ntg(){
+    fe(); const n = S.ntg; if(n.status==='ok' || n.status==='pending') return;
+    if(G.note() > 3){ toast('Mit dieser Beurteilung lehnt der Chef sofort ab.'); return; }
+    if(n.until && now() < n.until){ toast('Neuer Antrag erst in '+fmtRest(n.until-now())+'.'); return; }
+    S.ntg = {status:'pending', ts:now(), until:now()+864e5/S.speed}; save();
+    toast('Antrag eingereicht. Formular 17b liegt bei, Formular 17a auch.'); render();
+  },
   spar_start(r){
     r = Number(r); if(S.spar || !SPAR_RATEN.includes(r)) return;
     S.spar = {rate:r, bal:0, zTs:now(), lastOut:0, seit:now()}; save();
