@@ -749,7 +749,7 @@ function sparNext(){ return S.spar && S.spar.lastOut ? S.spar.lastOut + SPAR_SPE
 function eur2(n){ return n.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €'; }
 const SPAR_ART = '<svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true" style="flex:none"><rect width="64" height="64" rx="6" fill="var(--surface2)"/><rect x="14" y="10" width="30" height="40" rx="2" fill="#F2F2EA" stroke="var(--olive)" stroke-width="2"/><path d="M19 19h20M19 25h20M19 31h14" stroke="var(--muted)" stroke-width="2"/><path d="M20 42c3-4 6 2 9-2" stroke="var(--stamp)" stroke-width="2" fill="none"/><path d="M40 52l14-22 4 3-14 22-5 2z" fill="var(--signal)" stroke="#1C2217" stroke-width="1.5"/></svg>';
 function renderSpar(){
-  let h = '<h2>Sparvertrag</h2><div class="panel pad">';
+  let h = '<h2>Anwartschaftsversicherung</h2><div class="panel pad">';
   if(!S.spar){
     return h + '<div style="display:flex;gap:12px;align-items:flex-start">'+SPAR_ART+'<p class="small" style="margin:0">Herr Klingelhöfer von der „Kameraden-Vorsorge“ steht schon zum dritten Mal in deiner Stube. Sein Angebot: Ein fester Anteil von jedem Verdienst wandert automatisch auf dein Sparkonto und bringt 2,5 % Zinsen pro Woche. Auszahlen kannst du alle '+SPAR_SPERRE+' Tage, kündigen erst, wenn das Konto leer ist. Und das Ersparte bleibt dir sogar, wenn du ausscheidest.</p></div>'
       + '<p style="margin:14px 0 6px"><b>Wie viel von jedem Verdienst?</b></p><div class="seg" role="group" aria-label="Sparanteil">'
@@ -1175,6 +1175,30 @@ function renderTsk(){
     + '<div class="seg" role="group" aria-label="Wechseln zu">' + Object.entries(TSK).filter(([k]) => k !== t).map(([k,v]) => '<button data-act="tsk_wechsel" data-id="'+k+'" '+(S.money < cost ? 'disabled' : '')+'>Wechsel zu '+v.name+'</button>').join('') + '</div></div>';
 }
 
+/* ---------- Pflegepflichtversicherung ---------- */
+const PFLEGE = {
+  basis:  {name:'Spind & Sicher, Basistarif',     rate:.03, bonus:0,  fx:'Nur die Pflicht. Hauptsache, Brockmann ist ruhig.'},
+  komfort:{name:'Kameraden-Vorsorge, Komforttarif', rate:.05, bonus:5,  fx:'Mit Präventionskurs: 5 Punkte mehr maximale Ausdauer.'},
+  premium:{name:'Goldener Spaten, Premiumtarif',  rate:.08, bonus:12, fx:'Mit Kur-Zuschuss: 12 Punkte mehr maximale Ausdauer.'},
+};
+function pflegeBonus(){ return S && S.pflege && PFLEGE[S.pflege.tarif] ? PFLEGE[S.pflege.tarif].bonus : 0; }
+function pflegePflicht(){ return !!(S && DZ[S.verpfl] && DZ[S.verpfl].rang >= 1); }
+function renderPflege(){
+  let h = '<h2>Pflegepflichtversicherung</h2><div class="panel pad">';
+  if(S.pflege){
+    const t = PFLEGE[S.pflege.tarif];
+    h += '<p style="margin:0 0 4px"><b>'+esc(t.name)+'</b></p><p class="small muted" style="margin:0 0 10px">Beitrag '+Math.round(t.rate*100)+' % vom Tagessold, zurzeit '+eur(G.rank().sold*t.rate)+' pro Tag. '+esc(t.fx)+'</p>';
+  } else {
+    h += '<p class="small" style="margin:0 0 10px">'+(pflegePflicht()
+      ? '<b>Pflicht für Soldaten auf Zeit und Berufssoldaten.</b> Ohne Nachweis gibt es Ärger mit dem Spieß und bei jedem Sold einen Säumniszuschlag'+(S.pflegeFrist && now() < S.pflegeFrist ? '. Frist: noch '+fmtRest(S.pflegeFrist - now()) : '')+'.'
+      : 'Im Freiwilligen Wehrdienst brauchst du sie im Spiel noch nicht. Sobald du dich als Soldat auf Zeit verpflichtest, ist sie Pflicht.')+'</p>';
+  }
+  h += '<div class="choices" style="margin-top:0">' + Object.entries(PFLEGE).map(([k,t]) => '<button class="btn ghost choice" data-act="pflege" data-id="'+k+'" '+(S.pflege && S.pflege.tarif===k ? 'disabled' : '')+'>'
+    + '<span><b>'+esc(t.name)+'</b>, '+Math.round(t.rate*100)+' % vom Tagessold'+(S.pflege && S.pflege.tarif===k ? ' (dein Tarif)' : '')+'</span><span class="small muted">'+esc(t.fx)+'</span></button>').join('') + '</div>';
+  if(S.pflege && !pflegePflicht()) h += '<button class="linkbtn" data-act="pflege_end">Vertrag kündigen</button>';
+  return h + '</div>';
+}
+
 function hasGear(id){ return !!(S && S.gear && S.gear[id]); }
 
 function unlocksFor(id){
@@ -1265,6 +1289,7 @@ function renderRaum(){
       + (l<max ? '<button class="btn" data-act="buy" data-id="'+it.id+'" '+(S.money<c?'disabled':'')+'>Einbauen</button>' : '<span class="small muted">fertig</span>')+'</div>';
   }).join('') + '</div>';
   h += renderSpar();
+  h += renderPflege();
   h += renderAlbum();
   h += '<h2>Ausrüstung</h2><p class="small muted">Eigene Ausrüstung kaufst du einmal, sie wirkt dauerhaft. Neue Stücke gibt es mit höheren Dienstgraden.</p><div class="cards">' + GEAR.map(g => {
     const own = hasGear(g.id), open = g.req(G.rank());
@@ -1387,6 +1412,8 @@ function migrate(){
   S.stube = Object.assign({bett:0,spind:0,kaffee:0,kuehl:0,hantel:0}, S.stube||{});
   if(S.verw === undefined) S.verw = null;
   if(!S.tsk) S.tsk = 'heer';
+  if(S.pflege === undefined) S.pflege = null;
+  if(pflegePflicht() && !S.pflege && !S.pflegeFrist) S.pflegeFrist = now() + 3*864e5/S.speed;
   if(!S.start) S.start = (S.history && S.history[0] && S.history[0].ts) || now();
   if(S.gaDone === undefined) S.gaDone = S.rank !== 'sdt';
   if(!S.verpfl){
@@ -2073,7 +2100,7 @@ const G = {
     if(k==='BS'){ out.push({label:'Dienstgrad Oberfeldwebel oder Leutnant und höher', ok:(r.g==='F'&&r.t>=7)||r.g==='O'||r.g==='G'}); out.push({label:'Beurteilung mindestens „gut“', ok:G.note()<=2}); }
     return out;
   },
-  maxStamina(){ return 100 + 5*S.stats.fitness + 10*S.stube.kaffee + (vb()==='san' ? 20 : 0) + (hasGear('rucksack') ? 15 : 0) + (albumSet('s') ? 10 : 0) + 2*kStufe('truppenkueche') + 3*kpStufe('kantine'); },
+  maxStamina(){ return 100 + pflegeBonus() + 5*S.stats.fitness + 10*S.stube.kaffee + (vb()==='san' ? 20 : 0) + (hasGear('rucksack') ? 15 : 0) + (albumSet('s') ? 10 : 0) + 2*kStufe('truppenkueche') + 3*kpStufe('kantine'); },
   regenMs(){ return 120000 / S.speed / (rel('dennis')>=30 ? 1.15 : 1) / (1 + .05*S.stube.bett) / (hasGear('wagen') ? 1.2 : 1) / (1 + .02*kStufe('sanbereich')); }, // 1 Ausdauer alle 2 Minuten
   normStamina(){
     const max = G.maxStamina(), rg = G.regenMs();
@@ -2197,6 +2224,13 @@ const G = {
       const days = Math.max(1, Math.min(7, daysBetween(S.lastPay, today)));
       const amount = Math.round(G.rank().sold*days*(1+.02*S.stats.vitaminb)*(1+.05*S.stube.kuehl));
       S.money += amount - earnCut(amount); S.lastPay = today; changed = true;
+      if(S.pflege && PFLEGE[S.pflege.tarif]){
+        const b = Math.round(G.rank().sold * days * PFLEGE[S.pflege.tarif].rate);
+        S.money -= b; events.push('Beitrag Pflegepflichtversicherung: '+eur(b));
+      } else if(pflegePflicht() && now() > (S.pflegeFrist || 0)){
+        const f = 2 * G.rank().sold; S.money -= f; S.log.push({ts:now(), p:-3});
+        events.push('Brockmann: „Wo ist Ihr Nachweis der Pflegepflichtversicherung?“ Säumniszuschlag '+eur(f)+'.');
+      }
       events.push('Sold ist da: ' + eur(amount));
     }
     if(S.dienst && now() >= S.dienst.end){
@@ -2377,6 +2411,8 @@ function renderStube(){
   }
   if(S.pakete)
     h += '<div class="panel pad" style="margin-top:16px"><p><b>Feldpost!</b> '+(S.pakete===1 ? 'Ein Paket wartet' : S.pakete+' Pakete warten')+' auf dich.</p><button class="btn" data-act="paket">Paket öffnen</button></div>';
+  if(pflegePflicht() && !S.pflege)
+    h += '<div class="panel pad" style="margin-top:16px;border-left:4px solid var(--stamp)"><p><b>Pflegepflichtversicherung fehlt.</b> Als Soldat auf Zeit musst du eine abschließen. '+(S.pflegeFrist && now() < S.pflegeFrist ? 'Frist: noch '+fmtRest(S.pflegeFrist - now())+'.' : 'Die Frist ist abgelaufen, es gibt Säumniszuschläge.')+'</p><button class="btn" data-act="tab" data-id="raum">Versicherung abschließen</button></div>';
   if(!S.standort)
     h += '<div class="panel pad" style="margin-top:16px"><p><b>Wo dienst du?</b> Leg deinen Heimatstandort fest.</p><button class="btn ghost" data-act="tab" data-id="laufbahn">Standort wählen</button></div>';
   if(!S.verw && G.rank().t >= 1)
@@ -2605,7 +2641,9 @@ const ACT = {
     const v = DZ[k];
     if(!v || v.rang <= DZ[S.verpfl].rang || !G.dzReqs(k).every(x=>x.ok)) return;
     if(!ok) return ask('Als '+v.name+' verpflichten? Das lässt sich nicht rückgängig machen.', ()=>ACT.verpflichten(k, true), 'Verpflichten');
-    S.verpfl = k; S.money += v.praemie; G.addPoints(5); save();
+    S.verpfl = k; S.money += v.praemie; G.addPoints(5);
+    if(!S.pflege && !S.pflegeFrist) S.pflegeFrist = now() + 3*864e5/S.speed;
+    save();
     toast('Verpflichtet: '+v.short+', Prämie '+eur(v.praemie)); render();
   },
   ausscheiden(_, ok){
@@ -2650,6 +2688,16 @@ const ACT = {
     toast(first ? 'Heimatstandort: '+neu.ort : 'Versetzung genehmigt: '+neu.ort); render();
   },
   paket(){ openPaket(); },
+  pflege(k){
+    if(!PFLEGE[k] || (S.pflege && S.pflege.tarif === k)) return;
+    const neu = !S.pflege; S.pflege = {tarif:k, seit:now()}; save();
+    toast(neu ? 'Vertrag abgeschlossen: '+PFLEGE[k].name+'. Herr Klingelhöfer ist zufrieden.' : 'Tarif gewechselt: '+PFLEGE[k].name+'.'); render();
+  },
+  pflege_end(_, ok){
+    if(!S.pflege || pflegePflicht()) return;
+    if(!ok) return ask('Pflegepflichtversicherung kündigen?', ()=>ACT.pflege_end(null, true), 'Kündigen');
+    S.pflege = null; save(); render();
+  },
   tsk_pick(v){
     if(!TSK[v]) return; CREATE_TSK = v;
     document.documentElement.dataset.tsk = v;
