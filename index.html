@@ -130,6 +130,9 @@ p{margin:0 0 10px}
 @keyframes stamp{from{transform:rotate(-7deg) scale(2.2);opacity:0}to{transform:rotate(-7deg) scale(1);opacity:1}}
 @media (prefers-reduced-motion: reduce){.stamp{animation:none}}
 .history li{padding:4px 0}
+.btn.mini{min-height:32px;padding:4px 9px;font-size:13px;margin-top:3px;white-space:normal;text-align:left}
+.linkbtn {background:none;border:0;color:var(--muted);text-decoration:underline;font:500 15px 'Barlow',sans-serif;cursor:pointer;padding:8px 0}
+.linkbtn:disabled{opacity:.5;text-decoration:none;cursor:not-allowed}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
 .acard{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 0 rgba(0,0,0,.06)}
 .acard .ah{background-color:var(--olive);background-image:linear-gradient(180deg,rgba(255,255,255,.10),rgba(0,0,0,.18));color:var(--olive-ink);padding:8px 10px;font-family:'Black Ops One',Impact,sans-serif;font-size:15px;line-height:1.15;border-bottom:2px solid var(--signal)}
@@ -1044,7 +1047,7 @@ function renderFeier(){
         const run = S.fa && S.fa.type==='fix' && S.fa.uid===c.uid && S.fa.def===x.id;
         return '<li class="'+(x.done?'ok':'no')+'"><b>'+(x.done?'✓':'✗')+'</b><span>'+esc(DEF_I[x.id].name)
           + (x.done ? '' : run ? ' <span class="num" data-left="fa"></span>'
-            : ' <button class="linkbtn" style="padding:0;font-size:12px" data-act="car_fix" data-id="'+c.uid+':'+x.id+'" '+((!feOpen() || S.money < fixCost(x.id) || c.listed) ? 'disabled' : '')+'>reparieren ('+fmtMin(fixMin(x.id)/S.speed)+', '+eur(fixCost(x.id))+')</button>')
+            : '<br><button class="btn ghost mini" data-act="car_fix" data-id="'+c.uid+':'+x.id+'">Reparieren ('+fmtMin(fixMin(x.id)/S.speed)+', '+eur(fixCost(x.id))+')</button>')
           + '</span></li>';
       }).join('') + '</ul>';
       if(!c.listed) inner += '<button class="btn wide" data-act="car_list" data-id="'+c.uid+'">Inserieren für rund '+eur(wert)+'</button>'
@@ -2480,7 +2483,10 @@ const ACT = {
   car_fix(arg){
     fe(); const [uid, def] = String(arg).split(':'), c = S.garage.cars.find(x=>x.uid===uid); if(!c) return;
     const d = c.defs.find(x=>x.id===def); if(!d || d.done) return;
-    if(!feOpen()){ toast('Erst Dienstschluss, dann schrauben.'); return; }
+    if(S.einsatz){ toast('Im Auslandseinsatz wird nicht geschraubt.'); return; }
+    if(S.dienst){ toast('Erst Dienstschluss, dann schrauben.'); return; }
+    if(S.fa){ toast(S.fa.type==='fix' ? 'Du schraubst gerade schon. Erst das fertig machen.' : 'Du bist gerade noch beim Leergutsammeln.'); return; }
+    if(c.listed){ toast('Das Auto ist inseriert. Zieh erst das Inserat zurück.'); return; }
     const cost = fixCost(def); if(S.money < cost){ toast('Zu wenig Geld für die Teile.'); return; }
     S.money -= cost; c.invest += cost;
     S.fa = {type:'fix', uid, def, start:now(), end:now()+fixMin(def)*60000/S.speed}; save(); render();
