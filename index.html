@@ -130,6 +130,14 @@ p{margin:0 0 10px}
 @keyframes stamp{from{transform:rotate(-7deg) scale(2.2);opacity:0}to{transform:rotate(-7deg) scale(1);opacity:1}}
 @media (prefers-reduced-motion: reduce){.stamp{animation:none}}
 .history li{padding:4px 0}
+.tut{background:var(--surface);border:2px solid var(--signal);border-radius:8px;padding:12px;margin:4px 0 16px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.tut .tt{font-family:'Black Ops One',Impact,sans-serif;font-size:17px;line-height:1.2;margin-bottom:4px}
+.tut p{margin:0 0 8px;font-size:15px}
+.tut .hint{font-size:14px;font-weight:600;color:var(--olive)}
+.nav button.pulse{animation:navpulse 1.2s ease-in-out infinite}
+.nav button.pulse svg{color:var(--signal)}
+@keyframes navpulse{0%,100%{background:transparent}50%{background:var(--surface2)}}
+@media (prefers-reduced-motion: reduce){.nav button.pulse{animation:none;background:var(--surface2)}}
 :root[data-tsk="lw"]{--olive:#45566B;--board:#45566B;--fabric:#45566B}
 :root[data-tsk="marine"]{--olive:#1F3557;--board:#1F3557;--fabric:#1F3557;--mark:#E6C35C}
 @media (prefers-color-scheme: dark){
@@ -1199,6 +1207,70 @@ function renderPflege(){
   return h + '</div>';
 }
 
+/* ---------- Einführung für neue Spieler ---------- */
+const TUT = [
+  {tab:'stube', t:'Willkommen, Rekrut!', x:'Ich bin Hauptfeldwebel Brockmann, Ihr Spieß. Oben rechts sehen Sie Ihr Geld und Ihre Ausdauer. Hier in der Übersicht stehen Ihr Ausweis, die Grundausbildung, Meldungen und Ihre Beurteilung. Die Beurteilung entscheidet über Beförderungen. Merken Sie sich das.'},
+  {tab:'dienst', t:'Erster Dienst', x:'Dienste bringen Geld und Beurteilungspunkte und kosten Ausdauer. Treten Sie zum Formaldienst an. Jetzt.', hint:'Tippe beim Formaldienst auf „Antreten“.', done:() => !!S.dienst || S.dienstCount > 0},
+  {tab:'ausb', t:'Ausbildung nebenher', x:'Während der Dienst läuft, bilden Sie sich weiter. Fitness und Schießen brauchen Sie für die Grundausbildung. Unter jeder Ausbildung hängen Leistungsabzeichen, die Sie sich verdienen können.', hint:'Starte eine Ausbildung, am besten Fitness oder Schießen.', done:() => !!S.ausb || Object.values(S.stats).some(v => v > 0)},
+  {tab:'stube', t:'Grundausbildung', x:'In der Übersicht steht Ihre Checkliste für die Grundausbildung: drei Tage, ein paar Dienste, die ersten Ausbildungsstufen. Danach legen Sie das Gelöbnis ab und können zum Gefreiten befördert werden.'},
+  {tab:'stube', t:'Feldpost', x:'Zu Hause denkt man an Sie. Da liegt ein Paket. Öffnen Sie es, der Inhalt wandert in Ihr Sammelalbum.', hint:'Tippe in der Übersicht auf „Paket öffnen“.', done:() => !S.pakete},
+  {tab:'raum', t:'Ihre Stube', x:'Hier bauen Sie Ihre Stube aus, schließen die Anwartschafts- und später die Pflegepflichtversicherung ab und kaufen Ausrüstung. Unten stehen Ihre Kameraden. Gutes Ansehen bei denen bringt Vorteile, schlechtes bringt Zahnpasta in die Stiefel.'},
+  {tab:'laufbahn', t:'Laufbahn', x:'Ganz oben alle Dienstgrade, darunter, was Sie für die nächste Beförderung brauchen. Hier wählen Sie später Ihre Verwendung, verpflichten sich und melden sich für Lehrgänge und Auslandseinsätze.'},
+  {tab:'feier', t:'Feierabend', x:'Nach Dienstschluss können Sie Leergut sammeln, an Autos schrauben oder mit Kalle Karten spielen. Feierabend kostet keine Ausdauer. Aber kommen Sie mir morgens nicht zu spät.'},
+  {tab:'truppe', t:'Truppe', x:'Hier finden Sie Ihre Kompanie mit Gemeinschaftskasse, die Kaserne an Ihrem Standort und die Karte aller Standorte. Allein gewinnt hier keiner.'},
+  {tab:'stube', t:'Wegtreten!', x:'Das war die Einweisung. Als Startgeld gibt es 200 € und noch ein Paket von zu Hause. Und jetzt: Wegtreten!', final:true},
+];
+function tutOn(){ return !!(S && S.tut && !S.tut.done); }
+function tutSteps(){ return TUT.filter(s => TABS.some(t => t[0] === s.tab)); }
+function tutCheck(){
+  const st = tutSteps();
+  while(S.tut.step < st.length && st[S.tut.step].done && st[S.tut.step].done()) S.tut.step++;
+  if(S.tut.step >= st.length) S.tut.step = st.length - 1;
+}
+function tutBox(){
+  tutCheck();
+  const st = tutSteps(), s = st[S.tut.step], here = tab === s.tab;
+  setTimeout(() => { const b = document.querySelector('.nav [data-id="'+s.tab+'"]'); if(b && b.classList && !here) b.classList.add('pulse'); }, 0);
+  let h = '<div class="tut" role="region" aria-label="Einführung">'+npcBadge('spiess', 44)+'<div style="flex:1;min-width:0">'
+    + '<div class="small muted">Einführung, Schritt '+(S.tut.step+1)+' von '+st.length+'</div><div class="tt">'+esc(s.t)+'</div>';
+  if(!here){
+    h += '<p>Weiter geht es im Bereich „'+esc((TABS.find(t => t[0] === s.tab) || [,''])[1])+'“.</p><button class="btn" data-act="tab" data-id="'+s.tab+'">Dorthin</button>';
+  } else {
+    h += '<p>'+esc(s.x)+'</p>';
+    if(s.done) h += '<div class="hint">'+esc(s.hint)+'</div>';
+    else h += '<button class="btn" data-act="tut_next">'+(s.final ? 'Wegtreten' : 'Verstanden')+'</button>';
+  }
+  return h + '<div><button class="linkbtn" data-act="tut_skip" style="padding:6px 0 0;font-size:13px">Einführung überspringen</button></div></div></div>';
+}
+
+/* ---------- Ausbildung mit Ausdauer verkürzen ---------- */
+const KURZ_RATE = 10;   // Ausdauer pro Stunde Ausbildungszeit
+function kurzRestH(){ return S.ausb && S.ausb.type === 'stat' ? Math.max(0, (S.ausb.end - now()) / (36e5/S.speed)) : 0; }
+function kurzStunden(opt){
+  G.normStamina();
+  const rest = kurzRestH(), moeglich = S.stamina / KURZ_RATE;
+  return opt === 'max' ? Math.min(rest, moeglich) : Math.min(Number(opt), rest, moeglich);
+}
+function kurzKosten(h){ return Math.min(S.stamina, Math.ceil(h * KURZ_RATE - 1e-9)); }
+function fmtStd(h){ return h >= 1 ? (Math.round(h*10)/10).toLocaleString('de-DE') + (h === 1 ? ' Stunde' : ' Stunden') : Math.max(1, Math.round(h*60)) + ' Minuten'; }
+function kurzRender(){
+  if(!S.ausb || S.ausb.type !== 'stat'){ ACT.close(); return; }
+  G.normStamina();
+  const rest = kurzRestH();
+  const opts = [['1', '1 Stunde'], ['5', '5 Stunden'], ['max', 'So viel wie möglich']];
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="kzt"><div class="sheet ev">'
+    + '<h2 id="kzt" style="margin:0 0 6px">Ausbildung verkürzen</h2>'
+    + '<p class="small" style="margin:0 0 4px"><b>'+STAT_NAME[S.ausb.id]+'</b> auf Stufe '+(S.stats[S.ausb.id]+1)+', Restdauer '+fmtRest(S.ausb.end - now())+'.</p>'
+    + '<p class="small muted" style="margin:0 0 10px">'+KURZ_RATE+' Ausdauer verkürzen die Ausbildung um eine Stunde. Du hast '+S.stamina+' Ausdauer.</p>'
+    + '<div class="choices">' + opts.map(([v,l]) => {
+        const h = kurzStunden(v), c = kurzKosten(h), ok = h > 0 && c > 0 && (v === 'max' || Number(v) <= rest + 1e-9 || h >= rest - 1e-9);
+        return '<button class="btn ghost choice" data-act="kurz" data-id="'+v+'" '+(ok ? '' : 'disabled')+'><span><b>'+l+'</b>'+(ok ? ': '+fmtStd(h)+' für '+c+' Ausdauer' : '')+'</span>'
+          + (ok && h >= rest - 1e-9 ? '<span class="small muted">Damit ist die Ausbildung sofort fertig.</span>' : '') + '</button>';
+      }).join('') + '</div>'
+    + '<p class="small muted" style="margin:10px 0 0">Ausdauer, die du hier einsetzt, fehlt dir für Dienste.</p>'
+    + '<button class="btn wide" data-act="close" style="margin-top:12px">Zurück</button></div></div>';
+}
+
 function hasGear(id){ return !!(S && S.gear && S.gear[id]); }
 
 function unlocksFor(id){
@@ -1412,6 +1484,7 @@ function migrate(){
   S.stube = Object.assign({bett:0,spind:0,kaffee:0,kuehl:0,hantel:0}, S.stube||{});
   if(S.verw === undefined) S.verw = null;
   if(!S.tsk) S.tsk = 'heer';
+  if(!S.tut) S.tut = {step:0, done:true};
   if(S.pflege === undefined) S.pflege = null;
   if(pflegePflicht() && !S.pflege && !S.pflegeFrist) S.pflegeFrist = now() + 3*864e5/S.speed;
   if(!S.start) S.start = (S.history && S.history[0] && S.history[0].ts) || now();
@@ -2071,7 +2144,7 @@ function newGame(name, res=0, tsk){
     lastPromo:now(), lastPay:dateStr(), speed:1, theme:'system',
     history:[{rank:'sdt', ts:now()}], dienstCount:0,
     rel:{spiess:0,chef:0,kalle:0,lena:0,dennis:0,krueger:0}, flags:{}, pending:[], seen:{}, lgNote:{}, lgRetry:{},
-    tsk: tsk || CREATE_TSK, verw:null, stube:{bett:0,spind:0,kaffee:0,kuehl:0,hantel:0},
+    tsk: tsk || CREATE_TSK, tut:{step:0, done:false}, verw:null, stube:{bett:0,spind:0,kaffee:0,kuehl:0,hantel:0},
     start:now(), gaDone:false, verpfl:'FWD', dc:{}, gear:{}, einsatz:null, einsaetze:[], album:{}, pakete:1, sr:null, res
   };
   save();
@@ -2440,7 +2513,7 @@ function renderStube(){
   h += '<h2>Einstellungen</h2><div class="panel pad">'
     + '<p style="margin-bottom:6px"><b>Darstellung</b></p><div class="seg" role="group" aria-label="Darstellung">'
     + [['system','System'],['light','Hell'],['dark','Dunkel']].map(([v,l])=>'<button data-act="theme" data-id="'+v+'" aria-pressed="'+(S.theme===v)+'">'+l+'</button>').join('')
-    + '</div><p style="margin:16px 0 6px"><b>Testmodus</b></p><p class="small muted">Alle Zeiten laufen schneller. Nur zum Ausprobieren, nicht zum echten Spielen.</p>'
+    + '</div><p style="margin:16px 0 6px"><b>Einführung</b></p><button class="btn ghost" data-act="tut_restart">Einführung noch mal ansehen</button><p style="margin:16px 0 6px"><b>Testmodus</b></p><p class="small muted">Alle Zeiten laufen schneller. Nur zum Ausprobieren, nicht zum echten Spielen.</p>'
     + '<div class="seg" role="group" aria-label="Testmodus">'
     + [[1,'Aus'],[10,'10×'],[100,'100×']].map(([v,l])=>'<button data-act="speed" data-id="'+v+'" aria-pressed="'+(S.speed===v)+'">'+l+'</button>').join('')
     + '</div><p style="margin:16px 0 6px"><b>Spielstand</b></p><p class="small muted">Dein Spielstand wird automatisch in deinem Konto gespeichert'+(USER && USER.email ? ' ('+esc(USER.email)+')' : '')+'.</p>'
@@ -2482,7 +2555,7 @@ function renderAusb(){
       + '<p class="flv">'+esc(STAT_FLAVOR[s.id])+'</p><p class="eff">'+esc(s.desc)+'</p>'
       + '<div class="lvl">Stufe '+lv+' / '+STAT_MAX+'</div>'
       + (max ? '<div class="small"><b>Höchststufe</b></div>'
-        : running ? '<div class="small">Stufe '+(lv+1)+' in <span class="num" data-left="ausb"></span></div><div class="prog" style="margin:0"><i data-prog="ausb"></i></div>'
+        : running ? '<div class="small">Stufe '+(lv+1)+' in <span class="num" data-left="ausb"></span></div><div class="prog" style="margin:0"><i data-prog="ausb"></i></div><button class="btn ghost mini" style="text-align:center" data-act="kurz_open">Mit Ausdauer verkürzen</button>'
         : '<div class="small">Nächste Stufe <b>'+(lv+1)+'</b>, Dauer '+fmtMin(G.statMin(s.id)/S.speed)+'</div>'
           + '<button class="btn wide" data-act="stat" data-id="'+s.id+'" '+(dis?'disabled':'')+'>Ausbildung starten<small>'+eur(c)+'</small></button>')
       + '</div><div class="medals">' + MEDAL_LV.map((l,i) => medalSvg(i, lv >= l, 'Leistungsabzeichen '+s.name+' in '+MEDAL_NAME[i]+' (ab Stufe '+l+')')).join('') + '</div></div>';
@@ -2561,6 +2634,7 @@ function render(){
   else {
     main.innerHTML = tab==='stube' ? renderStube() : tab==='raum' ? renderRaum() : tab==='dienst' ? renderDienst() : tab==='ausb' ? renderAusb() : tab==='feier' ? renderFeier() : tab==='truppe' ? renderTruppe() : renderLaufbahn();
   }
+  if(S && tutOn() && main.insertAdjacentHTML) main.insertAdjacentHTML('afterbegin', tutBox());
   renderNav(); renderRes(); live();
   if(typeof afterRender === "function") afterRender();
 }
@@ -2650,7 +2724,7 @@ const ACT = {
     if(!G.dzOver()) return;
     if(!ok) return ask('Wirklich ausscheiden? Du beginnst neu als Soldat und behältst deinen Wiedereinsteller-Bonus.', ()=>ACT.ausscheiden(null, true), 'Ausscheiden');
     const name = S.name, res = (S.res||0)+1, theme = S.theme, speed = S.speed, spar = S.spar;
-    newGame(name, res, S.tsk); S.theme = theme; S.speed = speed; if(spar) S.spar = spar; save(); tab = 'stube'; render();
+    newGame(name, res, S.tsk); S.tut = {step:0, done:true}; S.theme = theme; S.speed = speed; if(spar) S.spar = spar; save(); tab = 'stube'; render();
     toast('Willkommen zurück, Wiedereinsteller.');
   },
   verw(id){
@@ -2688,6 +2762,33 @@ const ACT = {
     toast(first ? 'Heimatstandort: '+neu.ort : 'Versetzung genehmigt: '+neu.ort); render();
   },
   paket(){ openPaket(); },
+  kurz_open(){ kurzRender(); },
+  kurz(opt){
+    if(!S.ausb || S.ausb.type !== 'stat') return;
+    const h = kurzStunden(opt), c = kurzKosten(h);
+    if(!(h > 0) || !(c > 0)){ toast('Zu wenig Ausdauer.'); return; }
+    S.stamina -= c; S.ausb.end -= h * 36e5 / S.speed;
+    if(S.ausb.end <= now() + 500) S.ausb.end = now();
+    const r = G.tick(); save(); render();
+    if(!S.ausb || S.ausb.type !== 'stat'){ ACT.close(); r.events.forEach((m,i)=>setTimeout(()=>toast(m), i*1600)); if(!r.events.length) toast('Ausbildung abgeschlossen.'); }
+    else { toast('Um '+fmtStd(h)+' verkürzt.'); kurzRender(); }
+  },
+  tut_next(){
+    if(!tutOn()) return;
+    const st = tutSteps(), s = st[S.tut.step];
+    if(s.final){
+      const first = !S.tut.again;
+      S.tut.done = true; if(first){ S.money += 200; S.pakete = Math.min(9, (S.pakete||0) + 1); } save();
+      toast(first ? 'Einführung abgeschlossen: +200 € und ein Paket.' : 'Einführung abgeschlossen.'); tab = 'stube'; render(); return;
+    }
+    S.tut.step++; save();
+    const n = st[S.tut.step]; tab = n.tab; render(); window.scrollTo(0,0);
+  },
+  tut_skip(_, ok){
+    if(!ok) return ask('Einführung überspringen? Du kannst sie in der Übersicht unter Einstellungen jederzeit wiederholen.', ()=>ACT.tut_skip(null, true), 'Überspringen');
+    S.tut.done = true; save(); render();
+  },
+  tut_restart(){ S.tut = {step:0, done:false, again:true}; save(); tab = 'stube'; render(); window.scrollTo(0,0); },
   pflege(k){
     if(!PFLEGE[k] || (S.pflege && S.pflege.tarif === k)) return;
     const neu = !S.pflege; S.pflege = {tarif:k, seit:now()}; save();
