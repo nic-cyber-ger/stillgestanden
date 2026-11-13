@@ -522,7 +522,7 @@ function finishEinsatz(){
   const E = EINSATZ_I[a.id], s = a.score;
   const note = s >= E.n*3 ? 1 : s >= E.n*2 ? 2 : s >= E.n ? 3 : 4;
   const zuschlag = Math.round(einsatzZuschlag(E) * EINSATZ_BONUS[note]);
-  S.einsatz = null; S.money += zuschlag; G.addPoints(10 + (4-note)*5);
+  S.einsatz = null; S.money += zuschlag - earnCut(zuschlag); G.addPoints(10 + (4-note)*5);
   S.einsaetze.push({id:a.id, ts:now(), note});
   S.pakete = Math.min(9, (S.pakete||0)+2);
   S.einsatzPause = now() + 14*864e5/S.speed;
@@ -702,6 +702,44 @@ function srAccuse(){
   save(); renderRes(); srRender(msg);
 }
 
+/* ---------- Sparvertrag bei der „Kameraden-Vorsorge“ ---------- */
+const SPAR_RATEN = [5, 10, 20];
+const SPAR_ZINS = 0.025;   // pro Woche echte Zeit, taggenau verzinst
+const SPAR_SPERRE = 5;     // Tage zwischen zwei Auszahlungen
+// Anteil eines Verdienstes, der automatisch aufs Sparkonto geht
+function earnCut(v){
+  if(!S.spar || !S.spar.rate || !(v > 0)) return 0;
+  const c = Math.round(v * S.spar.rate / 100); S.spar.bal += c; return c;
+}
+function sparZinsen(){
+  if(!S.spar) return;
+  const t = now(), d = (t - S.spar.zTs) / 864e5 * S.speed;
+  if(d > 0 && S.spar.bal > 0) S.spar.bal = S.spar.bal * Math.pow(1 + SPAR_ZINS, d / 7);
+  S.spar.zTs = t;
+}
+function sparNext(){ return S.spar && S.spar.lastOut ? S.spar.lastOut + SPAR_SPERRE*864e5/S.speed : 0; }
+function eur2(n){ return n.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €'; }
+const SPAR_ART = '<svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true" style="flex:none"><rect width="64" height="64" rx="6" fill="var(--surface2)"/><rect x="14" y="10" width="30" height="40" rx="2" fill="#F2F2EA" stroke="var(--olive)" stroke-width="2"/><path d="M19 19h20M19 25h20M19 31h14" stroke="var(--muted)" stroke-width="2"/><path d="M20 42c3-4 6 2 9-2" stroke="var(--stamp)" stroke-width="2" fill="none"/><path d="M40 52l14-22 4 3-14 22-5 2z" fill="var(--signal)" stroke="#1C2217" stroke-width="1.5"/></svg>';
+function renderSpar(){
+  let h = '<h2>Sparvertrag</h2><div class="panel pad">';
+  if(!S.spar){
+    return h + '<div style="display:flex;gap:12px;align-items:flex-start">'+SPAR_ART+'<p class="small" style="margin:0">Herr Klingelhöfer von der „Kameraden-Vorsorge“ steht schon zum dritten Mal in deiner Stube. Sein Angebot: Ein fester Anteil von jedem Verdienst wandert automatisch auf dein Sparkonto und bringt 2,5 % Zinsen pro Woche. Auszahlen kannst du alle '+SPAR_SPERRE+' Tage, kündigen erst, wenn das Konto leer ist. Und das Ersparte bleibt dir sogar, wenn du ausscheidest.</p></div>'
+      + '<p style="margin:14px 0 6px"><b>Wie viel von jedem Verdienst?</b></p><div class="seg" role="group" aria-label="Sparanteil">'
+      + SPAR_RATEN.map(r => '<button data-act="spar_start" data-id="'+r+'">'+r+' %</button>').join('') + '</div></div>';
+  }
+  sparZinsen();
+  const nx = sparNext(), frei = now() >= nx, bal = S.spar.bal;
+  h += '<div style="display:flex;gap:12px;align-items:center">'+SPAR_ART+'<div><div class="small muted">Guthaben mit Zinsen</div>'
+    + '<div class="num" style="font-size:28px;line-height:1.1">'+eur2(bal)+'</div>'
+    + '<div class="small muted">'+S.spar.rate+' % von jedem Verdienst, 2,5 % Zinsen pro Woche</div></div></div>'
+    + '<p style="margin:14px 0 6px"><b>Auszahlen</b> <span class="small muted">'+(frei ? 'jetzt möglich' : 'wieder in '+fmtRest(nx - now()))+'</span></p>'
+    + '<div style="display:flex;gap:6px">' + [25,50,100].map(p => '<button class="btn ghost" style="flex:1" data-act="spar_out" data-id="'+p+'" '+((!frei || bal < 1) ? 'disabled' : '')+'>'+p+' %</button>').join('') + '</div>'
+    + '<p style="margin:14px 0 6px"><b>Anteil ändern</b></p><div class="seg" role="group" aria-label="Sparanteil">'
+    + SPAR_RATEN.map(r => '<button data-act="spar_rate" data-id="'+r+'" aria-pressed="'+(S.spar.rate===r)+'">'+r+' %</button>').join('') + '</div>'
+    + '<button class="linkbtn" data-act="spar_end" '+(bal >= 1 ? 'disabled' : '')+'>Vertrag kündigen'+(bal >= 1 ? ' (erst bei leerem Konto)' : '')+'</button>';
+  return h + '</div>';
+}
+
 function hasGear(id){ return !!(S && S.gear && S.gear[id]); }
 
 function unlocksFor(id){
@@ -791,6 +829,7 @@ function renderRaum(){
       + '<div class="desc">'+esc(it.levels[l])+'</div><div class="meta">'+esc(it.fx)+(l<max ? ' Als Nächstes: '+esc(it.levels[l+1])+' für '+eur(c)+'.' : '')+'</div></div>'
       + (l<max ? '<button class="btn" data-act="buy" data-id="'+it.id+'" '+(S.money<c?'disabled':'')+'>Einbauen</button>' : '<span class="small muted">fertig</span>')+'</div>';
   }).join('') + '</div>';
+  h += renderSpar();
   h += renderAlbum();
   h += '<h2>Stubenrunde</h2><div class="panel pad"><p>Kalle hat Karten. Siebzehn und Vier um Spielgeld, höchstens '+SR_MAX+' Runden am Tag. Noch '+srLeft()+' heute.</p><button class="btn" data-act="sr_open">Mitspielen</button></div>';
   h += renderSpielothek();
@@ -1595,18 +1634,19 @@ const G = {
   },
   tick(){
     let events = [], changed = false;
+    sparZinsen();
     G.normStamina();
     // Sold
     const today = dateStr();
     if(S.lastPay !== today){
       const days = Math.max(1, Math.min(7, daysBetween(S.lastPay, today)));
       const amount = Math.round(G.rank().sold*days*(1+.02*S.stats.vitaminb)*(1+.05*S.stube.kuehl));
-      S.money += amount; S.lastPay = today; changed = true;
+      S.money += amount - earnCut(amount); S.lastPay = today; changed = true;
       events.push('Sold ist da: ' + eur(amount));
     }
     if(S.dienst && now() >= S.dienst.end){
       const d = D[S.dienst.id];
-      S.money += S.dienst.pay; G.addPoints(S.dienst.bp); S.dienstCount++; S.dc[S.dienst.id] = (S.dc[S.dienst.id]||0) + 1;
+      S.money += S.dienst.pay - earnCut(S.dienst.pay); G.addPoints(S.dienst.bp); S.dienstCount++; S.dc[S.dienst.id] = (S.dc[S.dienst.id]||0) + 1;
       if(D[S.dienst.id].einsatz && S.einsatz) S.einsatz.score += 1;
       if(Math.random() < (D[S.dienst.id].einsatz ? .25 : .12)){ S.pakete = Math.min(9, (S.pakete||0)+1); events.push('Feldpost ist da!'); }
       events.push(d.name + ' beendet: +' + eur(S.dienst.pay));
@@ -2003,8 +2043,8 @@ const ACT = {
   ausscheiden(_, ok){
     if(!G.dzOver()) return;
     if(!ok) return ask('Wirklich ausscheiden? Du beginnst neu als Soldat und behältst deinen Wiedereinsteller-Bonus.', ()=>ACT.ausscheiden(null, true), 'Ausscheiden');
-    const name = S.name, res = (S.res||0)+1, theme = S.theme, speed = S.speed;
-    newGame(name, res); S.theme = theme; S.speed = speed; save(); tab = 'stube'; render();
+    const name = S.name, res = (S.res||0)+1, theme = S.theme, speed = S.speed, spar = S.spar;
+    newGame(name, res); S.theme = theme; S.speed = speed; if(spar) S.spar = spar; save(); tab = 'stube'; render();
     toast('Willkommen zurück, Wiedereinsteller.');
   },
   verw(id){
@@ -2042,6 +2082,27 @@ const ACT = {
     toast(first ? 'Heimatstandort: '+neu.ort : 'Versetzung genehmigt: '+neu.ort); render();
   },
   paket(){ openPaket(); },
+  spar_start(r){
+    r = Number(r); if(S.spar || !SPAR_RATEN.includes(r)) return;
+    S.spar = {rate:r, bal:0, zTs:now(), lastOut:0, seit:now()}; save();
+    toast('Vertrag unterschrieben. Herr Klingelhöfer strahlt.'); render();
+  },
+  spar_rate(r){ r = Number(r); if(!S.spar || !SPAR_RATEN.includes(r)) return; S.spar.rate = r; save(); render(); },
+  spar_out(p){
+    p = Number(p); if(!S.spar || ![25,50,100].includes(p)) return;
+    sparZinsen();
+    if(now() < sparNext()){ toast('Die nächste Auszahlung ist erst in '+fmtRest(sparNext()-now())+' möglich.'); return; }
+    const v = p === 100 ? Math.floor(S.spar.bal) : Math.floor(S.spar.bal * p / 100);
+    if(v < 1){ toast('Auf dem Konto ist noch nichts.'); return; }
+    S.spar.bal -= v; if(p === 100) S.spar.bal = 0; S.spar.lastOut = now(); S.money += v; save();
+    toast(eur(v)+' ausgezahlt.'); render();
+  },
+  spar_end(_, ok){
+    if(!S.spar) return;
+    if(S.spar.bal >= 1){ toast('Kündigen geht erst, wenn das Konto leer ist.'); return; }
+    if(!ok) return ask('Sparvertrag kündigen? Herr Klingelhöfer wird untröstlich sein.', ()=>ACT.spar_end(null, true), 'Kündigen');
+    S.spar = null; save(); toast('Vertrag gekündigt.'); render();
+  },
   sr_open(){ SR = null; srRender(); },
   sr_start(i){ srStart(Number(i)); },
   sr_hit(){ srHit(); },
