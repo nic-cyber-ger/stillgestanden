@@ -42,7 +42,8 @@ body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--olive)}
 :focus-visible{outline:3px solid var(--signal);outline-offset:2px}
 
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--olive);color:var(--olive-ink);
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background-color:var(--olive);color:var(--olive-ink);border-bottom:3px solid var(--signal);
+  background-image:radial-gradient(ellipse 22px 14px at 20% 35%,rgba(0,0,0,.18) 98%,transparent),radial-gradient(ellipse 28px 16px at 72% 62%,rgba(0,0,0,.13) 98%,transparent),radial-gradient(ellipse 16px 10px at 46% 82%,rgba(255,255,255,.07) 98%,transparent);background-size:110px 64px;
   padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .logo{font-family:'Black Ops One',Impact,'Arial Black',sans-serif;font-size:21px;letter-spacing:.01em;white-space:nowrap}
 .res{display:flex;gap:14px;align-items:center;font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:600;font-size:17px}
@@ -51,7 +52,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .stam .bar i{display:block;height:100%;background:var(--signal)}
 
 main{max-width:640px;margin:0 auto;padding:16px}
-h2{font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:700;font-size:24px;line-height:1.15;margin:24px 0 10px}
+h2{font-family:'Black Ops One',Impact,'Arial Black',sans-serif;font-weight:400;font-size:20px;line-height:1.2;margin:26px 0 10px;display:flex;align-items:center;gap:10px}
+h2::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,var(--signal),transparent)}
+.sheet h2,.create h2{display:block}
+.sheet h2::after,.create h2::after{display:none}
 h2:first-child{margin-top:4px}
 p{margin:0 0 10px}
 .muted{color:var(--muted)}
@@ -126,6 +130,24 @@ p{margin:0 0 10px}
 @keyframes stamp{from{transform:rotate(-7deg) scale(2.2);opacity:0}to{transform:rotate(-7deg) scale(1);opacity:1}}
 @media (prefers-reduced-motion: reduce){.stamp{animation:none}}
 .history li{padding:4px 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
+.acard{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.acard .ah{background-color:var(--olive);background-image:linear-gradient(180deg,rgba(255,255,255,.10),rgba(0,0,0,.18));color:var(--olive-ink);padding:8px 10px;font-family:'Black Ops One',Impact,sans-serif;font-size:15px;line-height:1.15;border-bottom:2px solid var(--signal)}
+.acard .art{background:var(--surface2);line-height:0;border-bottom:1px solid var(--line)}
+.acard .art svg{width:100%;height:auto;display:block}
+.acard .ab{padding:10px;text-align:center;display:flex;flex-direction:column;gap:6px;flex:1}
+.acard .flv{font-size:13px;color:var(--muted);margin:0;font-style:italic}
+.acard .eff{font-size:13px;margin:0}
+.acard .lvl{font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:700;font-size:16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:3px 0;margin-top:auto}
+.acard .btn{line-height:1.15;padding:8px 10px}
+.acard .btn small{display:block;font-weight:500;font-size:13px;opacity:.85}
+.medals{display:flex;justify-content:center;gap:6px;padding:8px 6px;background:var(--surface2);border-top:1px solid var(--line)}
+.medal{width:30px;height:40px}
+.medal.off{opacity:.28;filter:grayscale(1)}
+.ladder{display:flex;gap:4px;overflow-x:auto;padding:10px;background:var(--surface);border:1px solid var(--line);border-radius:6px;scrollbar-width:thin}
+.lad{flex:none;opacity:.3;padding:3px;border-radius:4px;line-height:0}
+.lad.done{opacity:.85}
+.lad.cur{opacity:1;outline:2px solid var(--signal);outline-offset:1px}
 .album{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .tile{border:2px solid var(--rc);border-radius:6px;background:var(--surface);min-height:64px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:600;line-height:1.25}
 .tile.miss{opacity:.45;font-size:20px}
@@ -324,6 +346,32 @@ const STATS = [
   {id:'vitaminb',   name:'Vitamin B',   desc:'Wer den Spieß kennt, kennt den Weg. Mehr Sold und bessere Beurteilungen.'},
 ];
 const STAT_NAME = Object.fromEntries(STATS.map(s=>[s.id,s.name]));
+const STAT_MAX = 60;
+const MEDAL_LV = [5, 15, 30, 50];
+const MEDAL_NAME = ['Bronze', 'Silber', 'Gold', 'Platin'];
+const MEDAL_COL = ['#A0673A', '#A9B0B5', '#D4A72C', '#9CC3D3'];
+const STAT_FLAVOR = {
+  fitness:'Hindernisbahn, Klimmzüge, Dauerlauf im Nieselregen. Irgendwann macht es sogar Spaß, behauptet Lena.',
+  schiessen:'Atmen, zielen, abkrümmen. Und danach die Hülsen zählen, bis die Zahl stimmt.',
+  fachwissen:'Vorschriften, Geräte, Abkürzungen. Wer weiß, was eine ZDv ist, hat hier klar die Nase vorn.',
+  fuehrung:'Laut sein reicht nicht. Man muss auch wissen, wohin alle laufen sollen.',
+  vitaminb:'Kaffee für den Spieß, Kekse für die Kammer. Beziehungen schaden nur dem, der keine hat.',
+};
+const STAT_ART = {
+  fitness:'<svg viewBox="0 0 120 64" aria-hidden="true"><rect width="120" height="64" fill="var(--wall)"/><rect y="50" width="120" height="14" fill="var(--floor)"/><path d="M0 56h120" stroke="var(--mark)" stroke-width="1.5" stroke-dasharray="7 6"/><path d="M22 22h16M16 30h18M24 38h12" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" opacity=".6"/><circle cx="68" cy="12" r="6" fill="var(--olive)"/><path d="M66 19 60 34M64 23l10 6M64 23l-10 3M60 34l9 10 6 0M60 34l-8 9-6-3" stroke="var(--olive)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+  schiessen:'<svg viewBox="0 0 120 64" aria-hidden="true"><rect width="120" height="64" fill="var(--wall)"/><rect x="57" y="52" width="6" height="12" fill="var(--wood)"/><circle cx="60" cy="30" r="25" fill="#F2F2EA" stroke="var(--olive)" stroke-width="2"/><circle cx="60" cy="30" r="18" fill="var(--olive)"/><circle cx="60" cy="30" r="11" fill="#F2F2EA"/><circle cx="60" cy="30" r="5" fill="var(--stamp)"/><circle cx="58" cy="28" r="1.8" fill="#1C2217"/><circle cx="64" cy="33" r="1.8" fill="#1C2217"/><circle cx="70" cy="22" r="1.8" fill="#1C2217"/></svg>',
+  fachwissen:'<svg viewBox="0 0 120 64" aria-hidden="true"><rect width="120" height="64" fill="var(--wall)"/><path d="M60 18C48 12 36 12 26 16v38c10-4 22-4 34 2 12-6 24-6 34-2V16c-10-4-22-4-34 2z" fill="#F2F2EA" stroke="var(--olive)" stroke-width="2"/><path d="M60 18v38" stroke="var(--olive)" stroke-width="2"/><path d="M32 26h20M32 32h20M32 38h16M68 26h20M68 32h20M68 38h14" stroke="var(--muted)" stroke-width="2"/><circle cx="96" cy="14" r="8" fill="none" stroke="var(--signal)" stroke-width="4" stroke-dasharray="3.5 2.8"/><circle cx="96" cy="14" r="3" fill="var(--signal)"/></svg>',
+  fuehrung:'<svg viewBox="0 0 120 64" aria-hidden="true"><rect width="120" height="64" fill="var(--wall)"/><path d="M84 8v50" stroke="var(--wood)" stroke-width="3"/><path d="M86 9l22 7-22 7z" fill="var(--signal)"/><path d="M30 26l16 9 16-9M30 36l16 9 16-9M30 46l16 9 16-9" stroke="var(--olive)" stroke-width="6" fill="none" stroke-linejoin="round"/></svg>',
+  vitaminb:'<svg viewBox="0 0 120 64" aria-hidden="true"><rect width="120" height="64" fill="var(--wall)"/><rect y="52" width="120" height="12" fill="var(--wood)"/><rect x="44" y="22" width="26" height="30" rx="3" fill="#F2F2EA" stroke="var(--olive)" stroke-width="2"/><path d="M70 28h6a6 6 0 0 1 0 14h-6" fill="none" stroke="var(--olive)" stroke-width="3"/><path d="M50 16c0-4 4-4 4-8M58 16c0-4 4-4 4-8" stroke="var(--muted)" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M50 35h14" stroke="var(--stamp)" stroke-width="3"/><circle cx="88" cy="48" r="6" fill="#C9A06A"/><circle cx="99" cy="49" r="5" fill="#C9A06A"/></svg>',
+};
+function medalSvg(tier, on, label){
+  const c = MEDAL_COL[tier];
+  return '<svg class="medal'+(on?'':' off')+'" viewBox="0 0 30 40" role="img" aria-label="'+label+'"><title>'+label+'</title>'
+    + '<path d="M8 0h14l-3 16h-8z" fill="var(--olive)"/><path d="M13 0h4l-1 16h-2z" fill="var(--signal)"/>'
+    + '<circle cx="15" cy="27" r="11" fill="'+c+'" stroke="rgba(0,0,0,.35)" stroke-width="1.5"/>'
+    + '<path d="M15 20l2.1 4.4 4.8.5-3.6 3.2 1 4.7-4.3-2.4-4.3 2.4 1-4.7-3.6-3.2 4.8-.5z" fill="rgba(255,255,255,.55)"/></svg>';
+}
+function medalCount(){ return STATS.reduce((a,s)=>a + MEDAL_LV.filter(l => S.stats[s.id] >= l).length, 0); }
 
 // min = Dauer in Minuten, st = Ausdauerkosten, pay = Grundverdienst, bp = Beurteilungspunkte
 const DIENSTE = [
@@ -1451,7 +1499,7 @@ const G = {
     }
   },
   payMult(){ return (G.rank().sold/40) * (1 + .03*S.stats.fachwissen) * (1 + .02*S.stats.vitaminb) * (S.verw==='inst' ? 1.1 : 1) * (1 + .05*Math.min(5, S.res||0)) * (hasGear('stander') ? 1.1 : 1) * (albumSet('g') ? 1.05 : 1) * (albumSet('l') ? 1.1 : 1) * (1 + .01*kStufe('betreuung') + .02*kpStufe('mannschaftsheim')); },
-  bpMult(){ return Math.max(.2, 1 + .03*S.stats.vitaminb + .02*S.stats.fuehrung + rel('spiess')/500 + Math.max(0,rel('chef'))/1000 + .04*S.stube.spind + (S.verw==='fm' ? .1 : 0) + (hasGear('kalender') ? .05 : 0) + (albumSet('e') ? .05 : 0) + .02*kpStufe('geschaeftszimmer')); },
+  bpMult(){ return Math.max(.2, 1 + .01*medalCount() + .03*S.stats.vitaminb + .02*S.stats.fuehrung + rel('spiess')/500 + Math.max(0,rel('chef'))/1000 + .04*S.stube.spind + (S.verw==='fm' ? .1 : 0) + (hasGear('kalender') ? .05 : 0) + (albumSet('e') ? .05 : 0) + .02*kpStufe('geschaeftszimmer')); },
   dienstPay(d){ return Math.round(d.pay * G.payMult() * ((S.verw==='inf' && (d.id==='gelaende'||d.id==='uebung')) ? 1.15 : 1)); },
   dienstSt(d){ return Math.round(d.st * (S.verw==='kfz' ? .8 : 1) * (hasGear('stiefel') ? .95 : 1) * (1 - .02*kpStufe('fahrzeughalle'))); },
   dienstMin(d){ return d.min * (hasGear('uhr') ? .95 : 1); },
@@ -1499,6 +1547,7 @@ const G = {
   },
   startStat(id){
     if(S.ausb) return 'Es läuft schon eine Ausbildung.';
+    if(S.stats[id] >= STAT_MAX) return 'Höchststufe erreicht.';
     const c = G.statCost(id);
     if(S.money < c) return 'Zu wenig Geld.';
     S.money -= c;
@@ -1790,12 +1839,19 @@ function renderAusb(){
   let h = '<h2>Ausbildung</h2>';
   if(S.ausb) h += '<div class="panel" style="margin-bottom:16px">'+(S.dienst ? activeBlock().split('<div class="active">').slice(2).map(x=>'<div class="active">'+x).join('') : activeBlock())+'</div>';
   h += '<p class="small muted">Es läuft immer nur eine Ausbildung oder ein Lehrgang gleichzeitig. Parallel kannst du Dienst schieben.</p>';
-  h += '<div class="panel">' + STATS.map(s => {
-    const c = G.statCost(s.id), dis = !!S.ausb || S.money < c;
-    return '<div class="row"><div class="info"><div class="title">'+s.name+' <span class="tag">Stufe '+S.stats[s.id]+'</span></div>'
-      + '<div class="desc">'+esc(s.desc)+'</div><div class="meta">Nächste Stufe: '+eur(c)+', '+fmtMin(G.statMin(s.id)/S.speed)+'</div></div>'
-      + '<button class="btn" data-act="stat" data-id="'+s.id+'" '+(dis?'disabled':'')+'>Ausbilden</button></div>';
-  }).join('') + '</div>';
+  h += '<div class="cards">' + STATS.map(s => {
+    const lv = S.stats[s.id], max = lv >= STAT_MAX, c = G.statCost(s.id), running = S.ausb && S.ausb.type==='stat' && S.ausb.id===s.id;
+    const dis = !!S.ausb || S.money < c || max;
+    return '<div class="acard"><div class="ah">'+s.name+'</div><div class="art">'+STAT_ART[s.id]+'</div><div class="ab">'
+      + '<p class="flv">'+esc(STAT_FLAVOR[s.id])+'</p><p class="eff">'+esc(s.desc)+'</p>'
+      + '<div class="lvl">Stufe '+lv+' / '+STAT_MAX+'</div>'
+      + (max ? '<div class="small"><b>Höchststufe</b></div>'
+        : running ? '<div class="small">Stufe '+(lv+1)+' in <span class="num" data-left="ausb"></span></div><div class="prog" style="margin:0"><i data-prog="ausb"></i></div>'
+        : '<div class="small">Nächste Stufe <b>'+(lv+1)+'</b>, Dauer '+fmtMin(G.statMin(s.id)/S.speed)+'</div>'
+          + '<button class="btn wide" data-act="stat" data-id="'+s.id+'" '+(dis?'disabled':'')+'>Ausbildung starten<small>'+eur(c)+'</small></button>')
+      + '</div><div class="medals">' + MEDAL_LV.map((l,i) => medalSvg(i, lv >= l, 'Leistungsabzeichen '+s.name+' in '+MEDAL_NAME[i]+' (ab Stufe '+l+')')).join('') + '</div></div>';
+  }).join('') + '</div>'
+  + '<p class="small muted" style="margin-top:10px">Leistungsabzeichen gibt es ab Stufe '+MEDAL_LV.join(', ')+'. Jedes bringt dauerhaft 1 % mehr Beurteilungspunkte. Bisher: '+medalCount()+' von '+(MEDAL_LV.length*STATS.length)+'.</p>';
 
   h += '<h2>Lehrgänge</h2><div class="panel">' + LEHRGAENGE.map(l => {
     const done = !!S.lehrgaenge[l.id], reqs = G.lehrgangReqs(l), ok = reqs.every(r=>r.ok);
@@ -1813,7 +1869,11 @@ function reqList(reqs){
 
 function renderLaufbahn(){
   const r = G.rank(), next = NEXT[S.rank] || [];
-  let h = '<h2>Nächste Beförderung</h2>';
+  const had = new Set(S.history.map(x=>x.rank));
+  let h = '<h2>Dienstgrade</h2><div class="ladder" role="list" aria-label="Alle Dienstgrade">'
+    + RANKS.map(x => '<div role="listitem" class="lad'+(x.id===S.rank ? ' cur' : had.has(x.id) ? ' done' : '')+'" title="'+esc(x.name)+'">'+insignia(x.id, 24)+'</div>').join('') + '</div>';
+  setTimeout(() => { const c = document.querySelector('.lad.cur'); if(c && c.parentNode && c.parentNode.scrollTo) c.parentNode.scrollTo({left: c.offsetLeft - c.parentNode.clientWidth/2, behavior:'auto'}); }, 0);
+  h += '<h2>Nächste Beförderung</h2>';
   if(!next.length){
     h += '<div class="panel pad"><p>'+(S.rank==='gen' ? 'General. Höher geht es nicht. Der Spieß grüßt jetzt zuerst.' : 'Das ist das Ende dieser Laufbahn. Ein Wechsel ist von hier aus nicht mehr möglich.')+'</p></div>';
   } else {
