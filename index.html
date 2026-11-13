@@ -148,6 +148,16 @@ p{margin:0 0 10px}
 .lad{flex:none;opacity:.3;padding:3px;border-radius:4px;line-height:0}
 .lad.done{opacity:.85}
 .lad.cur{opacity:1;outline:2px solid var(--signal);outline-offset:1px}
+.acard.run{outline:2px solid var(--signal)}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;font-size:12.5px;text-align:left;margin-top:auto;border-top:1px solid var(--line);padding-top:6px}
+.facts span{color:var(--muted)}
+.facts b{text-align:right;font-weight:600}
+.lock{font-size:12.5px;color:var(--muted);border:1px dashed var(--line);border-radius:4px;padding:7px 6px}
+.reqmini{list-style:none;margin:0;padding:0;text-align:left;font-size:12px;line-height:1.3}
+.reqmini li{display:flex;gap:5px;padding:1px 0}
+.reqmini b{flex:none;width:12px}
+.reqmini .ok b{color:var(--ok)}
+.reqmini .no b{color:var(--bad)}
 .album{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .tile{border:2px solid var(--rc);border-radius:6px;background:var(--surface);min-height:64px;padding:8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:600;line-height:1.25}
 .tile.miss{opacity:.45;font-size:20px}
@@ -545,14 +555,14 @@ function renderEinsatz(){
   }
   if(S.einsatzPause && now() < S.einsatzPause) h += '<p class="small muted">Einsatznachbereitung: Der nächste Einsatz ist in '+fmtRest(S.einsatzPause-now())+' möglich.</p>';
   else h += '<p class="small muted">Ein Einsatz läuft über mehrere Tage. In der Zeit gibt es nur Einsatzdienste und keine Lehrgänge, dafür eigene Lagen, Auslandszuschlag und eine Medaille.</p>';
-  h += '<div class="panel">' + EINSATZ.map(E => {
+  h += '<div class="cards">' + EINSATZ.map(E => {
     const req = einsatzReqs(E), ok = req.every(x=>x.ok);
-    return '<div class="target"><div style="font-weight:700;font-size:17px">'+esc(E.name)+'</div>'
-      + '<div class="small muted">'+esc(E.ort)+', '+E.days+' Tage</div>'
-      + '<div class="small" style="margin-top:4px"><b>Auslandszuschlag:</b> '+eur(einsatzRate())+' pro Tag, insgesamt '+eur(einsatzZuschlag(E))+'. Bei sehr guter Bewertung 25 % mehr. Dazu besser bezahlte Einsatzdienste.</div>'
-      + '<p class="small" style="margin:6px 0 0">'+esc(E.desc)+'</p>' + reqList(req)
-      + '<button class="btn wide" data-act="einsatz" data-id="'+E.id+'" '+(ok?'':'disabled')+'>Für den Einsatz melden</button></div>';
-  }).join('') + '</div>';
+    const inner = '<p class="flv">'+esc(E.desc)+'</p>'
+      + facts([['Ort', esc(E.ort)], ['Dauer', E.days+' Tage'], ['Zuschlag/Tag', eur(einsatzRate())], ['Gesamt', eur(einsatzZuschlag(E))]])
+      + reqMini(req)
+      + '<button class="btn wide" data-act="einsatz" data-id="'+E.id+'" '+(ok?'':'disabled')+'>Für den Einsatz melden</button>';
+    return acard(E.name, 'plane', inner);
+  }).join('') + '</div><p class="small muted" style="margin-top:8px">Bei sehr guter Bewertung gibt es 25 % mehr Zuschlag. Im Einsatz gibt es besser bezahlte Einsatzdienste.</p>';
   if(S.einsaetze.length) h += '<p class="small muted" style="margin-top:10px">Bisherige Einsätze: '+S.einsaetze.map(x=>EINSATZ_I[x.id].name+' („'+NOTES[x.note]+'“)').join(', ')+'</p>';
   return h;
 }
@@ -747,6 +757,65 @@ function renderSpar(){
   return h + '</div>';
 }
 
+/* ---------- Karten-Bausteine und Grafiken ---------- */
+function acard(title, kind, inner, run){
+  return '<div class="acard'+(run ? ' run' : '')+'"><div class="ah">'+esc(title)+'</div><div class="art">'+art(kind)+'</div><div class="ab">'+inner+'</div></div>';
+}
+function facts(rows){ return '<div class="facts">'+rows.map(([k,v]) => '<span>'+k+'</span><b>'+v+'</b>').join('')+'</div>'; }
+function reqMini(reqs){ return '<ul class="reqmini">'+reqs.map(r => '<li class="'+(r.ok?'ok':'no')+'"><b>'+(r.ok?'✓':'✗')+'</b><span>'+esc(r.label)+'</span></li>').join('')+'</ul>'; }
+function fig(x, y, s, c){
+  s = s || 1; c = c || 'var(--olive)';
+  return '<circle cx="'+x+'" cy="'+(y-15*s)+'" r="'+(4.5*s)+'" fill="'+c+'"/><rect x="'+(x-4.5*s)+'" y="'+(y-10*s)+'" width="'+(9*s)+'" height="'+(14*s)+'" rx="'+(2*s)+'" fill="'+c+'"/>'
+    + '<rect x="'+(x-4*s)+'" y="'+(y+4*s)+'" width="'+(3.2*s)+'" height="'+(9*s)+'" fill="'+c+'"/><rect x="'+(x+0.8*s)+'" y="'+(y+4*s)+'" width="'+(3.2*s)+'" height="'+(9*s)+'" fill="'+c+'"/>';
+}
+const BOOT = '<path d="M44 14h16v20l16 7v9H40z" fill="#2A2A22"/><rect x="40" y="48" width="38" height="5" fill="#111"/><path d="M48 18h8M48 24h8M48 30h8" stroke="var(--metal)" stroke-width="1.5"/>';
+const CAR = '<rect x="24" y="32" width="64" height="14" rx="5" fill="var(--olive)"/><path d="M36 32l8-10h24l8 10z" fill="var(--olive)"/><path d="M46 24h20l5 8H41z" fill="#BCD1DC"/><circle cx="40" cy="47" r="6" fill="#1C2217"/><circle cx="74" cy="47" r="6" fill="#1C2217"/><path d="M88 32V18" stroke="var(--metal)" stroke-width="2"/><path d="M89 18h9v6h-9z" fill="var(--signal)"/>';
+const BINOC = '<circle cx="48" cy="34" r="12" fill="#1C2217"/><circle cx="72" cy="34" r="12" fill="#1C2217"/><circle cx="48" cy="34" r="6" fill="#BCD1DC"/><circle cx="72" cy="34" r="6" fill="#BCD1DC"/><rect x="54" y="26" width="12" height="8" fill="var(--olive)"/>';
+const TRUCK = '<rect x="20" y="20" width="50" height="26" fill="var(--olive)"/><path d="M70 28h18l10 10v8H70z" fill="var(--olive)"/><path d="M74 31h12l6 7H74z" fill="#BCD1DC"/><circle cx="34" cy="48" r="6" fill="#1C2217"/><circle cx="84" cy="48" r="6" fill="#1C2217"/><path d="M24 24h42" stroke="rgba(0,0,0,.25)" stroke-width="2"/>';
+const TOWER = '<path d="M44 16h32l-16-9z" fill="var(--olive)"/><rect x="48" y="16" width="24" height="36" fill="#F2F2EA" stroke="var(--olive)" stroke-width="2"/><path d="M48 28l24-8M48 40l24-8M48 52l24-8" stroke="var(--olive)" stroke-width="5"/><rect x="55" y="34" width="10" height="18" fill="#1C2217" opacity=".55"/>';
+const BOOKS = '<rect x="36" y="40" width="48" height="10" fill="var(--olive)"/><rect x="40" y="30" width="42" height="10" fill="var(--stamp)"/><rect x="38" y="20" width="44" height="10" fill="var(--metal)"/><path d="M60 6l22 7-22 7-22-7z" fill="#1C2217"/><path d="M78 14v8" stroke="var(--signal)" stroke-width="2"/>';
+const ARTS = {
+  desk: '<rect x="30" y="34" width="60" height="5" fill="var(--wood)"/><rect x="34" y="39" width="4" height="13" fill="var(--wood)"/><rect x="82" y="39" width="4" height="13" fill="var(--wood)"/><rect x="40" y="22" width="22" height="12" fill="#F2F2EA" stroke="var(--muted)"/><rect x="44" y="17" width="22" height="12" fill="#F2F2EA" stroke="var(--muted)"/><rect x="72" y="25" width="8" height="9" rx="1" fill="var(--olive)"/><path d="M74 22c0-3 3-3 3-6" stroke="var(--muted)" stroke-width="1.5" fill="none"/>',
+  formal: fig(40,39) + fig(60,39) + fig(80,39),
+  tower: TOWER + fig(90,39,.9),
+  field: '<rect x="84" y="28" width="4" height="24" fill="var(--wood)"/><circle cx="86" cy="22" r="13" fill="var(--olive)"/><circle cx="77" cy="29" r="8" fill="var(--olive)"/><rect x="26" y="45" width="32" height="7" rx="3.5" fill="var(--olive)"/><circle cx="62" cy="46" r="4.5" fill="var(--olive)"/><path d="M58 44l10-4" stroke="#1C2217" stroke-width="2.5"/>',
+  tent: '<path d="M28 52L60 16l32 36z" fill="var(--olive)"/><path d="M60 16v36" stroke="rgba(0,0,0,.25)" stroke-width="2"/><path d="M52 52l8-15 8 15z" fill="#1C2217" opacity=".55"/><path d="M28 52l-6-4M92 52l6-4" stroke="var(--muted)" stroke-width="1.5"/>',
+  star: '<path d="M60 8l7 15 16 2-12 11 3 16-14-8-14 8 3-16-12-11 16-2z" fill="var(--signal)" stroke="var(--olive)" stroke-width="2"/>',
+  keys: '<circle cx="54" cy="28" r="9" fill="none" stroke="var(--metal)" stroke-width="3"/><path d="M60 34l14 14M68 42l4-4M72 46l4-4" stroke="var(--signal)" stroke-width="4" stroke-linecap="round"/><path d="M50 36l-6 14M46 45l-4-2" stroke="var(--metal)" stroke-width="4" stroke-linecap="round"/><path d="M96 8a9 9 0 1 0 7 15 7 7 0 0 1-7-15z" fill="var(--signal)"/>',
+  slides: '<rect x="34" y="8" width="52" height="34" fill="#F2F2EA" stroke="var(--olive)" stroke-width="2"/><rect x="42" y="28" width="7" height="10" fill="var(--olive)"/><rect x="53" y="22" width="7" height="16" fill="var(--signal)"/><rect x="64" y="16" width="7" height="22" fill="var(--stamp)"/><path d="M60 42v10M48 52l12-10 12 10" stroke="var(--wood)" stroke-width="3" fill="none"/>',
+  march: '<path d="M6 58C40 40 70 62 116 34" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 5" fill="none"/>' + BOOT,
+  recruits: fig(34,36,1.25) + fig(64,40,.85) + fig(80,40,.85) + fig(96,40,.85),
+  clip: '<rect x="42" y="10" width="36" height="42" rx="3" fill="var(--wood)"/><rect x="46" y="16" width="28" height="32" fill="#F2F2EA"/><rect x="52" y="7" width="16" height="7" rx="2" fill="var(--metal)"/><path d="M50 23l3 3 5-6M50 32l3 3 5-6M50 41l3 3 5-6" stroke="var(--ok)" stroke-width="2" fill="none"/><path d="M61 24h9M61 33h9M61 42h9" stroke="var(--muted)" stroke-width="2"/>',
+  books: BOOKS,
+  map: '<path d="M26 14l22-6 24 6 22-6v40l-22 6-24-6-22 6z" fill="#E8E4CF" stroke="var(--olive)" stroke-width="2"/><path d="M48 8v40M72 14v40" stroke="var(--olive)" stroke-width="1" opacity=".5"/><path d="M34 40c10-12 22-4 30-16" stroke="var(--stamp)" stroke-width="3" fill="none"/><path d="M59 22l6 1-2 6" stroke="var(--stamp)" stroke-width="3" fill="none"/><circle cx="82" cy="24" r="4" fill="var(--olive)"/>',
+  hq: '<rect x="30" y="24" width="50" height="28" fill="var(--metal)"/><path d="M26 24l29-12 29 12z" fill="var(--olive)"/><rect x="50" y="38" width="10" height="14" fill="#1C2217" opacity=".6"/><rect x="36" y="30" width="8" height="6" fill="#F2F2EA"/><rect x="66" y="30" width="8" height="6" fill="#F2F2EA"/><path d="M94 52V12" stroke="var(--wood)" stroke-width="3"/><path d="M96 13h16l-4 5 4 5H96z" fill="var(--signal)"/>',
+  screens: '<rect x="18" y="16" width="26" height="18" fill="#1C2217"/><rect x="47" y="12" width="26" height="22" fill="#1C2217"/><rect x="76" y="16" width="26" height="18" fill="#1C2217"/><path d="M22 28l6-5 5 3 7-7M51 28h18M51 22h12M80 30l6-8 6 4 6-6" stroke="var(--ok)" stroke-width="2" fill="none"/><rect x="30" y="40" width="60" height="5" fill="var(--wood)"/>',
+  car: CAR,
+  binoc: BINOC,
+  truck: TRUCK,
+  wrench: '<path d="M38 50l26-26a10 10 0 1 1 6 6L44 56z" fill="var(--metal)" stroke="#1C2217" stroke-width="1.5"/><circle cx="84" cy="20" r="11" fill="none" stroke="var(--signal)" stroke-width="5" stroke-dasharray="4.5 3.5"/><circle cx="84" cy="20" r="4" fill="var(--signal)"/>',
+  medbag: '<rect x="36" y="22" width="48" height="30" rx="4" fill="var(--olive)"/><path d="M50 22v-6h20v6" stroke="#1C2217" stroke-width="3" fill="none"/><path d="M60 29v16M52 37h16" stroke="#F2F2EA" stroke-width="5"/>',
+  radio: '<rect x="40" y="22" width="34" height="30" rx="3" fill="var(--olive)"/><circle cx="50" cy="32" r="4" fill="#1C2217"/><rect x="58" y="28" width="12" height="6" fill="#BCD1DC"/><path d="M66 22l6-16" stroke="#1C2217" stroke-width="2.5"/><path d="M78 12a10 10 0 0 1 4 10M84 8a16 16 0 0 1 6 16" stroke="var(--signal)" stroke-width="2.5" fill="none"/>',
+  pot: '<path d="M36 28h48v18a6 6 0 0 1-6 6H42a6 6 0 0 1-6-6z" fill="var(--metal)"/><rect x="32" y="25" width="56" height="5" rx="2" fill="#1C2217"/><path d="M50 20c0-4 4-4 4-8M60 20c0-4 4-4 4-8M70 20c0-4 4-4 4-8" stroke="var(--muted)" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M84 30l12-6" stroke="var(--wood)" stroke-width="4" stroke-linecap="round"/>',
+  ball: '<rect x="22" y="22" width="76" height="26" rx="3" fill="var(--ok)"/><path d="M60 22v26M22 35h76" stroke="#F2F2EA" stroke-width="1.5"/><circle cx="60" cy="35" r="5" fill="none" stroke="#F2F2EA" stroke-width="1.5"/><path d="M38 16v36M82 16v36" stroke="var(--metal)" stroke-width="3"/><circle cx="70" cy="30" r="3" fill="#F2F2EA"/>',
+  plane: '<path d="M14 34h80l14-6v6l-10 6H22z" fill="var(--olive)"/><path d="M50 34L36 14h8l22 20zM50 40l-10 14h8l16-14z" fill="var(--olive)"/><path d="M96 28l8-14h4l-4 14z" fill="var(--olive)"/><rect x="28" y="33" width="50" height="3" fill="#BCD1DC"/>',
+  boot: BOOT,
+  watch: '<rect x="54" y="6" width="12" height="48" rx="3" fill="#1C2217"/><circle cx="60" cy="30" r="14" fill="#2A2A22" stroke="var(--metal)" stroke-width="3"/><path d="M60 30v-9M60 30l6 3" stroke="var(--signal)" stroke-width="2.5" stroke-linecap="round"/>',
+  backpack: '<rect x="42" y="14" width="36" height="38" rx="8" fill="var(--olive)"/><rect x="48" y="30" width="24" height="16" rx="3" fill="rgba(0,0,0,.2)"/><path d="M52 14v-4h16v4" stroke="#1C2217" stroke-width="3" fill="none"/>',
+  calendar: '<rect x="38" y="12" width="44" height="40" rx="3" fill="#6E4B2A"/><rect x="42" y="20" width="36" height="28" fill="#F2F2EA"/><path d="M48 9v6M72 9v6" stroke="var(--metal)" stroke-width="3"/><path d="M46 28h28M46 35h28M46 42h18" stroke="var(--muted)" stroke-width="2"/>',
+  whistle: '<path d="M38 30a12 12 0 1 0 22 6h22V24H46a12 12 0 0 0-8 6z" fill="var(--metal)" stroke="#1C2217" stroke-width="1.5"/><path d="M82 30c8 0 14 8 14 18" stroke="var(--signal)" stroke-width="2.5" fill="none"/>',
+  tablet: '<rect x="40" y="8" width="40" height="44" rx="4" fill="#1C2217"/><rect x="44" y="12" width="32" height="34" fill="#BCD1DC"/><path d="M48 20h24M48 26h24M48 32h16" stroke="var(--olive)" stroke-width="2"/>',
+  flag: '<path d="M44 52V10" stroke="var(--metal)" stroke-width="3"/><path d="M46 12h30l-6 8 6 8H46z" fill="var(--signal)" stroke="var(--olive)" stroke-width="1.5"/>',
+};
+function art(kind){
+  return '<svg viewBox="0 0 120 64" aria-hidden="true"><rect width="120" height="64" fill="var(--wall)"/><rect y="52" width="120" height="12" fill="var(--floor)"/>'+(ARTS[kind] || ARTS.star)+'</svg>';
+}
+const DIENST_ART = {innen:'desk', formal:'formal', wache:'tower', gelaende:'field', uebung:'tent', spez:'star', uvd:'keys', stab:'slides',
+  ausbilder:'recruits', spiess_v:'clip', hoersaal:'books', zug:'map', kompanie:'hq', lagezentrum:'screens', truppenbesuch:'car', ga_marsch:'march',
+  v_inf:'binoc', v_kfz:'truck', v_inst:'wrench', v_san:'medbag', v_fm:'radio', v_koch:'pot',
+  e_patr:'binoc', e_wache:'tower', e_konvoi:'truck', e_betreu:'ball'};
+const GEAR_ART = {stiefel:'boot', uhr:'watch', rucksack:'backpack', kalender:'calendar', pfeife:'whistle', tablet:'tablet', wagen:'car', stander:'flag'};
+
 function hasGear(id){ return !!(S && S.gear && S.gear[id]); }
 
 function unlocksFor(id){
@@ -840,11 +909,13 @@ function renderRaum(){
   h += renderAlbum();
   h += '<h2>Stubenrunde</h2><div class="panel pad"><p>Kalle hat Karten. Siebzehn und Vier um Spielgeld, höchstens '+SR_MAX+' Runden am Tag. Noch '+srLeft()+' heute.</p><button class="btn" data-act="sr_open">Mitspielen</button></div>';
   h += renderSpielothek();
-  h += '<h2>Ausrüstung</h2><p class="small muted">Eigene Ausrüstung kaufst du einmal, sie wirkt dauerhaft. Neue Stücke gibt es mit höheren Dienstgraden.</p><div class="panel">' + GEAR.map(g => {
+  h += '<h2>Ausrüstung</h2><p class="small muted">Eigene Ausrüstung kaufst du einmal, sie wirkt dauerhaft. Neue Stücke gibt es mit höheren Dienstgraden.</p><div class="cards">' + GEAR.map(g => {
     const own = hasGear(g.id), open = g.req(G.rank());
-    return '<div class="row"><div class="info"><div class="title">'+esc(g.name)+(own?' <span class="tag">vorhanden</span>':'')+'</div>'
-      + '<div class="desc">'+esc(g.desc)+'</div><div class="meta">'+esc(g.fx)+(own ? '' : ' Preis: '+eur(g.cost)+'.')+'</div></div>'
-      + (own ? '' : open ? '<button class="btn" data-act="gear" data-id="'+g.id+'" '+(S.money<g.cost?'disabled':'')+'>Kaufen</button>' : '<span class="small muted">'+esc(g.reqL)+'</span>')+'</div>';
+    const inner = '<p class="flv">'+esc(g.desc)+'</p><p class="eff">'+esc(g.fx)+'</p>'
+      + (own ? '<div class="stamp good small-stamp" style="margin:auto auto 2px;font-size:16px">VORHANDEN</div>'
+        : open ? '<button class="btn wide" style="margin-top:auto" data-act="gear" data-id="'+g.id+'" '+(S.money<g.cost?'disabled':'')+'>Kaufen<small>'+eur(g.cost)+'</small></button>'
+        : '<div class="lock" style="margin-top:auto">'+esc(g.reqL)+', '+eur(g.cost)+'</div>');
+    return acard(g.name, GEAR_ART[g.id], inner);
   }).join('') + '</div>';
   return h + renderKompanie();
 }
@@ -1863,21 +1934,22 @@ function renderStube(){
 
 function renderDienst(){
   let h = '<h2>Dienstplan</h2>';
-  if(S.dienst) h += '<div class="panel" style="margin-bottom:16px">'+activeBlock().split('<div class="active">').slice(0,2).join('<div class="active">')+'</div>';
   h += '<p class="small muted">Dienste kosten Ausdauer und bringen Geld und Beurteilungspunkte. Ausdauer lädt sich alle '+fmtMin(2/S.speed)+' um einen Punkt auf.</p>';
-  h += '<div class="panel">' + DIENSTE.map(d => {
+  h += '<div class="cards">' + DIENSTE.map(d => {
     const lock = G.dienstLock(d);
     if(!!d.einsatz !== !!S.einsatz) return '';
     if(d.verw && d.verw !== S.verw) return '';
     if(d.ga && S.gaDone) return '';
     if(d.hideFor && d.hideFor.includes(G.rank().g)) return '';
     if(lock && (d.spec || d.groups) && G.rank().t < 3) return ''; // Fortgeschrittene Dienste erst zeigen, wenn sie in Reichweite sind
+    const running = S.dienst && S.dienst.id === d.id;
     const dis = !!lock || !!S.dienst || S.stamina < G.dienstSt(d);
-    return '<div class="row"><div class="info"><div class="title">'+esc(d.name)+'</div>'
-      + '<div class="desc">'+esc(d.desc)+'</div>'
-      + '<div class="meta">'+fmtMin(G.dienstMin(d)/S.speed)+', '+G.dienstSt(d)+' Ausdauer, '+eur(G.dienstPay(d))+', '+d.bp+' Punkte</div></div>'
-      + (lock ? '<span class="small muted">'+lock+'</span>' : '<button class="btn" data-act="dienst" data-id="'+d.id+'" '+(dis?'disabled':'')+'>Antreten</button>')
-      + '</div>';
+    const inner = '<p class="flv">'+esc(d.desc)+'</p>'
+      + facts([['Dauer', fmtMin(G.dienstMin(d)/S.speed)], ['Ausdauer', G.dienstSt(d)], ['Verdienst', eur(G.dienstPay(d))], ['Punkte', d.bp]])
+      + (running ? '<div class="small">Fertig in <span class="num" data-left="dienst"></span></div><div class="prog" style="margin:0"><i data-prog="dienst"></i></div>'
+        : lock ? '<div class="lock">Gesperrt: '+esc(lock)+'</div>'
+        : '<button class="btn wide" data-act="dienst" data-id="'+d.id+'" '+(dis?'disabled':'')+'>Antreten</button>');
+    return acard(d.name, DIENST_ART[d.id], inner, running);
   }).join('') + '</div>';
   return h;
 }
@@ -1900,12 +1972,18 @@ function renderAusb(){
   }).join('') + '</div>'
   + '<p class="small muted" style="margin-top:10px">Leistungsabzeichen gibt es ab Stufe '+MEDAL_LV.join(', ')+'. Jedes bringt dauerhaft 1 % mehr Beurteilungspunkte. Bisher: '+medalCount()+' von '+(MEDAL_LV.length*STATS.length)+'.</p>';
 
-  h += '<h2>Lehrgänge</h2><div class="panel">' + LEHRGAENGE.map(l => {
+  h += '<h2>Lehrgänge</h2><div class="cards">' + LEHRGAENGE.map(l => {
     const done = !!S.lehrgaenge[l.id], reqs = G.lehrgangReqs(l), ok = reqs.every(r=>r.ok);
-    return '<div class="target"><div class="row" style="padding:0;border:0"><div class="info"><div class="title" style="font-family:Barlow,sans-serif;font-weight:700;font-size:17px">'+esc(l.name)+(done?' <span class="tag">bestanden'+(S.lgNote&&S.lgNote[l.id] ? ', Note '+S.lgNote[l.id] : '')+'</span>':'')+'</div>'
-      + '<div class="desc">'+esc(l.desc)+'</div><div class="meta">Dauer '+fmtMin(l.min/S.speed)+'</div></div>'
-      + (done ? '' : '<button class="btn" data-act="lehrgang" data-id="'+l.id+'" '+((!ok||S.ausb)?'disabled':'')+'>Anmelden</button>')+'</div>'
-      + (done ? '' : reqList(reqs)) + '</div>';
+    const running = S.ausb && S.ausb.type === 'lehrgang' && S.ausb.id === l.id;
+    let inner = '<p class="flv">'+esc(l.desc)+'</p>';
+    if(done) inner += '<div class="stamp good small-stamp" style="margin:8px auto 2px;font-size:17px">BESTANDEN</div>'
+      + (S.lgNote && S.lgNote[l.id] ? '<div class="small">Note '+S.lgNote[l.id]+' („'+NOTES[S.lgNote[l.id]]+'“)</div>' : '');
+    else if(running) inner += facts([['Lehrgangspunkte', S.ausb.score||0]])
+      + '<div class="small">'+(S.ausb.exam ? 'Die Prüfung wartet in den Meldungen.' : 'Ende in <span class="num" data-left="ausb"></span>')+'</div><div class="prog" style="margin:0"><i data-prog="ausb"></i></div>';
+    else inner += facts([['Dauer', fmtMin(l.min/S.speed)], ['Kosten', eur(lgCost(l))]])
+      + reqMini(reqs.filter(r => !r.label.startsWith('Kosten')))
+      + '<button class="btn wide" data-act="lehrgang" data-id="'+l.id+'" '+((!ok || S.ausb || S.einsatz) ? 'disabled' : '')+'>Anmelden<small>'+eur(lgCost(l))+'</small></button>';
+    return acard(l.name, 'books', inner, running);
   }).join('') + '</div>';
   return h;
 }
