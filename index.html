@@ -9,29 +9,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
+  --bg:#1E2416; --surface:#2C3420; --surface2:#262D1B; --ink:#ECEEE2; --muted:#AEB59C; --line:#4A5535;
+  --olive:#3C4722; --olive-ink:#F2F5EA; --board:#4B582C; --mark:#E8ECDD;
+  --signal:#E3B23C; --stamp:#E2584C; --ok:#8BC57A; --bad:#EE6B5F;
+  --wall:#2F3826; --floor:#4A4232; --metal:#7A8274; --wood:#7A5A3A; --fabric:#5E6E38; --window:#3A5066;
+  color-scheme:dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root[data-theme="light"]{
   --bg:#E4E8DC; --surface:#F5F7F0; --surface2:#E9ECE2; --ink:#1C2217; --muted:#5A6350; --line:#C7CEBA;
   --olive:#4B582C; --olive-ink:#F2F5EA; --board:#4B582C; --mark:#E8ECDD;
   --signal:#BF8E10; --stamp:#A3271E; --ok:#3B7436; --bad:#A3271E;
   --wall:#D3D8C7; --floor:#A69C84; --metal:#8A9286; --wood:#9A7650; --fabric:#4B582C; --window:#BCD1DC;
   color-scheme:light;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#131711; --surface:#1C2118; --surface2:#262C21; --ink:#E2E7D7; --muted:#9AA38B; --line:#353D2D;
-    --olive:#3E4A24; --olive-ink:#EEF2E3; --board:#4B582C; --mark:#E8ECDD;
-    --signal:#E3B23C; --stamp:#E2584C; --ok:#7CBB6C; --bad:#E2584C;
-    --wall:#2A3025; --floor:#3B362C; --metal:#5E665B; --wood:#6E5539; --fabric:#5E6E38; --window:#34475A;
-    color-scheme:dark;
-  }
 }
 :root[data-theme="dark"]{
-  --bg:#131711; --surface:#1C2118; --surface2:#262C21; --ink:#E2E7D7; --muted:#9AA38B; --line:#353D2D;
-  --olive:#3E4A24; --olive-ink:#EEF2E3; --board:#4B582C; --mark:#E8ECDD;
-  --signal:#E3B23C; --stamp:#E2584C; --ok:#7CBB6C; --bad:#E2584C;
-  --wall:#2A3025; --floor:#3B362C; --metal:#5E665B; --wood:#6E5539; --fabric:#5E6E38; --window:#34475A;
+  --bg:#1E2416; --surface:#2C3420; --surface2:#262D1B; --ink:#ECEEE2; --muted:#AEB59C; --line:#4A5535;
+  --olive:#3C4722; --olive-ink:#F2F5EA; --board:#4B582C; --mark:#E8ECDD;
+  --signal:#E3B23C; --stamp:#E2584C; --ok:#8BC57A; --bad:#EE6B5F;
+  --wall:#2F3826; --floor:#4A4232; --metal:#7A8274; --wood:#7A5A3A; --fabric:#5E6E38; --window:#3A5066;
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:inherit}
@@ -232,6 +230,65 @@ p{margin:0 0 10px}
 .reel{flex:1;max-width:100px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:clamp(32px,10vw,48px);background:var(--surface2);border:2px solid var(--line);border-radius:8px}
 .reel.spin{filter:blur(1.5px)}
 .slmsg{text-align:center;font-weight:700;margin:12px 0;min-height:1.4em}
+.subnav{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;margin:0 -16px 12px;background:var(--surface2);border-bottom:1px solid var(--line);scrollbar-width:none}
+.subnav:first-child{margin-top:-16px}
+.subnav::-webkit-scrollbar{display:none}
+.subnav button{flex:1 0 auto;min-height:40px;padding:0 12px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 14px 'Barlow',sans-serif;border-radius:4px;white-space:nowrap;cursor:pointer}
+.subnav button[aria-pressed="true"]{background:var(--signal);border-color:var(--signal);color:#1E2416;font-weight:700}
+.strip{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:6px;display:grid;gap:8px}
+.strip.idle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
+.strip .sh{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600}
+.strip .prog{margin-top:4px;height:6px}
+.nav button{font-size:12px}
+.acard .art{height:56px;overflow:hidden;display:flex;justify-content:center}
+.acard .art svg{height:100%;width:auto}
+.acard .ah{font-size:14px;padding:7px 10px}
+.acard .ab{padding:8px 9px;gap:5px}
+.acard .flv{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cards{gap:10px}
+.panel{border-radius:6px}
+
+/* Ladebildschirm */
+#splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:#1E2416;color:#ECEEE2;transition:opacity .45s ease, visibility .45s;
+  background-image:radial-gradient(ellipse 60px 34px at 18% 22%,rgba(0,0,0,.22) 98%,transparent),radial-gradient(ellipse 80px 40px at 78% 70%,rgba(0,0,0,.18) 98%,transparent),radial-gradient(ellipse 50px 28px at 40% 85%,rgba(255,255,255,.04) 98%,transparent),radial-gradient(ellipse 70px 30px at 85% 18%,rgba(255,255,255,.035) 98%,transparent);background-size:260px 190px}
+#splash.off{opacity:0;visibility:hidden;pointer-events:none}
+#splash .sp-title{font-family:'Black Ops One',Impact,sans-serif;font-size:clamp(34px,10vw,52px);line-height:1;letter-spacing:.01em}
+#splash .sp-sub{font-size:14px;color:#AEB59C;min-height:1.4em;text-align:center;padding:0 24px}
+#splash .sp-bar{width:min(240px,60vw);height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+#splash .sp-bar i{display:block;height:100%;width:40%;background:#E3B23C;border-radius:3px;animation:spbar 1.4s ease-in-out infinite}
+#splash .sp-klappe rect{transform-box:fill-box;transform-origin:left;animation:spstripe 1.8s ease-in-out infinite}
+#splash .sp-klappe rect:nth-of-type(2){animation-delay:.2s}
+#splash .sp-klappe rect:nth-of-type(3){animation-delay:.4s}
+@keyframes spbar{0%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
+@keyframes spstripe{0%,15%{transform:scaleX(0)}45%,85%{transform:scaleX(1)}100%{transform:scaleX(0)}}
+@media (prefers-reduced-motion: reduce){#splash .sp-bar i,#splash .sp-klappe rect{animation:none}#splash .sp-bar i{width:100%}}
+
+/* Landingpage */
+body.landing .top, body.landing .nav{display:none}
+body.landing{padding-bottom:0}
+.lp{margin:-16px -16px 0}
+.lp-hero{position:relative;padding:44px 20px 34px;text-align:center;background-color:#3C4722;color:#F2F5EA;border-bottom:4px solid #E3B23C;overflow:hidden;
+  background-image:radial-gradient(ellipse 60px 34px at 18% 22%,rgba(0,0,0,.22) 98%,transparent),radial-gradient(ellipse 80px 40px at 78% 70%,rgba(0,0,0,.18) 98%,transparent),radial-gradient(ellipse 50px 28px at 40% 85%,rgba(255,255,255,.06) 98%,transparent);background-size:240px 170px}
+.lp-hero h1{font-family:'Black Ops One',Impact,sans-serif;font-weight:400;font-size:clamp(40px,12vw,64px);line-height:1;margin:14px 0 10px}
+.lp-hero p{font-size:17px;max-width:420px;margin:0 auto 20px;color:#DDE3CC}
+.lp-cta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.lp-cta .btn{min-width:150px}
+.btn.gold{background:#E3B23C;color:#1E2416;font-weight:700}
+.btn.line{background:transparent;border:1px solid rgba(242,245,234,.6);color:#F2F5EA}
+.lp-feat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:20px 16px 4px}
+.lp-feat div{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px}
+.lp-feat svg{color:var(--signal)}
+.lp-feat b{display:block;margin:6px 0 2px;font-size:15px}
+.lp-feat span{font-size:13px;color:var(--muted);line-height:1.35;display:block}
+.lp-form{margin:18px 16px 0;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px}
+.lp-form label{display:block;font-weight:600;margin:14px 0 6px}
+.lp-form input{width:100%;font:500 17px 'Barlow',sans-serif;padding:12px;border:1px solid var(--line);border-radius:4px;background:var(--surface2);color:var(--ink)}
+.lp-quote{margin:20px 16px 0;padding:12px 14px;border-left:3px solid var(--signal);font-style:italic;color:var(--muted)}
+.lp-foot{margin:22px 16px 28px;font-size:12.5px;color:var(--muted);text-align:center}
+.pwrow{position:relative}
+.pwrow input{padding-right:52px}
+.pwrow button{position:absolute;right:4px;top:50%;transform:translateY(-50%);min-height:40px;min-width:44px;background:transparent;border:0;color:var(--muted);cursor:pointer}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -242,7 +299,13 @@ p{margin:0 0 10px}
 <meta name="apple-mobile-web-app-title" content="Stillgestanden">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
-<body>
+<body class="landing">
+<div id="splash" role="status" aria-live="polite">
+  <svg class="sp-klappe" width="64" height="103" viewBox="0 0 56 90" aria-hidden="true"><path d="M4 88V24Q4 4 28 2Q52 4 52 24V88Z" fill="#3C4722" stroke="#4A5535" stroke-width="1.5"/><circle cx="28" cy="15" r="3.5" fill="#E8ECDD"/><rect x="13" y="70" width="30" height="5" rx="1" fill="#E3B23C"/><rect x="13" y="61" width="30" height="5" rx="1" fill="#E3B23C"/><rect x="13" y="52" width="30" height="5" rx="1" fill="#E3B23C"/></svg>
+  <div class="sp-title">Stillgestanden!</div>
+  <div class="sp-bar"><i></i></div>
+  <div class="sp-sub" id="spsub">Antrag auf Ladebildschirm wird bearbeitet …</div>
+</div>
 <header class="top" id="top">
   <div class="logo">Stillgestanden!</div>
   <div class="res" id="res"></div>
@@ -1229,7 +1292,7 @@ const TUT = [
   {tab:'stube', t:'Wegtreten!', x:'Das war die Einweisung. Als Startgeld gibt es 200 € und noch ein Paket von zu Hause. Und jetzt: Wegtreten!', final:true},
 ];
 function tutOn(){ return !!(S && S.tut && !S.tut.done); }
-function tutSteps(){ return TUT.filter(s => TABS.some(t => t[0] === s.tab)); }
+function tutSteps(){ return TUT.filter(s => TABS.some(t => t[0] === pageOf(s.tab)[0])); }
 function tutCheck(){
   const st = tutSteps();
   while(S.tut.step < st.length && st[S.tut.step].done && st[S.tut.step].done()) S.tut.step++;
@@ -1237,12 +1300,12 @@ function tutCheck(){
 }
 function tutBox(){
   tutCheck();
-  const st = tutSteps(), s = st[S.tut.step], here = tab === s.tab;
-  setTimeout(() => { const b = document.querySelector('.nav [data-id="'+s.tab+'"]'); if(b && b.classList && !here) b.classList.add('pulse'); }, 0);
+  const st = tutSteps(), s = st[S.tut.step], here = onPage(s.tab);
+  setTimeout(() => { const b = document.querySelector('.nav [data-id="'+pageOf(s.tab)[0]+'"]'); if(b && b.classList && !here) b.classList.add('pulse'); }, 0);
   let h = '<div class="tut" role="region" aria-label="Einführung">'+npcBadge('spiess', 44)+'<div style="flex:1;min-width:0">'
     + '<div class="small muted">Einführung, Schritt '+(S.tut.step+1)+' von '+st.length+'</div><div class="tt">'+esc(s.t)+'</div>';
   if(!here){
-    h += '<p>Weiter geht es im Bereich „'+esc((TABS.find(t => t[0] === s.tab) || [,''])[1])+'“.</p><button class="btn" data-act="tab" data-id="'+s.tab+'">Dorthin</button>';
+    h += '<p>Weiter geht es im Bereich „'+esc(subLabel(s.tab))+'“.</p><button class="btn" data-act="tab" data-id="'+s.tab+'">Dorthin</button>';
   } else {
     h += '<p>'+esc(s.x)+'</p>';
     if(s.done) h += '<div class="hint">'+esc(s.hint)+'</div>';
@@ -1364,6 +1427,91 @@ function notifyEvents(ev){
     if(navigator.serviceWorker && navigator.serviceWorker.controller) navigator.serviceWorker.ready.then(r => r.showNotification('Stillgestanden!', opts)).catch(() => {});
     else new Notification('Stillgestanden!', opts);
   }catch(e){}
+}
+
+/* ---------- Seitenaufbau: Hauptbereiche mit Unterreitern ---------- */
+const SUBS = {
+  stube: [
+    {id:'uebersicht', label:'Übersicht', src:'stube', rest:true, match:['Grundausbildung','Dienstzeitende','Meldungen','Auslandseinsatz','Beurteilung','Werte']},
+    {id:'stube', label:'Stube', src:'raum', rest:true, match:['Deine Stube','Ausrüstung']},
+    {id:'vorsorge', label:'Vorsorge', src:'raum', match:['Anwartschaftsversicherung','Pflegepflichtversicherung']},
+    {id:'kameraden', label:'Kameraden', src:'raum', match:['Kompanie','Sammelalbum']},
+    {id:'einst', label:'Einstellungen', src:'stube', match:['Einstellungen']},
+  ],
+  dienst: [
+    {id:'plan', label:'Dienstplan', src:'dienst', rest:true, match:['Dienstplan']},
+    {id:'einsatz', label:'Auslandseinsatz', src:'laufbahn', match:['Auslandseinsatz']},
+  ],
+  ausb: [
+    {id:'ausbildung', label:'Ausbildung', src:'ausb', rest:true, match:['Ausbildung']},
+    {id:'lehrgaenge', label:'Lehrgänge', src:'ausb', match:['Lehrgänge']},
+    {id:'laufbahn', label:'Laufbahn', src:'laufbahn', rest:true, match:['Dienstgrade','Nächste Beförderung','Werdegang']},
+    {id:'dv', label:'Dienstverhältnis', src:'laufbahn', match:['Teilstreitkraft','Dienstverhältnis','Verwendung','Standort']},
+    {id:'orden', label:'Orden', src:'laufbahn', match:['Orden']},
+  ],
+  feier: [
+    {id:'leergut', label:'Leergut', src:'feier', rest:true, match:['Leergut']},
+    {id:'schrauben', label:'Schrauben', src:'feier', match:['Schrauben','Kleinanzeigen','Werkstatt']},
+    {id:'spiele', label:'Spiele', src:'feier', match:['Spielothek','Stubenrunde']},
+  ],
+  truppe: [
+    {id:'kompanie', label:'Kompanie', src:'truppe', rest:true, match:['Kompanie','Mitglieder','Einladen']},
+    {id:'kasse', label:'Kasse', src:'truppe', match:['Kompaniekasse','Kassenbuch']},
+    {id:'ausbau', label:'Ausbau', src:'truppe', match:['Kompanie-Ausbau','Kompanielager']},
+    {id:'kaserne', label:'Kaserne', src:'truppe', match:['Standortkarte','Kaserne']},
+    {id:'rang', label:'Rangliste', src:'truppe', match:['Ranglisten']},
+  ],
+};
+// Abschnitte, die der Laufend-Streifen oben ersetzt
+const SUB_DROP = ['Im Dienst', 'Feierabend'];
+const SUB = {}, LASTSUB = {};
+const ALIAS = {stube:['stube','uebersicht'], raum:['stube','stube'], laufbahn:['ausb','laufbahn'], dienst:['dienst','plan'], ausb:['ausb','ausbildung'], feier:['feier',null], truppe:['truppe',null]};
+function pageOf(id){ return ALIAS[id] || [id, null]; }
+function goPage(id){ const a = pageOf(id); tab = a[0]; if(a[1]) SUB[tab] = a[1]; }
+function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LASTSUB[tab] === a[1]); }
+function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === a[0]), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
+function pageSrc(src){
+  const f = {stube:renderStube, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
+    truppe: typeof renderTruppe === 'function' ? renderTruppe : null}[src];
+  return f ? f() : '';
+}
+function splitSecs(html){
+  return html.split(/(?=<h2>)/).map(h => {
+    const m = h.match(/^<h2>([\s\S]*?)<\/h2>/);
+    return {title: m ? m[1].replace(/<[^>]*>/g, '').trim() : '', html: h};
+  });
+}
+function runStrip(){
+  const it = [];
+  if(S.einsatz) it.push(['einsatz', 'Auslandseinsatz: ' + EINSATZ_I[S.einsatz.id].name]);
+  if(S.dienst) it.push(['dienst', D[S.dienst.id].name]);
+  if(S.ausb) it.push(['ausb', STAT_NAME[S.ausb.id] + ' auf Stufe ' + (S.stats[S.ausb.id] + 1)]);
+  if(S.lg) it.push(['lg', L[S.lg.id].name + (S.lg.exam ? ', Prüfung wartet' : '')]);
+  if(S.fa) it.push(['fa', S.fa.type === 'pfand' ? 'Leergut sammeln' : 'Schrauben']);
+  if(!it.length) return '<div class="strip idle"><span>Gerade nichts zu tun. Das fällt auf.</span><button class="btn mini" data-act="tab" data-id="dienst">Dienst antreten</button></div>';
+  return '<div class="strip" aria-label="Läuft gerade">' + it.map(([k, n]) => '<div><div class="sh"><span>' + esc(n) + '</span><span class="num" data-left="' + k + '"></span></div><div class="prog"><i data-prog="' + k + '"></i></div></div>').join('') + '</div>';
+}
+function renderPage(){
+  const subs = (SUBS[tab] || []).filter(x => x.src !== 'truppe' || typeof renderTruppe === 'function');
+  if(!subs.length) return runStrip();
+  const parts = subs.map(x => ({x, html:''}));
+  for(const src of [...new Set(subs.map(x => x.src))]){
+    for(const sec of splitSecs(pageSrc(src))){
+      if(SUB_DROP.includes(sec.title)) continue;
+      // Abschnitte, die ein anderer Hauptbereich für sich beansprucht, hier überspringen
+      const hit = x => x.src === src && x.match.some(m => sec.title === m || sec.title.startsWith(m + ' '));
+      if(!subs.some(hit) && Object.entries(SUBS).some(([k, l]) => k !== tab && l.some(hit))) continue;
+      let t = parts.find(p => p.x.src === src && p.x.match.some(m => sec.title === m || sec.title.startsWith(m + ' ')));
+      if(!t) t = parts.find(p => p.x.src === src && p.x.rest);
+      if(t) t.html += sec.html;
+    }
+  }
+  const vis = parts.filter(p => p.html.replace(/<[^>]*>/g, '').trim());
+  if(!vis.length) return runStrip();
+  const cur = vis.find(p => p.x.id === SUB[tab]) || vis[0];
+  LASTSUB[tab] = cur.x.id;
+  const nav = vis.length > 1 ? '<div class="subnav" role="group" aria-label="Unterbereiche">' + vis.map(p => '<button data-act="sub" data-id="' + p.x.id + '" aria-pressed="' + (p === cur) + '">' + p.x.label + '</button>').join('') + '</div>' : '';
+  return nav + runStrip() + cur.html;
 }
 
 function hasGear(id){ return !!(S && S.gear && S.gear[id]); }
@@ -2726,14 +2874,15 @@ const ICONS = {
   ausb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></svg>',
   laufbahn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/></svg>',
 };
-const TABS = [['stube','Start'],['raum','Stube'],['dienst','Dienst'],['ausb','Ausbildung'],['laufbahn','Laufbahn'],['feier','Feierabend'],['truppe','Truppe']];
+const TABS = [['stube','Start'],['dienst','Dienst'],['ausb','Ausbildung'],['feier','Feierabend'],['truppe','Truppe']];
 
 function renderNav(){
   const nav = document.getElementById('nav');
   nav.hidden = !(S && USER && ONLINE.profile);
   if(nav.hidden) return;
+  nav.style.gridTemplateColumns = 'repeat('+TABS.length+',1fr)';
   nav.innerHTML = TABS.map(([id,label]) =>
-    '<button data-act="tab" data-id="'+id+'" '+(tab===id?'aria-current="page"':'')+'>'+ICONS[id]+label
+    '<button data-act="main" data-id="'+id+'" '+(tab===id?'aria-current="page"':'')+'>'+(id==='stube' ? ICONS.raum : ICONS[id])+label
     + (id==='stube' && (S.pending.length || S.pakete) ? '<span class="dot" aria-label="neue Meldung"></span>' : '')+'</button>').join('');
 }
 
@@ -2947,10 +3096,11 @@ function render(){
   applyTheme();
   const main = document.getElementById('main');
   if(!BOOTED){ main.innerHTML = '<p class="muted" style="margin-top:20vh;text-align:center">Melde mich zum Dienst …</p>'; renderNav(); return; }
+  if(document.body && document.body.classList) document.body.classList.toggle('landing', !USER);
   if(!USER){ main.innerHTML = renderLogin(); renderNav(); renderRes(); return; }
   if(!S || !ONLINE.profile){ main.innerHTML = renderCreate(); }
   else {
-    main.innerHTML = tab==='stube' ? renderStube() : tab==='raum' ? renderRaum() : tab==='dienst' ? renderDienst() : tab==='ausb' ? renderAusb() : tab==='feier' ? renderFeier() : tab==='truppe' ? renderTruppe() : renderLaufbahn();
+    main.innerHTML = renderPage();
   }
   if(S && tutOn() && main.insertAdjacentHTML) main.insertAdjacentHTML('afterbegin', tutBox());
   renderNav(); renderRes(); live();
@@ -2993,7 +3143,9 @@ function ask(text, fn, yes){
    AKTIONEN
    ========================================================= */
 const ACT = {
-  tab(id){ tab=id; render(); window.scrollTo(0,0); if(id==='truppe') loadTruppe(); },
+  tab(id){ goPage(id); render(); window.scrollTo(0,0); if(tab==='truppe') loadTruppe(); },
+  main(id){ tab=id; render(); window.scrollTo(0,0); if(tab==='truppe') loadTruppe(); },
+  sub(id){ SUB[tab]=id; render(); window.scrollTo(0,0); },
   async create(){
     const v = document.getElementById('nm').value.trim();
     const bl = document.getElementById('bl'), so = document.getElementById('so');
@@ -3109,7 +3261,7 @@ const ACT = {
       toast(first ? 'Einführung abgeschlossen: +200 € und ein Paket.' : 'Einführung abgeschlossen.'); tab = 'stube'; render(); return;
     }
     S.tut.step++; save();
-    const n = st[S.tut.step]; tab = n.tab; render(); window.scrollTo(0,0);
+    const n = st[S.tut.step]; goPage(n.tab); render(); window.scrollTo(0,0);
   },
   tut_skip(_, ok){
     if(!ok) return ask('Einführung überspringen? Du kannst sie in der Übersicht unter Einstellungen jederzeit wiederholen.', ()=>ACT.tut_skip(null, true), 'Überspringen');
@@ -3265,6 +3417,17 @@ const ACT = {
     save(); cloudPush(true); tab='stube'; render();
   },
   async login(){ await authSubmit('login'); },
+  lmode(m){
+    if(m !== 'login' && m !== 'signup') return;
+    const em = (document.getElementById('em')||{}).value || '';
+    LOGIN_MODE = m; render();
+    const e = document.getElementById('em'); if(e && em) e.value = em;
+    const f = document.getElementById('lpform'); if(f && f.scrollIntoView) f.scrollIntoView({behavior:'smooth', block:'start'});
+  },
+  pwshow(){
+    const i = document.getElementById('pw'); if(!i) return;
+    i.type = i.type === 'password' ? 'text' : 'password';
+  },
   async signup(){ await authSubmit('signup'); },
   logout(_, ok){
     if(!ok) return ask('Abmelden? Dein Spielstand ist im Konto gesichert.', ()=>ACT.logout(null, true), 'Abmelden');
@@ -3372,7 +3535,7 @@ document.addEventListener('change', e => {
 });
 document.addEventListener('keydown', e => {
   if(e.key==='Enter' && e.target.id==='nm') ACT.create();
-  if(e.key==='Enter' && (e.target.id==='em' || e.target.id==='pw')) ACT.login();
+  if(e.key==='Enter' && (e.target.id==='em' || e.target.id==='pw')) ACT[LOGIN_MODE]();
   if(e.key==='Escape') ACT.close();
 });
 
@@ -3514,17 +3677,39 @@ async function afterLogin(){
   if(S) await abholen();
 }
 
+const SPLASH_TXT = ['Antrag auf Ladebildschirm wird bearbeitet …', 'Warte auf Freigabe durch den Spieß …', 'Stiefel werden geputzt …', 'Spind wird auf Kante gebracht …',
+  'Formular 17b wird gesucht …', 'Kaffee für das Geschäftszimmer läuft durch …', 'Dienstweg wird eingehalten …'];
+let splashT0 = Date.now(), splashIv = null;
+function splashTick(){
+  const el = document.getElementById('spsub'); if(!el) return;
+  let i = 0; clearInterval(splashIv);
+  splashIv = setInterval(() => { i = (i + 1) % SPLASH_TXT.length; el.textContent = SPLASH_TXT[i]; }, 1300);
+}
+function showSplash(txt){
+  const sp = document.getElementById('splash'); if(!sp) return;
+  splashT0 = Date.now(); sp.classList.remove('off');
+  const el = document.getElementById('spsub'); if(el && txt) el.textContent = txt;
+  splashTick();
+}
+function hideSplash(){
+  const sp = document.getElementById('splash'); if(!sp) return;
+  const wait = Math.max(0, 900 - (Date.now() - splashT0));
+  setTimeout(() => { sp.classList.add('off'); clearInterval(splashIv); }, wait);
+}
+splashTick();
+setTimeout(hideSplash, 12000); // Notbremse, falls der Server nicht antwortet
+
 async function boot(){
   render();
   if(!sb){
-    BOOTED = true;
+    BOOTED = true; hideSplash();
     document.getElementById('main').innerHTML = '<div class="panel pad" style="margin-top:20vh"><p><b>Keine Verbindung zum Server.</b> Bitte prüfe deine Internetverbindung und lade die Seite neu.</p></div>';
     return;
   }
   const { data } = await sb.auth.getSession();
   USER = data && data.session ? data.session.user : null;
   if(USER){ try{ await afterLogin(); }catch(e){ toast('Laden fehlgeschlagen. Bitte Seite neu laden.'); } }
-  BOOTED = true; render();
+  BOOTED = true; render(); hideSplash();
   sb.auth.onAuthStateChange((ev, session) => {
     if(ev === 'SIGNED_OUT'){ USER = null; S = null; ONLINE.profile = null; render(); }
     else if(session) USER = session.user;
@@ -3544,20 +3729,44 @@ async function authSubmit(mode){
   }
   if(!res.data.session){ toast('Fast geschafft: Bitte bestätige deine E-Mail-Adresse über den Link im Postfach.'); return; }
   USER = res.data.session.user;
-  BOOTED = false; render();
+  showSplash('Melde mich zum Dienst …'); BOOTED = false; render();
   try{ await afterLogin(); }catch(e){ toast('Laden fehlgeschlagen.'); }
-  BOOTED = true; tab = 'stube'; render();
+  BOOTED = true; tab = 'stube'; render(); hideSplash();
 }
 
+let LOGIN_MODE = 'login';
+const LP_ICON = {
+  karriere:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/></svg>',
+  truppe:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3 3-6 6-6s6 3 6 6M16 11a3 3 0 1 0 0-6M22 20c0-3-2-6-5-6"/></svg>',
+  karte:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  feier:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 2h4v4l2 3v13H8V9l2-3z"/><path d="M8 13h8"/></svg>',
+  auge:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+};
 function renderLogin(){
-  return '<div class="create"><div>'+insignia('sdt',64)+'</div>'
-    + '<div class="hero">Stillgestanden!</div>'
-    + '<p>Melde dich an, damit dein Spielstand in deinem Konto gespeichert wird und du mit deiner Kompanie und deinem Standort spielen kannst.</p>'
-    + '<label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" inputmode="email">'
-    + '<label for="pw">Passwort</label><input id="pw" type="password" autocomplete="current-password" minlength="8">'
-    + '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn" style="flex:1" data-act="login">Anmelden</button>'
-    + '<button class="btn ghost" style="flex:1" data-act="signup">Registrieren</button></div>'
-    + '<p class="small muted" style="margin-top:14px">Deine E-Mail-Adresse ist nur für die Anmeldung da und für andere Spieler nicht sichtbar.</p></div>';
+  const reg = LOGIN_MODE === 'signup';
+  const klappe = '<svg width="56" height="90" viewBox="0 0 56 90" aria-hidden="true"><path d="M4 88V24Q4 4 28 2Q52 4 52 24V88Z" fill="#2A3318" stroke="#5E6E38" stroke-width="1.5"/><circle cx="28" cy="15" r="3.5" fill="#E8ECDD"/><rect x="13" y="70" width="30" height="5" rx="1" fill="#E3B23C"/><rect x="13" y="61" width="30" height="5" rx="1" fill="#E3B23C"/><rect x="13" y="52" width="30" height="5" rx="1" fill="#E3B23C"/></svg>';
+  return '<div class="lp">'
+    + '<section class="lp-hero">' + klappe
+    + '<h1>Stillgestanden!</h1>'
+    + '<p>Vom Schulterglatzer zum General. Die Bundeswehr-Karriere als Browserspiel, mit Kameraden, Kasernen und reichlich Formularen.</p>'
+    + '<div class="lp-cta"><button class="btn gold" data-act="lmode" data-id="signup">Jetzt Dienst antreten</button><button class="btn line" data-act="lmode" data-id="login">Ich bin schon dabei</button></div>'
+    + '</section>'
+    + '<section class="lp-feat" aria-label="Was dich erwartet">'
+    + '<div>'+LP_ICON.karriere+'<b>Karriere</b><span>Dienste, Lehrgänge und Beförderungen bis zum General, bei Heer, Luftwaffe oder Marine.</span></div>'
+    + '<div>'+LP_ICON.truppe+'<b>Kompanie</b><span>Gemeinsame Kasse, Ränge und Rohstoffe für den Ausbau mit deinen Kameraden.</span></div>'
+    + '<div>'+LP_ICON.karte+'<b>Kaserne</b><span>Wähle einen echten Standort und baue ihn mit allen Spielern dort aus.</span></div>'
+    + '<div>'+LP_ICON.feier+'<b>Feierabend</b><span>Leergut, Schrauben auf dem Parkplatz und Karten mit Kalle.</span></div>'
+    + '</section>'
+    + '<section class="lp-form" id="lpform" aria-label="'+(reg ? 'Registrieren' : 'Anmelden')+'">'
+    + '<div class="seg" role="group" aria-label="Anmelden oder registrieren"><button data-act="lmode" data-id="login" aria-pressed="'+!reg+'">Anmelden</button><button data-act="lmode" data-id="signup" aria-pressed="'+reg+'">Registrieren</button></div>'
+    + '<label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" inputmode="email" placeholder="name@beispiel.de">'
+    + '<label for="pw">Passwort</label><div class="pwrow"><input id="pw" type="password" autocomplete="'+(reg ? 'new-password' : 'current-password')+'" minlength="8" placeholder="'+(reg ? 'mindestens 8 Zeichen' : '')+'"><button type="button" data-act="pwshow" aria-label="Passwort anzeigen">'+LP_ICON.auge+'</button></div>'
+    + '<button class="btn wide gold" style="margin-top:16px" data-act="'+LOGIN_MODE+'">'+(reg ? 'Konto anlegen und zum Dienst melden' : 'Anmelden')+'</button>'
+    + '<p class="small muted" style="margin:12px 0 0">'+(reg ? 'Danach wählst du Teilstreitkraft, Spielnamen und Standort. ' : '')+'Deine E-Mail-Adresse ist nur für die Anmeldung da und für andere Spieler nicht sichtbar.</p>'
+    + '</section>'
+    + '<p class="lp-quote">„Pünktlichkeit ist fünf Minuten vor der Zeit. Alles andere ist Urlaub auf Bewährung.“ – Hauptfeldwebel Brockmann</p>'
+    + '<p class="lp-foot">Ein Spiel mit Humor. Kein Angebot der Bundeswehr und nicht mit ihr verbunden. Alle Personen sind erfunden.</p>'
+    + '</div>';
 }
 
 // Ersetzt die Offline-Version: Name und Standort für das Profil
