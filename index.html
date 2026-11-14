@@ -2616,6 +2616,7 @@ const G = {
     }
     if(S.dienst && now() >= S.dienst.end){
       const d = D[S.dienst.id];
+      if(typeof kpBonusAdd === 'function') kpBonusAdd(S.dienst.pay);
       S.money += S.dienst.pay - earnCut(S.dienst.pay); G.addPoints(S.dienst.bp); S.dienstCount++; S.dc[S.dienst.id] = (S.dc[S.dienst.id]||0) + 1;
       if(D[S.dienst.id].einsatz && S.einsatz) S.einsatz.score += 1;
       if(Math.random() < (D[S.dienst.id].einsatz ? .25 : .12)){ S.pakete = Math.min(9, (S.pakete||0)+1); events.push('Feldpost ist da!'); }
@@ -3311,11 +3312,30 @@ const ACT = {
   },
   kp_ausbau(g){
     const st = kpStufe(g), cost = kpKosten(st);
-    ask(GEB_KP_I[g].name+' auf Stufe '+(st+1)+' ausbauen? Kosten '+eur(cost)+' aus der Kasse, Bauzeit '+(6*(st+1))+' Stunden.', async () => {
+    const bed = kpBedarf(g), roh = Object.entries(bed).map(([r,n]) => n+' '+ROH[r].name).join(', ');
+    ask(GEB_KP_I[g].name+' auf Stufe '+(st+1)+' ausbauen? Kosten '+eur(cost)+' aus der Kasse und '+roh+' aus dem Lager, Bauzeit '+(6*(st+1))+' Stunden.', async () => {
       const { error } = await sb.rpc('kompanie_ausbau_starten', {p_gebaeude:g});
       if(error){ toast(error.message); return; }
       toast('Ausbau gestartet.'); await loadTruppe();
     }, 'Bauen');
+  },
+  async auf_start(h){
+    const { error } = await sb.rpc('aufraeumen_starten', {p_stunden:Number(h)});
+    if(error){ toast(error.message); return; }
+    toast('Ab auf den Kasernenhof. Die Ausbeute geht direkt ins Kompanielager.'); await loadTruppe();
+  },
+  auf_abbrechen(_, ok){
+    if(!ok) return ask('Aufräumen abbrechen? Dann bekommt die Kompanie nichts.', ()=>ACT.auf_abbrechen(null, true), 'Abbrechen');
+    sb.rpc('aufraeumen_abbrechen').then(({error}) => { if(error) toast(error.message); else { toast('Abgebrochen.'); loadTruppe(); } });
+  },
+  async kp_tausch(){
+    const v = (document.getElementById('tv')||{}).value, n = (document.getElementById('tn')||{}).value, m = Math.floor(Number((document.getElementById('tm')||{}).value));
+    if(!ROH[v] || !ROH[n] || v === n || !(m > 0)){ toast('Bitte zwei verschiedene Rohstoffe und eine Menge wählen.'); return; }
+    ask((3*m)+' '+ROH[v].name+' gegen '+m+' '+ROH[n].name+' tauschen?', async () => {
+      const { error } = await sb.rpc('kompanie_tauschen', {p_von:v, p_nach:n, p_menge:m});
+      if(error){ toast(error.message); return; }
+      toast('Getauscht.'); await loadTruppe();
+    }, 'Tauschen');
   },
   kp_entlassen(n, ok){
     if(!ok) return ask(n+' aus der Kompanie entlassen?', ()=>ACT.kp_entlassen(n, true), 'Entlassen');
@@ -3397,7 +3417,10 @@ async function loadKompanie(){
   if(ONLINE.kp){
     const m = await sb.from('meine_kompanie').select('*').order('punkte', {ascending:false});
     ONLINE.mitglieder = m.data || [];
-  }
+    const l = await sb.rpc('kompanie_lager_status');
+    ONLINE.lag = l.error ? null : (l.data || null);
+    if(ONLINE.lag && ONLINE.lag.aufraeumen && new Date(ONLINE.lag.aufraeumen.ende).getTime() <= Date.now()) await aufAbschliessen();
+  } else ONLINE.lag = null;
 }
 
 const GEB = [
@@ -3586,12 +3609,14 @@ function renderTruppe(){
     const rest = Math.max(0, kpLimit() - Number(k.heute||0));
     h += '<h2>Kompaniekasse</h2><div class="panel pad"><div class="note"><span class="big" style="font-size:34px">'+eur(Number(k.kasse))+'</span></div>'
       + '<p class="small muted" style="margin:6px 0 8px">Einzahlen kann jeder. Heute noch bis '+eur(rest)+' möglich.</p>'
+      + (ONLINE.lag ? '<p class="small" style="margin:0 0 8px"><b>Zuschuss vom Oberführungskommando:</b> Von jedem beendeten Dienst eines Mitglieds gehen zusätzlich 10 % in die Kasse, ohne dass vom Verdienst etwas abgezogen wird. Dein Beitrag heute: '+eur(Number(ONLINE.lag.bonus_heute))+' von höchstens '+eur(Number(ONLINE.lag.bonus_limit))+'.</p>' : '')
       + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
       + [1,5,10].map(m => { const b = Math.round(G.rank().sold*m); return '<button class="btn ghost" style="flex:1;min-width:90px" data-act="kp_einzahlen" data-id="'+m+'" '+((S.money<b || b>rest)?'disabled':'')+'>'+eur(b)+'</button>'; }).join('')
       + '</div>';
     if(kpDarf('kasse')){
       h += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><p style="margin-bottom:6px"><b>Auszahlen</b></p>'
-        + '<label class="lbl" for="kpa_n" style="margin-top:0">An</label><select id="kpa_n" class="sel">'+ONLINE.mitglieder.map(m=>'<option>'+esc(m.name)+'</option>').join('')+'</select>'
+        + '<label class="lbl" for="kpa_n" style="margin-top:0">An</label><select id="kpa_n" class="sel">'+ONLINE.mitglieder.map(m => { const ok = m.seit && (Date.now() - new Date(m.seit).getTime()) > 3*864e5; return '<option'+(ok ? '' : ' disabled')+'>'+esc(m.name)+(ok ? '' : ' (erst nach 3 Tagen)')+'</option>'; }).join('')+'</select>'
+        + '<p class="small muted" style="margin:6px 0 0">Ohne Limit und gebührenfrei, an alle, die länger als 3 Tage in der Kompanie sind.</p>'
         + '<label class="lbl" for="kpa_b">Betrag in €</label><input id="kpa_b" class="inp" type="number" inputmode="numeric" min="1" step="1">'
         + '<button class="btn wide" style="margin-top:10px" data-act="kp_auszahlen">Auszahlen</button></div>';
     }
@@ -3601,12 +3626,23 @@ function renderTruppe(){
     const bau = k.bau_gebaeude, bauEnde = k.bau_ende ? new Date(k.bau_ende).getTime() : 0;
     h += '<h2>Kompanie-Ausbau</h2><p class="small muted">Die Boni gelten für alle Mitglieder. Es läuft immer nur ein Ausbau gleichzeitig.'+(kpDarf('ausbau') ? '' : ' Starten dürfen Zugführer, Kompaniefeldwebel und Kompaniechef.')+'</p>';
     if(bau) h += '<div class="panel pad" style="margin-bottom:12px"><p style="margin:0"><b>Im Bau:</b> '+esc(GEB_KP_I[bau] ? GEB_KP_I[bau].name : bau)+' auf Stufe '+(kpStufe(bau)+1)+', fertig in '+fmtRest(bauEnde-now())+'.</p></div>';
-    h += '<div class="panel">' + GEB_KP.map(g => {
-      const st = kpStufe(g.id), cost = kpKosten(st), max = st >= 10;
-      const kann = kpDarf('ausbau') && !bau && !max && Number(k.kasse) >= cost;
-      return '<div class="row"><div class="info"><div class="title">'+esc(g.name)+' <span class="tag">Stufe '+st+'/10</span></div>'
-        + '<div class="meta">'+esc(g.fx)+(max ? '' : '. Nächste Stufe: '+eur(cost)+', Bauzeit '+(6*(st+1))+' Std.')+'</div></div>'
-        + (kpDarf('ausbau') && !max ? '<button class="btn" data-act="kp_ausbau" data-id="'+g.id+'" '+(kann?'':'disabled')+'>Bauen</button>' : '')+'</div>';
+    h += renderLager();
+    h += '<div class="cards" style="margin-top:12px">' + GEB_KP.map(g => {
+      const st = kpStufe(g.id), cost = kpKosten(st), max = st >= 10, bed = kpBedarf(g.id), lag = (ONLINE.lag && ONLINE.lag.lager) || {};
+      const rohOk = Object.entries(bed).every(([r,n]) => (lag[r]||0) >= n);
+      const kann = kpDarf('ausbau') && !bau && !max && Number(k.kasse) >= cost && rohOk;
+      let inner = '<p class="eff">'+esc(g.fx)+'</p><div class="lvl">Stufe '+st+' / 10</div>';
+      if(max) inner += '<div class="small"><b>Voll ausgebaut</b></div>';
+      else {
+        inner += '<div style="text-align:left;font-size:12.5px">'
+          + [['geld', cost, Number(k.kasse)]].concat(Object.entries(bed).map(([r,n]) => [r, n, lag[r]||0])).map(([r,n,have]) => {
+            const ok = have >= n, w = Math.min(100, have/n*100);
+            return '<div style="margin:3px 0"><div style="display:flex;justify-content:space-between"><span>'+(r==='geld' ? 'Geld' : ROH[r].name)+'</span><b style="color:'+(ok?'var(--ok)':'var(--bad)')+'">'+(r==='geld' ? eur(have)+' / '+eur(n) : have+' / '+n)+'</b></div>'
+              + '<div class="bar2" style="margin:2px 0 0;height:5px"><i style="width:'+w+'%;background:'+(ok?'var(--ok)':'var(--signal)')+'"></i></div></div>';
+          }).join('') + '</div><div class="small muted">Bauzeit '+(6*(st+1))+' Std.</div>';
+        if(kpDarf('ausbau')) inner += '<button class="btn wide" data-act="kp_ausbau" data-id="'+g.id+'" '+(kann?'':'disabled')+'>Bauen</button>';
+      }
+      return acard(g.name, KP_ART[g.id], inner, bau === g.id);
     }).join('') + '</div>';
 
     // Mitglieder
@@ -3626,11 +3662,13 @@ function renderTruppe(){
     // Kassenbuch
     if(k.buchungen && k.buchungen.length){
       h += '<h2>Kassenbuch</h2><div class="panel"><ul class="rl">' + k.buchungen.map(b => {
-        const t = b.art==='einzahlung' ? esc(b.von||'Ehemaliges Mitglied')+' hat eingezahlt'
+        const plus = b.art==='einzahlung' || b.art==='oberkommando';
+        const t = b.art==='oberkommando' ? 'Zuschuss vom Oberführungskommando für den Dienst von '+esc(b.von||'Ehemaliges Mitglied')
+          : b.art==='einzahlung' ? esc(b.von||'Ehemaliges Mitglied')+' hat eingezahlt'
           : b.art==='auszahlung' ? esc(b.von||'?')+' hat an '+esc(b.an||'?')+' ausgezahlt'
           : esc(b.von||'?')+' hat den Ausbau '+esc(GEB_KP_I[b.notiz] ? GEB_KP_I[b.notiz].name : (b.notiz||''))+' gestartet';
         return '<li><span class="who">'+t+'<br><span class="small muted">'+new Date(b.created_at).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})+'</span></span>'
-          + '<span class="num" style="color:'+(b.art==='einzahlung'?'var(--ok)':'var(--bad)')+'">'+(b.art==='einzahlung'?'+':'−')+eur(Number(b.betrag))+'</span></li>';
+          + '<span class="num" style="color:'+(plus?'var(--ok)':'var(--bad)')+'">'+(plus?'+':'−')+eur(Number(b.betrag))+'</span></li>';
       }).join('') + '</ul></div>';
     }
 
@@ -3681,6 +3719,74 @@ document.addEventListener('change', async e => {
   if(error) toast(error.message); else toast(n+' ist jetzt '+ROLLEN[neu]+'.');
   loadTruppe();
 });
+
+// ---------- Rohstoffe und Kasernenhof aufräumen ----------
+const ROH = {
+  zement:{name:'Zement', col:'#8A9286'}, holz:{name:'Bauholz', col:'#9A7650'}, panzertape:{name:'Panzertape', col:'#4B582C'},
+  spielkarten:{name:'Spielkarten', col:'#A3271E', geb:'mannschaftsheim'}, hanteln:{name:'Hanteln', col:'#2A2A22', geb:'trainingsraum'},
+  aktenordner:{name:'Aktenordner', col:'#2E4F7A', geb:'geschaeftszimmer'}, ersatzteile:{name:'Ersatzteile', col:'#6B4E2E', geb:'fahrzeughalle'},
+  kochtoepfe:{name:'Kochtöpfe', col:'#BF8E10', geb:'kantine'},
+};
+const KP_ART = {mannschaftsheim:'ball', trainingsraum:'march', geschaeftszimmer:'clip', fahrzeughalle:'truck', kantine:'pot'};
+const AUF = [[1,3],[3,8],[6,14],[12,24]];
+ONLINE.lag = null;
+function kpBedarf(g){
+  if(ONLINE.lag && ONLINE.lag.bedarf && ONLINE.lag.bedarf[g] && ONLINE.lag.bedarf[g].roh) return ONLINE.lag.bedarf[g].roh;
+  const n = kpStufe(g) + 1, sp = Object.keys(ROH).find(r => ROH[r].geb === g);
+  return {zement:12*n, holz:8*n, panzertape:4*n, [sp]:3*n};
+}
+async function aufAbschliessen(){
+  const { data, error } = await sb.rpc('aufraeumen_abschliessen');
+  if(error || !data) return;
+  const t = Object.entries(data).map(([r,n]) => n+' '+(ROH[r] ? ROH[r].name : r)).join(', ');
+  toast(t ? 'Kasernenhof aufgeräumt, ins Lager: '+t+'.' : 'Aufräumen beendet.');
+  const l = await sb.rpc('kompanie_lager_status'); ONLINE.lag = l.error ? ONLINE.lag : (l.data || null);
+}
+function renderLager(){
+  const L2 = ONLINE.lag; if(!L2) return '';
+  const lag = L2.lager || {}, a = L2.aufraeumen;
+  let h = '<h2>Kompanielager</h2><div class="panel pad"><div style="display:flex;flex-wrap:wrap;gap:6px">'
+    + Object.entries(ROH).map(([r,o]) => '<span class="chip" style="color:var(--ink);border-left:4px solid '+o.col+'">'+esc(o.name)+' <b>'+(lag[r]||0)+'</b></span>').join('') + '</div>';
+  // Aufräumen
+  h += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><p style="margin:0 0 4px"><b>Kasernenhof aufräumen</b></p>'
+    + '<p class="small muted" style="margin:0 0 8px">Was du findest, geht direkt ins Kompanielager. Diese Woche: '+L2.woche+' von '+L2.limit+' Rohstoffen. Das Limit steigt mit deinem Dienstgrad. Wer abbricht, bringt nichts mit.</p>';
+  if(a){
+    const end = new Date(a.ende).getTime(), start = new Date(a.start).getTime(), pct = Math.min(100, (Date.now()-start)/(end-start)*100);
+    h += '<div class="small">Du räumst auf ('+a.menge+' Rohstoffe). Fertig in '+fmtRest(end - Date.now())+'.</div><div class="prog"><i style="width:'+pct+'%"></i></div>'
+      + (end <= Date.now() ? '<button class="btn wide" style="margin-top:8px" data-act="tab" data-id="truppe">Abholen</button>' : '<button class="linkbtn" data-act="auf_abbrechen">Abbrechen</button>');
+  } else {
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">' + AUF.map(([st,m]) => '<button class="btn ghost" data-act="auf_start" data-id="'+st+'" '+(L2.woche + m > L2.limit ? 'disabled' : '')+'>'+st+' Std.<small style="display:block;font-weight:500;font-size:12px">'+m+' Rohstoffe</small></button>').join('') + '</div>';
+  }
+  h += '</div>';
+  // Tausch
+  if(kpDarf('ausbau')){
+    const opts = Object.entries(ROH).map(([r,o]) => '<option value="'+r+'">'+esc(o.name)+'</option>').join('');
+    h += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><p style="margin:0 0 4px"><b>Rohstofftausch</b></p><p class="small muted" style="margin:0 0 6px">Drei gegen einen, für Überschüsse im Lager.</p>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr 70px;gap:6px"><select id="tv" class="sel" aria-label="Abgeben">'+opts+'</select><select id="tn" class="sel" aria-label="Bekommen">'+opts.replace('value="holz"','value="holz" selected')+'</select><input id="tm" class="inp" type="number" min="1" value="1" aria-label="Menge"></div>'
+      + '<button class="btn ghost wide" style="margin-top:8px" data-act="kp_tausch">Tauschen</button></div>';
+  }
+  if(L2.log && L2.log.length){
+    h += '<details class="small" style="margin-top:12px"><summary>Lagerbuch</summary><ul class="rl">' + L2.log.map(l => {
+      const t = l.art==='aufraeumen' ? esc(l.von||'?')+' hat '+l.menge+' Rohstoffe vom Kasernenhof geholt'
+        : l.art==='tausch' ? esc(l.von||'?')+' hat '+(3*l.menge)+' '+esc(ROH[l.details.von] ? ROH[l.details.von].name : '')+' gegen '+l.menge+' '+esc(ROH[l.details.nach] ? ROH[l.details.nach].name : '')+' getauscht'
+        : esc(l.von||'?')+' hat Rohstoffe für einen Ausbau verbraucht';
+      return '<li><span class="who">'+t+'<br><span class="muted">'+new Date(l.created_at).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})+'</span></span></li>';
+    }).join('') + '</ul></details>';
+  }
+  return h + '</div>';
+}
+
+// Zuschuss vom Oberführungskommando: Verdienste sammeln und regelmäßig melden
+let kpBonusQueue = 0;
+function kpBonusAdd(v){ if(ONLINE.kp && v > 0) kpBonusQueue += v; }
+async function kpBonusFlush(){
+  if(!sb || !USER || !ONLINE.kp || kpBonusQueue <= 0) return;
+  const v = Math.round(kpBonusQueue); kpBonusQueue = 0;
+  const { error } = await sb.rpc('kompanie_dienstbonus', {p_verdienst:v});
+  if(error) kpBonusQueue += v;
+}
+setInterval(() => { kpBonusFlush(); if(ONLINE.lag && ONLINE.lag.aufraeumen && new Date(ONLINE.lag.aufraeumen.ende).getTime() <= Date.now()) aufAbschliessen().then(() => { if(tab==='truppe') render(); }); }, 20000);
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') kpBonusFlush(); });
 
 // Auszahlungen regelmäßig abholen
 setInterval(() => { if(USER && S && ONLINE.kp) abholen(); }, 60000);
