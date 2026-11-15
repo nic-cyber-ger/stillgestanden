@@ -254,10 +254,12 @@ p{margin:0 0 10px}
 .reel{flex:1;max-width:100px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:clamp(32px,10vw,48px);background:var(--surface2);border:2px solid var(--line);border-radius:8px}
 .reel.spin{filter:blur(1.5px)}
 .slmsg{text-align:center;font-weight:700;margin:12px 0;min-height:1.4em}
-.subnav{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;margin:0 -16px 12px;background:var(--surface2);border-bottom:1px solid var(--line);scrollbar-width:none}
+.subnav{display:flex;gap:6px;overflow-x:auto;padding:10px 16px 11px;margin:0 -16px 14px;background:var(--board);border-bottom:2px solid rgba(0,0,0,.35);box-shadow:0 4px 10px rgba(0,0,0,.25);scrollbar-width:none;position:sticky;top:calc(var(--toph,58px) + env(safe-area-inset-top,0px));z-index:8}
+.subnav.more{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent)}
 .subnav:first-child{margin-top:-16px}
 .subnav::-webkit-scrollbar{display:none}
-.subnav button{flex:1 0 auto;min-height:40px;padding:0 12px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 14px 'Barlow',sans-serif;border-radius:4px;white-space:nowrap;cursor:pointer}
+.subnav button{flex:1 0 auto;min-height:42px;padding:0 14px;border:1.5px solid rgba(255,255,255,.35);background:rgba(0,0,0,.2);color:var(--olive-ink);font:600 14.5px 'Barlow',sans-serif;border-radius:6px;white-space:nowrap;cursor:pointer}
+.subnav button:hover{background:rgba(255,255,255,.08)}
 .subnav button[aria-pressed="true"]{background:var(--signal);border-color:var(--signal);color:#1E2416;font-weight:700}
 .strip{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:6px;display:grid;gap:8px}
 .strip.idle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
@@ -1623,6 +1625,14 @@ function runStrip(){
   if(S.fs) it.push(['fs', 'Fahrschule: ' + FS_I[S.fs.id].name + (S.fs.stage === 'theorie' ? ', Theorie wartet' : S.fs.exam ? ', Praxis wartet' : '')]);
   if(!it.length) return '<div class="strip idle"><span>Gerade nichts zu tun. Das fällt auf.</span><button class="btn mini" data-act="tab" data-id="dienst">Dienst antreten</button></div>';
   return '<div class="strip" aria-label="Läuft gerade">' + it.map(([k, n]) => '<div><div class="sh"><span>' + esc(n) + '</span><span class="num" data-left="' + k + '"></span></div><div class="prog"><i data-prog="' + k + '"></i></div></div>').join('') + '</div>';
+}
+function subnavHint(){
+  const t = document.getElementById('top'); if(t) document.documentElement.style.setProperty('--toph', t.offsetHeight + 'px');
+  const n = document.querySelector('.subnav'); if(!n) return;
+  const upd = () => n.classList.toggle('more', n.scrollWidth > n.clientWidth + 4 && n.scrollLeft + n.clientWidth < n.scrollWidth - 4);
+  const cur = n.querySelector('[aria-pressed="true"]');
+  if(cur && (cur.offsetLeft + cur.offsetWidth > n.scrollLeft + n.clientWidth || cur.offsetLeft < n.scrollLeft)) n.scrollLeft = cur.offsetLeft - 16;
+  upd(); n.onscroll = upd;
 }
 function renderPage(){
   const subs = (SUBS[tab] || []).filter(x => x.src !== 'truppe' || typeof renderTruppe === 'function');
@@ -4209,7 +4219,7 @@ function render(){
     main.innerHTML = renderPage();
   }
   if(S && tutOn() && main.insertAdjacentHTML) main.insertAdjacentHTML('afterbegin', tutBox());
-  renderNav(); renderRes(); live(); if(typeof slAttach === 'function' && S) slAttach();
+  renderNav(); renderRes(); live(); subnavHint(); if(typeof slAttach === 'function' && S) slAttach();
   if(typeof afterRender === "function") afterRender();
 }
 
