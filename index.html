@@ -330,6 +330,11 @@ body.landing{padding-bottom:0}
 .ltrow{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:6px;margin-top:6px}.ltrow .ltballs{margin-top:0}
 .ltrow span.small{text-align:right;min-width:70px}
 .lttab{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}.lttab th,.lttab td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}.lttab th:last-child,.lttab td:last-child{text-align:right}
+.adm{margin-bottom:12px}.adm h3{margin:0 0 8px;font-size:16px}
+.admbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.admbtns .btn{flex:1 1 calc(50% - 8px);min-height:44px;font-size:14px}
+.admrow{display:flex;gap:8px;margin-top:6px}.admrow select,.admrow input{flex:1;min-width:0;min-height:44px;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit}
+.adm textarea{width:100%;box-sizing:border-box;margin-top:6px;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit}
+.ansage{border-left:4px solid var(--signal);margin-bottom:12px}
 .recht h3{margin:16px 0 6px;font-size:16px}.recht p{margin:0 0 10px;font-size:14px;line-height:1.5}
 .pwrow{position:relative}
 .pwrow input{padding-right:52px}
@@ -393,6 +398,24 @@ body.landing{padding-bottom:0}
 .slx-pay div{display:flex;gap:8px;align-items:center;font-size:12.5px;line-height:1.3}
 .slx-pay svg{flex:none;background:#F4F3EA;border-radius:6px;padding:2px}
 @media (prefers-reduced-motion:reduce){.slx-lights{animation:none}.slx-cell.win{animation:none}.slx-lines .blink{animation:none}}
+.slx-ov{position:absolute;inset:0;z-index:5;background:rgba(10,12,8,.9);border-radius:15px 15px 8px 8px;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center;animation:slxOvIn .35s ease-out}
+.slx-ovin{max-width:300px}
+@keyframes slxOvIn{from{opacity:0;transform:scale(.96)}}
+.slx-ovk{font:700 13px 'Barlow Condensed',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--trim)}
+.slx-ovt{font-family:'Black Ops One',sans-serif;font-size:32px;line-height:1.1;color:#fff;text-shadow:0 0 14px var(--trim);margin:6px 0 14px}
+.slx-pick{width:104px;height:104px;margin:0 auto 8px;border-radius:12px;background:#F4F3EA;border:4px solid var(--trim);display:flex;align-items:center;justify-content:center}
+.slx-pick.done{animation:slxPickDone .6s ease-out;box-shadow:0 0 28px var(--trim)}
+@keyframes slxPickDone{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+.slx-ovs{color:#fff;font-weight:600;margin-bottom:10px}
+.slx-ovd{color:rgba(255,255,255,.85);font-size:13.5px;line-height:1.45;margin:0 0 16px}
+.slx-cell.exp{animation:slxExp .45s ease-out both;background:radial-gradient(circle,rgba(255,210,90,.65),transparent 72%)}
+@keyframes slxExp{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.15)}100%{transform:none;opacity:1}}
+.slx-cell.sticky{box-shadow:inset 0 0 0 3px #D4AF37;border-radius:6px;background:rgba(212,175,55,.2)}
+.slx-reel.wave::before{content:'';position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(108,200,255,0),rgba(108,200,255,.6),rgba(108,200,255,0));animation:slxWave 1.2s ease-in-out;pointer-events:none}
+@keyframes slxWave{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+.slx-mini svg{vertical-align:middle;background:#F4F3EA;border-radius:4px}
+@media (prefers-reduced-motion:reduce){.slx-ov,.slx-cell.exp,.slx-pick.done,.slx-reel.wave::before{animation:none}}
+
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1543,6 +1566,7 @@ const SUBS = {
     {id:'vorsorge', label:'Vorsorge', src:'raum', match:['Anwartschaftsversicherung','Pflegepflichtversicherung']},
     {id:'kameraden', label:'Kameraden', src:'raum', match:['Kompanie','Sammelalbum']},
     {id:'einst', label:'Einstellungen', src:'stube', match:['Einstellungen']},
+    {id:'admin', label:'Admin', src:'admin', match:['Admin']},
   ],
   dienst: [
     {id:'plan', label:'Dienstplan', src:'dienst', rest:true, match:['Dienstplan']},
@@ -1580,7 +1604,7 @@ function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LAST
 function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === a[0]), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
   const f = {stube:renderStube, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
-    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null}[src];
+    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null}[src];
   return f ? f() : '';
 }
 function splitSecs(html){
@@ -1797,19 +1821,19 @@ const FAHRSCHULE = [
 ];
 const FS_I = Object.fromEntries(FAHRSCHULE.map(x=>[x.id,x]));
 DIENSTE.push(
-  {id:'kurier', name:'Kurierfahrt', min:20, st:8, pay:55, bp:3, t:0, fs:'b', hideFor:['G'],
+  {id:'kurier', name:'Kurierfahrt', min:20, st:8, pay:75, q:6, bp:3, t:0, fs:'b', hideFor:['G'],
    desc:'Akten zur Standortverwaltung bringen. Unterwegs tanken, nicht frühstücken.'},
-  {id:'lager', name:'Lagerdienst', min:25, st:10, pay:60, bp:3, t:0, fs:'stapler', hideFor:['O','G'],
+  {id:'lager', name:'Lagerdienst', min:25, st:10, pay:80, q:6, bp:3, t:0, fs:'stapler', hideFor:['O','G'],
    desc:'Paletten von links nach rechts. Und wieder zurück, weil die Liste falsch war.'},
-  {id:'transport', name:'Transportfahrt', min:60, st:15, pay:190, bp:8, t:0, fs:'c', hideFor:['G'],
+  {id:'transport', name:'Transportfahrt', min:60, st:15, pay:270, q:4, bp:8, t:0, fs:'c', hideFor:['G'],
    desc:'Material zum Truppenübungsplatz fahren. Das Navi kennt die Panzerstraße nicht.'},
-  {id:'schwer', name:'Schwertransport', min:150, st:30, pay:560, bp:18, t:0, fs:'ce', hideFor:['G'],
+  {id:'schwer', name:'Schwertransport', min:150, st:30, pay:820, q:2, bp:18, t:0, fs:'ce', hideFor:['G'],
    desc:'Ein Anhänger, eine Brücke, drei Zentimeter Luft.'},
-  {id:'kette_d', name:'Kettenfahrzeug bewegen', min:120, st:30, pay:470, bp:16, t:0, fs:'kette', tsk:'heer', hideFor:['G'],
+  {id:'kette_d', name:'Kettenfahrzeug bewegen', min:120, st:30, pay:700, q:2, bp:16, t:0, fs:'kette', tsk:'heer', hideFor:['G'],
    desc:'Auf dem Übungsplatz darfst du alles. Außer bremsen müssen.'},
-  {id:'schlepp_d', name:'Flugzeug schleppen', min:60, st:15, pay:200, bp:8, t:0, fs:'schlepp', tsk:'lw', hideFor:['G'],
+  {id:'schlepp_d', name:'Flugzeug schleppen', min:60, st:15, pay:280, q:3, bp:8, t:0, fs:'schlepp', tsk:'lw', hideFor:['G'],
    desc:'Vom Shelter zur Startbahn, Schritttempo, alle Augen auf dir.'},
-  {id:'boot_d', name:'Hafenbootfahrt', min:60, st:15, pay:200, bp:8, t:0, fs:'boot', tsk:'marine', hideFor:['G'],
+  {id:'boot_d', name:'Hafenbootfahrt', min:60, st:15, pay:280, q:3, bp:8, t:0, fs:'boot', tsk:'marine', hideFor:['G'],
    desc:'Post und Proviant zu den Schiffen auf Reede. Spritzwasser inklusive.'},
   {id:'schnee', name:'Schneeräumen', min:30, st:15, pay:95, bp:5, t:0, wx:['schnee','frost'],
    desc:'Nur bei Schnee und Frost. Der Kasernenhof muss frei sein, bevor Brockmann aufsteht.'},
@@ -3207,6 +3231,12 @@ const FS_EXAMS = FAHRSCHULE.map(x => ({id:'fsx_'+x.id, who:'krueger', ctx:['fsx'
      fail:{t:'Zu locker. Der Prüfer hat Kaffee auf der Hose und schreibt „nicht bestanden“.', fx:{fsFail:x.id}}},
   ]}));
 EVENTS.push(...FS_EXAMS);
+/* Fahrzeug-Kontingent pro Tag und Routine-Abzug */
+function dqUsed(id){ return S.dq && S.dq.day === dateStr() ? (S.dq.n[id] || 0) : 0; }
+function dqAdd(id){ if(!S.dq || S.dq.day !== dateStr()) S.dq = {day:dateStr(), n:{}}; S.dq.n[id] = (S.dq.n[id] || 0) + 1; }
+function rtF(d){ if(!S || d.einsatz || !S.rt || S.rt.id !== d.id) return 1; return Math.max(.6, 1 - .1*Math.max(0, S.rt.n - 1)); }
+function rtAdd(id){ if(S.rt && S.rt.id === id) S.rt.n++; else S.rt = {id, n:1}; }
+function rtNote(d){ const f = rtF(d); return f < 1 ? '<div class="wxnote small">Routine: −' + Math.round((1 - f)*100) + ' % Verdienst. Ein anderer Dienst setzt das zurück.</div>' : ''; }
 function fsCost(x){ return Math.round(x.cost * (S.fsRetry && S.fsRetry[x.id] ? .5 : 1) * (vb()==='kfz' ? .8 : 1)); }
 function fsMin(x){ return x.min * (S.fsRetry && S.fsRetry[x.id] ? .5 : 1) * (vb()==='kfz' ? .7 : 1); }
 function fsHas(id){ return !!(S.fsDone && S.fsDone[id]); }
@@ -3703,7 +3733,7 @@ const G = {
   },
   payMult(){ return (1 + .01*ordenCount()) * (G.rank().sold/40) * (1 + .03*S.stats.fachwissen) * (1 + .02*S.stats.vitaminb) * (vb()==='inst' ? 1.1 : 1) * (1 + .05*Math.min(5, S.res||0)) * (hasGear('stander') ? 1.1 : 1) * (albumSet('g') ? 1.05 : 1) * (albumSet('l') ? 1.1 : 1) * (1 + .01*kStufe('betreuung') + .02*kpStufe('mannschaftsheim')); },
   bpMult(){ return lageF('bp') * Math.max(.2, 1 + .01*medalCount() + .03*S.stats.vitaminb + .02*S.stats.fuehrung + rel('spiess')/500 + Math.max(0,rel('chef'))/1000 + .04*S.stube.spind + (vb()==='fm' ? .1 : 0) + (hasGear('kalender') ? .05 : 0) + (albumSet('e') ? .05 : 0) + .02*kpStufe('geschaeftszimmer')); },
-  dienstPay(d){ return Math.round(wxF(d,'pay') * lagePay(d) * d.pay * G.payMult() * ((vb()==='inf' && (d.id==='gelaende'||d.id==='uebung')) ? 1.15 : 1)); },
+  dienstPay(d){ return Math.round(rtF(d) * wxF(d,'pay') * lagePay(d) * d.pay * G.payMult() * ((vb()==='inf' && (d.id==='gelaende'||d.id==='uebung')) ? 1.15 : 1)); },
   dienstSt(d){ return Math.round(wxF(d,'st') * lageF('st') * d.st * (vb()==='kfz' ? .8 : 1) * (hasGear('stiefel') ? .95 : 1) * (1 - .02*kpStufe('fahrzeughalle'))); },
   dienstMin(d){ return d.min * (hasGear('uhr') ? .95 : 1) * lageF('dur') * wxF(d,'dur'); },
   addPoints(p){ S.log.push({ts:now(), p: p>0 ? Math.round(p*G.bpMult()*10)/10 : p}); },
@@ -3718,6 +3748,7 @@ const G = {
     if(S.einsatz && !d.einsatz) return 'im Auslandseinsatz';
     if(d.einsatz && !S.einsatz) return 'nur im Auslandseinsatz';
     if(d.fs && !fsHas(d.fs)) return 'nur mit Führerschein ' + FS_I[d.fs].name;
+    if(d.q && dqUsed(d.id) >= d.q) return 'heute keine Fahrzeuge mehr frei';
     { const wl = wxLock(d); if(wl) return wl; }
     if(d.tsk && d.tsk !== S.tsk) return 'nur '+TSK[d.tsk].name;
     if(d.verw && S.verw !== d.verw) return 'nur für ' + VERW[d.verw].name;
@@ -3751,6 +3782,7 @@ const G = {
     if(S.stamina < G.dienstSt(d)) return 'Zu wenig Ausdauer.';
     S.stamina -= G.dienstSt(d); S.staminaTs = now();
     S.dienst = {id, start:now(), end:now()+G.dienstMin(d)*60000/S.speed, pay:G.dienstPay(d), bp:Math.round(d.bp*wxF(d,'bp'))};
+    if(d.q) dqAdd(d.id);
     return null;
   },
   startStat(id){
@@ -3803,7 +3835,7 @@ const G = {
   },
   tick(){
     let events = [], changed = false;
-    if(!TESTMODE && S.speed !== 1) S.speed = 1;
+    if(!TESTMODE && ONLINE.adminKnown && !ONLINE.admin && S.speed !== 1) S.speed = 1;
     sparZinsen();
     fe(); ntgTick(events); if(events.length) changed = true;
     if(S.fa && now() >= S.fa.end){
@@ -3830,7 +3862,7 @@ const G = {
     if(S.dienst && now() >= S.dienst.end){
       const d = D[S.dienst.id];
       if(typeof kpBonusAdd === 'function') kpBonusAdd(S.dienst.pay);
-      S.money += S.dienst.pay - earnCut(S.dienst.pay); G.addPoints(S.dienst.bp); S.dienstCount++; S.dc[S.dienst.id] = (S.dc[S.dienst.id]||0) + 1;
+      S.money += S.dienst.pay - earnCut(S.dienst.pay); G.addPoints(S.dienst.bp); S.dienstCount++; rtAdd(S.dienst.id); S.dc[S.dienst.id] = (S.dc[S.dienst.id]||0) + 1;
       if(D[S.dienst.id].einsatz && S.einsatz) S.einsatz.score += 1;
       if(Math.random() < (D[S.dienst.id].einsatz ? .25 : .12)){ S.pakete = Math.min(9, (S.pakete||0)+1); events.push('Feldpost ist da!'); }
       events.push(d.name + ' beendet: +' + eur(S.dienst.pay));
@@ -4003,7 +4035,7 @@ function renderStube(){
         + '<div class="info"><div class="title">Meldung von '+esc(n.short)+'</div><div class="meta">'+esc(n.role)+'</div></div></div>'
         + '<button class="btn" data-act="event" data-id="'+id+'">Ansehen</button></div>'; }).join('') + '</div>';
   }
-  h += pruefCard();
+  h += ansageCard() + pruefCard();
   h += renderWA();
   h += storyCard();
   if(!S.gaDone){
@@ -4050,7 +4082,7 @@ function renderStube(){
   h += '<h2>Einstellungen</h2><div class="panel pad">'
     + '<p style="margin-bottom:6px"><b>Darstellung</b></p><div class="seg" role="group" aria-label="Darstellung">'
     + [['system','System'],['light','Hell'],['dark','Dunkel']].map(([v,l])=>'<button data-act="theme" data-id="'+v+'" aria-pressed="'+(S.theme===v)+'">'+l+'</button>').join('')
-    + '</div><p style="margin:16px 0 6px"><b>Benachrichtigungen</b></p><p class="small muted">Meldet sich, wenn Dienste, Ausbildungen oder Lehrgänge fertig sind, solange das Spiel im Hintergrund geöffnet ist.</p><button class="btn ghost" data-act="notif">'+(S.notify && window.Notification && Notification.permission === 'granted' ? 'Benachrichtigungen ausschalten' : 'Benachrichtigungen einschalten')+'</button><p style="margin:16px 0 6px"><b>Einführung</b></p><button class="btn ghost" data-act="tut_restart">Einführung noch mal ansehen</button>'+(TESTMODE ? '<p style="margin:16px 0 6px"><b>Testmodus</b></p><p class="small muted">Alle Zeiten laufen schneller. Nur zum Ausprobieren, nicht zum echten Spielen.</p>'
+    + '</div><p style="margin:16px 0 6px"><b>Benachrichtigungen</b></p><p class="small muted">Meldet sich, wenn Dienste, Ausbildungen oder Lehrgänge fertig sind, solange das Spiel im Hintergrund geöffnet ist.</p><button class="btn ghost" data-act="notif">'+(S.notify && window.Notification && Notification.permission === 'granted' ? 'Benachrichtigungen ausschalten' : 'Benachrichtigungen einschalten')+'</button><p style="margin:16px 0 6px"><b>Einführung</b></p><button class="btn ghost" data-act="tut_restart">Einführung noch mal ansehen</button>'+(TESTMODE || ONLINE.admin ? '<p style="margin:16px 0 6px"><b>Testmodus</b></p><p class="small muted">Alle Zeiten laufen schneller. Nur zum Ausprobieren, nicht zum echten Spielen.</p>'
     + '<div class="seg" role="group" aria-label="Testmodus">'
     + [[1,'Aus'],[10,'10×'],[100,'100×']].map(([v,l])=>'<button data-act="speed" data-id="'+v+'" aria-pressed="'+(S.speed===v)+'">'+l+'</button>').join('')
     + '</div>' : '')+'<p style="margin:16px 0 6px"><b>Spielstand</b></p><p class="small muted">Dein Spielstand wird automatisch in deinem Konto gespeichert'+(USER && USER.email ? ' ('+esc(USER.email)+')' : '')+'.</p>'
@@ -4061,7 +4093,7 @@ function renderStube(){
 
 function renderDienst(){
   let h = '<h2>Dienstplan</h2>';
-  h += '<p class="small muted">Dienste kosten Ausdauer und bringen Geld und Beurteilungspunkte. Ausdauer lädt sich alle '+fmtMin(3/S.speed)+' um einen Punkt auf, aber nicht während eines Dienstes.</p>';
+  h += '<p class="small muted">Dienste kosten Ausdauer und bringen Geld und Beurteilungspunkte. Ausdauer lädt sich alle '+fmtMin(3/S.speed)+' um einen Punkt auf, aber nicht während eines Dienstes. Wer immer denselben Dienst schiebt, wird nachlässig: Ab dem dritten Mal hintereinander gibt es pro Wiederholung 10 % weniger Geld, höchstens 40 %. Ein anderer Dienst setzt das zurück.</p>';
   h += '<div class="cards">' + DIENSTE.map(d => {
     const lock = G.dienstLock(d);
     if(!!d.einsatz !== !!S.einsatz) return '';
@@ -4073,8 +4105,8 @@ function renderDienst(){
     if(lock && (d.spec || d.groups) && G.rank().t < 3) return ''; // Fortgeschrittene Dienste erst zeigen, wenn sie in Reichweite sind
     const running = S.dienst && S.dienst.id === d.id;
     const dis = !!lock || !!S.dienst || S.stamina < G.dienstSt(d);
-    const inner = '<p class="flv">'+esc(d.desc)+'</p>' + wxNote(d)
-      + facts([['Dauer', fmtMin(G.dienstMin(d)/S.speed)], ['Ausdauer', G.dienstSt(d)], ['Verdienst', eur(G.dienstPay(d))], ['Punkte', d.bp]])
+    const inner = '<p class="flv">'+esc(d.desc)+'</p>' + wxNote(d) + rtNote(d)
+      + facts([['Dauer', fmtMin(G.dienstMin(d)/S.speed)], ['Ausdauer', G.dienstSt(d)], ['Verdienst', eur(G.dienstPay(d))], ['Punkte', d.bp]].concat(d.q ? [['Fahrzeuge heute', Math.max(0, d.q - dqUsed(d.id)) + ' von ' + d.q]] : []))
       + (running ? '<div class="small">Fertig in <span class="num" data-left="dienst"></span></div><div class="prog" style="margin:0"><i data-prog="dienst"></i></div>'
         : lock ? '<div class="lock">Gesperrt: '+esc(lock)+'</div>'
         : '<button class="btn wide" data-act="dienst" data-id="'+d.id+'" '+(dis?'disabled':'')+'>Antreten</button>');
@@ -4489,7 +4521,7 @@ const ACT = {
     save(); toast('Abflug nach '+E.ort); tab='stube'; render();
   },
   theme(v){ S.theme=v; save(); render(); },
-  speed(v){ if(!TESTMODE) return; S.speed=Number(v); save(); render(); },
+  speed(v){ if(!TESTMODE && !ONLINE.admin) return; S.speed=Number(v); save(); render(); },
   reset(_, ok){
     if(!ok) return ask('Wirklich neu anfangen? Dein Spielstand wird gelöscht.', ()=>ACT.reset(null, true), 'Löschen');
     try{ localStorage.removeItem(KEY); }catch(e){}
@@ -4526,7 +4558,7 @@ const ACT = {
   },
   logout(_, ok){
     if(!ok) return ask('Abmelden? Dein Spielstand ist im Konto gesichert.', ()=>ACT.logout(null, true), 'Abmelden');
-    cloudPush(true).finally(async () => { await sb.auth.signOut(); USER = null; S = null; ONLINE.profile = null; try{ localStorage.removeItem(KEY); }catch(e){} render(); });
+    cloudPush(true).finally(async () => { await sb.auth.signOut(); USER = null; S = null; ONLINE.profile = null; ONLINE.admin = false; try{ localStorage.removeItem(KEY); }catch(e){} render(); });
   },
   async spende(arg){
     const [g, mult] = arg.split(':'); const betrag = Math.round(G.rank().sold * Number(mult));
@@ -4617,6 +4649,7 @@ const ACT = {
   sl_lines(n){ if(!SL.spinning && !slFree()){ SL.lines = Number(n); slRefresh(); } },
   slm(id){ const m = SL_M.find(x => x.id === id); if(m && m.ok() && !SL.spinning && !slFree()){ SL.m = id; SL.bet = 1; SL.talk = ''; SL.led = null; slRefresh(); } },
   sl_spin(){ slSpin(); },
+  sl_ovclose(){ if(S.slFree) S.slFree.intro = false; save(); const o = SLWRAP && SLWRAP.querySelector('.slx-ov'); if(o) o.remove(); slRefresh(); },
   sl_sound(){ S.slSound = !S.slSound; save(); slRefresh(); if(S.slSound) slSnd.win(); },
   sl_feierabend(){ document.getElementById('modalHost').innerHTML = ''; tab = 'stube'; render(); toast('Brockmann nickt zufrieden.'); },
   ask_yes(){ const f = askFn; askFn = null; ACT.close(); if(f) f(); },
@@ -4813,9 +4846,10 @@ async function boot(){
   BOOTED = true; render(); hideSplash();
   if(RECOVERY && USER) setTimeout(() => pwModal(true), 400);
   if(USER) setTimeout(loadLotto, 1500);
+  if(USER) setTimeout(loadAdmin, 1200);
   sb.auth.onAuthStateChange((ev, session) => {
     if(ev === 'PASSWORD_RECOVERY'){ USER = session ? session.user : USER; setTimeout(() => pwModal(true), 400); return; }
-    if(ev === 'SIGNED_OUT'){ USER = null; S = null; ONLINE.profile = null; render(); }
+    if(ev === 'SIGNED_OUT'){ USER = null; S = null; ONLINE.profile = null; ONLINE.admin = false; render(); }
     else if(session) USER = session.user;
   });
 }
@@ -4835,7 +4869,7 @@ async function authSubmit(mode){
   USER = res.data.session.user;
   showSplash('Melde mich zum Dienst …'); BOOTED = false; render();
   try{ await afterLogin(); }catch(e){ toast('Laden fehlgeschlagen.'); }
-  BOOTED = true; tab = 'stube'; render(); hideSplash(); setTimeout(loadLotto, 1500);
+  BOOTED = true; tab = 'stube'; render(); hideSplash(); setTimeout(loadLotto, 1500); setTimeout(loadAdmin, 1200);
 }
 
 /* =========================================================
@@ -4906,7 +4940,7 @@ async function kontoLoeschen(){
   if(error){ toast('Löschen fehlgeschlagen: ' + (error.message || 'unbekannter Fehler')); return; }
   try{ localStorage.removeItem(KEY); }catch(e){}
   try{ await sb.auth.signOut(); }catch(e){}
-  USER = null; S = null; ONLINE.profile = null; render();
+  USER = null; S = null; ONLINE.profile = null; ONLINE.admin = false; render();
   toast('Dein Konto und alle Spieldaten wurden gelöscht.');
 }
 
@@ -5005,6 +5039,91 @@ async function ltAbholen(){
   await loadLotto(); render();
 }
 
+/* =========================================================
+   ADMIN-PANEL (Server: stillgestanden_admin.sql)
+   Sichtbar nur für Konten in der Tabelle "admins". Werkzeuge für den eigenen
+   Spielstand laufen im Browser, alles was alle Spieler betrifft prüft der Server.
+   ========================================================= */
+ONLINE.admin = false; ONLINE.ansage = null; ONLINE.adm = null;
+async function loadAdmin(){
+  if(!sb || !USER) return;
+  const a = await sb.rpc('ist_admin');
+  const war = ONLINE.admin; ONLINE.admin = !a.error && a.data === true; ONLINE.adminKnown = true;
+  const b = await sb.rpc('ansage_lesen');
+  const alt = JSON.stringify(ONLINE.ansage); ONLINE.ansage = !b.error && b.data && b.data.text ? b.data : null;
+  if(war !== ONLINE.admin || alt !== JSON.stringify(ONLINE.ansage)) render();
+}
+setInterval(() => { if(USER && S) loadAdmin(); }, 300000);
+function ansageCard(){
+  if(!ONLINE.ansage) return '';
+  return '<div class="panel pad ansage"><div class="small muted">Mitteilung der Spielleitung</div><p style="margin:4px 0 0">' + esc(ONLINE.ansage.text) + '</p></div>';
+}
+async function admStats(){
+  const { data, error } = await sb.rpc('admin_stats');
+  if(error){ toast('Fehler: ' + error.message); return; }
+  ONLINE.adm = data; render();
+}
+function renderAdmin(){
+  if(!ONLINE.admin) return '';
+  const st = ONLINE.adm, btn = (act, label, id) => '<button class="btn ghost" data-act="' + act + '"' + (id !== undefined ? ' data-id="' + id + '"' : '') + '>' + label + '</button>';
+  let h = '<h2>Admin</h2><p class="small muted">Nur für dich sichtbar. Werkzeuge für deinen Spielstand wirken auch auf Ranglisten. Zum Testen am besten ein zweites Konto anlegen und ebenfalls als Admin eintragen.</p>';
+  h += '<div class="panel pad adm"><h3>Zeit</h3><p class="small muted">Zeitraffer gilt nur für deinen Spielstand.</p><div class="seg" role="group" aria-label="Zeitraffer">'
+    + [1, 10, 100, 1000].map(v => '<button data-act="speed" data-id="' + v + '" aria-pressed="' + (S.speed === v) + '">' + (v === 1 ? 'Normal' : v + '×') + '</button>').join('') + '</div>'
+    + '<div class="admbtns">' + btn('adm_timer', 'Alle Timer sofort beenden') + btn('adm_stamina', 'Ausdauer auffüllen') + '</div></div>';
+  h += '<div class="panel pad adm"><h3>Spielstand</h3><div class="admbtns">' + btn('adm_geld', '+1.000 €', 1000) + btn('adm_geld', '+10.000 €', 10000) + btn('adm_geld', '+100.000 €', 100000) + btn('adm_bp', '+50 Beurteilungspunkte') + '</div>'
+    + '<label for="admRank" style="display:block;margin-top:12px">Dienstgrad setzen</label><div class="admrow"><select id="admRank">' + RANKS.map(r => '<option value="' + r.id + '"' + (r.id === S.rank ? ' selected' : '') + '>' + esc(tskText(r.name)) + '</option>').join('') + '</select>' + btn('adm_rank', 'Setzen') + '</div>'
+    + '<div class="admbtns">' + btn('adm_stats5', 'Alle Werte +5') + btn('adm_fs', 'Alle Führerscheine') + btn('adm_ga', 'Grundausbildung abschließen') + btn('adm_rel', 'Kameraden-Ansehen +20') + '</div></div>';
+  h += '<div class="panel pad adm"><h3>Auslösen</h3><div class="admbtns">' + btn('adm_event', 'Zufällige Meldung') + btn('adm_dg', 'Dienstgradtest fällig') + btn('adm_wa', 'Wochenaufträge neu') + btn('adm_funk', 'Stubenfunk-Nachricht')
+    + btn('adm_slot', 'Spielothek-Limit zurücksetzen') + btn('adm_bonus', 'Bonusrunde im Automaten') + btn('adm_dq', 'Fahrzeuge und Routine zurücksetzen') + '</div></div>';
+  h += '<div class="panel pad adm"><h3>Server</h3><div class="admbtns">' + btn('adm_statsload', st ? 'Kennzahlen aktualisieren' : 'Kennzahlen laden') + btn('adm_lotto', 'Lotto jetzt ziehen') + '</div>';
+  if(st) h += '<div class="facts" style="margin-top:10px">' + [['Spieler', st.spieler], ['Aktiv 24 Std.', st.aktiv_24h], ['Aktiv 7 Tage', st.aktiv_7d], ['Neu 7 Tage', st.neu_7d], ['Kompanien', st.kompanien], ['Lotto-Jackpot', eur(st.lotto)], ['Tipps nächste Ziehung', st.tipps], ['Kasernen-Jackpot', eur(st.automat)]].map(([k, v]) => '<span>' + k + '</span><b>' + v + '</b>').join('') + '</div>'
+    + (st.top && st.top.length ? '<p class="small" style="margin:8px 0 0">Top 5: ' + st.top.map(x => esc(x.name) + ' (' + x.punkte + ')').join(', ') + '</p>' : '');
+  h += '<label for="admLotto" style="display:block;margin-top:12px">Jackpots setzen (leer = unverändert)</label><div class="admrow"><input id="admLotto" type="number" inputmode="numeric" placeholder="Lotto"><input id="admAuto" type="number" inputmode="numeric" placeholder="Automat">' + btn('adm_jp', 'Setzen') + '</div>'
+    + '<label for="admAnsage" style="display:block;margin-top:12px">Mitteilung an alle Spieler</label><textarea id="admAnsage" rows="2" maxlength="300" placeholder="z. B. Heute Abend kurze Wartung">' + esc(ONLINE.ansage ? ONLINE.ansage.text : '') + '</textarea>'
+    + '<div class="admbtns">' + btn('adm_ansage', 'Veröffentlichen') + btn('adm_ansage_weg', 'Mitteilung löschen') + '</div></div>';
+  return h;
+}
+const ADM = {
+  adm_timer(){
+    const t = now() - 1;
+    if(S.dienst) S.dienst.end = t; if(S.ausb) S.ausb.end = t; if(S.fs && !S.fs.stage) S.fs.end = t; if(S.fa) S.fa.end = t;
+    if(S.lg){ S.lg.end = t; if(S.lg.cps) S.lg.cps = S.lg.cps.map(() => t); }
+    if(S.einsatz){ S.einsatz.end = t; if(S.einsatz.cps) S.einsatz.cps = S.einsatz.cps.map(() => t); }
+    if(S.story) S.story.next = 0;
+    const r = G.tick(); save(); render(); toast(r.events.length ? r.events.length + ' Ereignisse ausgelöst' : 'Alle Timer beendet');
+  },
+  adm_stamina(){ S.stamina = G.maxStamina(); S.staminaTs = now(); save(); render(); },
+  adm_geld(v){ S.money += Number(v); save(); render(); },
+  adm_bp(){ G.addPoints(50); save(); render(); },
+  adm_rank(){ const v = (document.getElementById('admRank')||{}).value; if(R[v]){ S.rank = v; S.gaDone = true; save(); cloudPush(true); render(); toast('Dienstgrad: ' + tskText(R[v].name)); } },
+  adm_stats5(){ for(const k in S.stats) S.stats[k] = Math.min(STAT_MAX, S.stats[k] + 5); save(); render(); },
+  adm_fs(){ S.fsDone = S.fsDone || {}; FAHRSCHULE.forEach(x => S.fsDone[x.id] = now()); save(); render(); toast('Alle Führerscheine eingetragen'); },
+  adm_ga(){ S.gaDone = true; S.dgOk = true; save(); render(); },
+  adm_rel(){ for(const k in S.rel) S.rel[k] = Math.min(100, S.rel[k] + 20); save(); render(); },
+  adm_event(){ const p = S.pending.slice(); S.pending = []; const e = maybeEvent('innen', 1); S.pending = p.concat(e ? [e.id] : []); save(); render(); if(e) showEvent(e.id); else toast('Gerade keine passende Meldung.'); },
+  adm_dg(){ S.dgNext = now() - 1; S.dgAnnounced = false; save(); render(); toast('Dienstgradtest steht in der Übersicht'); },
+  adm_wa(){ S.wa = null; waEnsure(); save(); render(); toast('Neue Wochenaufträge'); },
+  adm_funk(){ const ev = []; const n = S.funk.filter(x => x.day === dateStr()).length; S.funk.forEach(x => { if(x.day === dateStr()) x.day = 'x'; }); const r = Math.random; Math.random = () => 0; funkTick(ev); Math.random = r; save(); render(); toast(ev[0] || 'Keine neue Nachricht übrig.'); },
+  adm_slot(){ S.slx = null; save(); render(); toast('Spielothek-Limit zurückgesetzt'); },
+  adm_bonus(){
+    const m = slMachine();
+    S.slFree = {left:m.fsN, total:m.fsN, win:0, lb:slLineBet(m, SL.bet), lines:SL.lines, m:m.id, feat:m.feat, intro:true,
+      sym: m.feat === 'exp' ? SLX_SPEC[Math.floor(Math.random()*SLX_SPEC.length)] : null, sticky: m.feat === 'sticky' ? [[0,0,0],[0,0,0],[0,0,0]] : null};
+    save(); tab = 'feier'; SUB.feier = 'spiele'; render();
+  },
+  adm_dq(){ S.dq = null; S.rt = null; save(); render(); toast('Fahrzeuge und Routine zurückgesetzt'); },
+  async adm_statsload(){ await admStats(); },
+  async adm_lotto(){ const { error } = await sb.rpc('admin_lotto_ziehen'); if(error){ toast('Fehler: ' + error.message); return; } toast('Lotto gezogen'); if(typeof loadLotto === 'function'){ ONLINE.ltTs = 0; await loadLotto(); } admStats(); },
+  async adm_jp(){
+    const a = (document.getElementById('admLotto')||{}).value, b = (document.getElementById('admAuto')||{}).value;
+    const { error } = await sb.rpc('admin_jackpots', {p_lotto: a === '' ? null : Number(a), p_automat: b === '' ? null : Number(b)});
+    if(error){ toast('Fehler: ' + error.message); return; } toast('Jackpots gesetzt'); if(typeof slJpLoad === 'function') slJpLoad(true); admStats();
+  },
+  async adm_ansage(){ const t = (document.getElementById('admAnsage')||{}).value || ''; const { error } = await sb.rpc('admin_ansage', {p_text:t}); if(error){ toast('Fehler: ' + error.message); return; } toast(t.trim() ? 'Mitteilung veröffentlicht' : 'Mitteilung gelöscht'); loadAdmin(); },
+  async adm_ansage_weg(){ const { error } = await sb.rpc('admin_ansage', {p_text:''}); if(error){ toast('Fehler: ' + error.message); return; } toast('Mitteilung gelöscht'); loadAdmin(); },
+};
+
+for(const k in ADM) ACT[k] = (...a) => ONLINE.admin ? ADM[k](...a) : undefined;
 let LOGIN_MODE = 'login';
 const LP_ICON = {
   karriere:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/></svg>',
@@ -5378,8 +5497,12 @@ const SLX_SYM = {
   paket:  {name:'Feldpost-Paket (Bonus)'},
 };
 const SLX_W  = {epa:9, stiefel:8, bier:7, helm:5, orden:3, stern:1.5, joker:1.3, paket:1.7};
-const SLX_P3 = {epa:5, stiefel:8, bier:12, helm:21, orden:52, stern:150, joker:300};
-const SLX_P2 = {orden:3, stern:8, joker:15};
+const SLX_P3 = {epa:4, stiefel:7, bier:10, helm:18, orden:44, stern:128, joker:255};
+const SLX_P2 = {orden:3, stern:7, joker:13};
+// Bonusfunktion „Manöver“: Spezialsymbol breitet sich aus (wie bei klassischen Buch-Automaten)
+const SLX_SPEC = ['epa','stiefel','bier','helm','orden','stern'];
+const SLX_MINK = {epa:3, stiefel:3, bier:3, helm:2, orden:2, stern:2};
+const SLX_EXP2 = {helm:3, orden:6, stern:15};
 const SLX_LINES = [[1,1,1],[0,0,0],[2,2,2],[0,1,2],[2,1,0]];
 const SLX_LNAME = ['Mitte','Oben','Unten','Diagonal ↘','Diagonal ↗'];
 function slxStrip(seed){
@@ -5409,16 +5532,23 @@ function slxEval(g, lines){
 
 /* ---------- Automaten ---------- */
 const SL_M = [
-  {id:'spaten', tab:'Spaten', name:'Zum goldenen Spaten', sub:'Spielothek an der Hauptwache', bets:[.05, .2, .5, 1], ok:() => true},
-  {id:'kasino', tab:'Kasino', name:'Offizierskasino', sub:'Gedämpftes Licht, hohe Einsätze', bets:[.25, .5, 1, 2.5], ok:() => ['O','G'].includes(G.rank().g), lock:'ab Leutnant'},
-  {id:'hafen', tab:'Anker', name:'Zum rostigen Anker', sub:'Hafenkneipe, nur für Marine', bets:[.05, .2, .5, 1], ok:() => S.tsk === 'marine', hide:() => S.tsk !== 'marine'},
+  {id:'spaten', tab:'Spaten', name:'Zum goldenen Spaten', sub:'Spielothek an der Hauptwache', bets:[.05, .2, .5, 1], ok:() => true,
+   feat:'exp', fsN:10, fsAdd:5, bonus:'Manöver', fdesc:'10 Freispiele mit Spezialsymbol. Vor der Runde wird ein Symbol gezogen. Landet es auf genug Walzen (Helm, Orden und Stern: 2, sonst 3), breitet es sich über die ganzen Walzen aus und zahlt zusätzlich auf allen gespielten Linien, egal wo es liegt.'},
+  {id:'kasino', tab:'Kasino', name:'Offizierskasino', sub:'Gedämpftes Licht, hohe Einsätze', bets:[.25, .5, 1, 2.5], ok:() => ['O','G'].includes(G.rank().g), lock:'ab Leutnant',
+   feat:'sticky', fsN:7, fsAdd:3, bonus:'Lagebesprechung', fdesc:'7 Freispiele mit haftenden Jokern. Jede Trillerpfeife, die in der Bonusrunde landet, bleibt bis zum Ende der Runde liegen. Je mehr es werden, desto mehr Linien gewinnen.'},
+  {id:'hafen', tab:'Anker', name:'Zum rostigen Anker', sub:'Hafenkneipe, nur für Marine', bets:[.05, .2, .5, 1], ok:() => S.tsk === 'marine', hide:() => S.tsk !== 'marine',
+   feat:'wild', fsN:10, fsAdd:5, bonus:'Sturmflut', fdesc:'10 Freispiele mit Sturmflut. Bei jedem Freispiel kann eine Welle über eine ganze Walze rollen und sie komplett in Joker verwandeln.'},
 ];
 const SL = {m:'spaten', bet:1, lines:5, spinning:false, grid:null, last:null, msg:'', talk:'', led:null};
-function slMachine(){ let m = SL_M.find(x => x.id === SL.m); if(!m || !m.ok()) { m = SL_M[0]; SL.m = 'spaten'; } return m; }
+function slMachine(){ if(S && S.slFree && S.slFree.left > 0 && S.slFree.m) SL.m = S.slFree.m; let m = SL_M.find(x => x.id === SL.m); if(!m || !m.ok()) { m = SL_M[0]; SL.m = 'spaten'; } return m; }
 function slLineBet(m, i){ return Math.max(1, Math.round(G.rank().sold * m.bets[i])); }
 function slLeft(){ return (!S.slx || S.slx.day !== dateStr()) ? SL_MAX : SL_MAX - S.slx.n; }
 function slOpen(){ return !S.dienst && !S.einsatz; }
-function slFree(){ return S.slFree && S.slFree.left > 0 ? S.slFree : null; }
+function slFree(){
+  const f = S.slFree && S.slFree.left > 0 ? S.slFree : null;
+  if(f && !f.feat){ f.feat = 'exp'; f.m = f.m || 'spaten'; f.sym = SLX_SPEC[Math.floor(Math.random()*SLX_SPEC.length)]; }
+  return f;
+}
 function slStats(){ return S.slst || (S.slst = {n:0, einsatz:0, gewinn:0, best:0, bonus:0, bestBonus:0, jp:0}); }
 
 /* ---------- Symbole ---------- */
@@ -5506,6 +5636,7 @@ function slAttach(){
   if(!SLWRAP) slBuild();
   slot.appendChild(SLWRAP);
   slRefresh();
+  if(S.slFree && S.slFree.intro && !SL.spinning && !SLWRAP.querySelector('.slx-ov')) slIntro();
 }
 function slLed(a, b){ const x = document.getElementById('slxLed1'), y = document.getElementById('slxLed2'); if(x && a !== undefined) x.textContent = a; if(y && b !== undefined) y.textContent = b; }
 function slLedTop(){
@@ -5520,9 +5651,13 @@ function slRefresh(){
   SLWRAP.querySelector('#slxTabs').innerHTML = tabs.length > 1 ? tabs.map(x => '<button data-act="slm" data-id="' + x.id + '" aria-pressed="' + (x.id === m.id) + '" ' + (!x.ok() || SL.spinning || free ? 'disabled' : '') + '>' + esc(x.tab || x.name) + (!x.ok() && x.lock ? '<small>' + esc(x.lock) + '</small>' : '') + '</button>').join('') : '';
   SLWRAP.querySelector('#slxName').textContent = m.name;
   SLWRAP.querySelector('#slxSub').textContent = m.sub;
-  if(!SL.spinning && !SL.counting) slLed(slLedTop(), SL.led || (free ? 'BONUSRUNDE MANÖVER' : 'GEWINNE BIS 300-FACH'));
+  if(!SL.spinning && !SL.counting) slLed(slLedTop(), SL.led || (free ? 'BONUSRUNDE ' + m.bonus.toUpperCase() : 'GEWINNE BIS ' + SLX_P3.joker + '-FACH'));
   SLWRAP.querySelector('#slxBonus').innerHTML = free
-    ? '<b>Bonusrunde „Manöver“</b> · Freispiel ' + (free.total - free.left + 1) + ' von ' + free.total + ' · alle Gewinne doppelt · bisher ' + eur(free.win) : '';
+    ? '<b>Bonusrunde „' + esc(m.bonus) + '“</b> · Freispiel ' + (free.total - free.left + 1) + ' von ' + free.total
+      + (free.feat === 'exp' && free.sym ? ' · Spezialsymbol <span class="slx-mini">' + slxIcon(free.sym, 20) + '</span> ' + esc(SLX_SYM[free.sym].name) : '')
+      + (free.feat === 'sticky' && free.sticky ? ' · ' + free.sticky.flat().filter(Boolean).length + ' haftende Joker' : '')
+      + (free.feat === 'wild' ? ' · Sturmflut-Chance 40 %' : '')
+      + ' · bisher ' + eur(free.win) : '';
   SLWRAP.querySelector('#slxBonus').classList.toggle('on', !!free);
   const lb = free ? free.lb : slLineBet(m, SL.bet), lines = free ? free.lines : SL.lines, total = lb * lines;
   const dis = SL.spinning || !slOpen();
@@ -5551,8 +5686,20 @@ function slSpin(){
   }
   const total = lb * lines, st = slStats();
   const stops = [0,1,2].map(r => Math.floor(Math.random()*SLX_STR[r].length));
-  const g = slxGrid(stops), ev = slxEval(g, lines), mult = free ? 2 : 1;
-  let win = ev.x * lb * mult + (ev.sc >= 3 ? 2 * total * mult : 0);
+  const g = slxGrid(stops);
+  let wildReel = -1, expReels = [], expWin = 0;
+  if(free && free.feat === 'sticky'){
+    free.sticky = free.sticky || [[0,0,0],[0,0,0],[0,0,0]];
+    for(let r = 0; r < 3; r++) for(let i = 0; i < 3; i++){ if(free.sticky[r][i]) g[r][i] = 'joker'; if(g[r][i] === 'joker') free.sticky[r][i] = 1; }
+  }
+  if(free && free.feat === 'wild' && Math.random() < .4){ wildReel = Math.floor(Math.random()*3); g[wildReel] = ['joker','joker','joker']; }
+  const ev = slxEval(g, lines);
+  let win = ev.x * lb + (ev.sc >= 3 ? 2 * total : 0);
+  if(free && free.feat === 'exp' && free.sym){
+    expReels = [0,1,2].filter(r => g[r].includes(free.sym));
+    if(expReels.length >= SLX_MINK[free.sym]){ expWin = (expReels.length === 3 ? SLX_P3[free.sym] : SLX_EXP2[free.sym]) * lines * lb; win += expWin; }
+    else expReels = [];
+  }
   // Buchung sofort und gespeichert, damit Neuladen nichts ändert
   if(!free){
     S.money -= total;
@@ -5560,10 +5707,15 @@ function slSpin(){
     S.slx.n++; st.n++; st.einsatz += total;
     if(typeof slJpAdd === 'function') slJpAdd(total);
   } else { free.left--; free.win += win; }
-  let bonusNeu = false, bonusMehr = false;
+  let bonusNeu = false, bonusMehr = 0;
   if(ev.sc >= 3){
-    if(free){ free.left += 5; free.total += 5; bonusMehr = true; }
-    else { S.slFree = {left:8, total:8, win:0, lb, lines, m:m.id}; bonusNeu = true; }
+    if(free){ const add = Math.min(m.fsAdd, Math.max(0, 50 - free.total)); free.left += add; free.total += add; bonusMehr = add; }
+    else {
+      S.slFree = {left:m.fsN, total:m.fsN, win:0, lb, lines, m:m.id, feat:m.feat, intro:true,
+        sym: m.feat === 'exp' ? SLX_SPEC[Math.floor(Math.random()*SLX_SPEC.length)] : null,
+        sticky: m.feat === 'sticky' ? [[0,0,0],[0,0,0],[0,0,0]] : null};
+      bonusNeu = true;
+    }
   }
   st.gewinn += win; st.best = Math.max(st.best, win);
   S.slPend = (S.slPend || 0) + win;
@@ -5571,25 +5723,83 @@ function slSpin(){
   save();
   SL.spinning = true; SL.talk = ''; SL.led = null; slRefresh(); renderRes();
   slAnimate(g, () => {
-    SL.spinning = false; SL.grid = g;
-    if(S.slPend){ S.money += S.slPend; S.slPend = 0; }
-    const fin = S.slFree && S.slFree.left <= 0 ? S.slFree : null;
-    if(fin){ st.bonus++; st.bestBonus = Math.max(st.bestBonus, fin.win); S.slFree = null; }
-    save(); renderRes();
-    slShowWins(ev);
-    const big = win >= total * 10;
-    if(win > 0){ big ? slSnd.big() : slSnd.win(); slCount(win, big ? 'GROSSER GEWINN ' : 'GEWINN '); if(big) slCoins(win >= total*50 ? 60 : 30); }
-    else slLed(undefined, free ? 'FREISPIEL OHNE GEWINN' : 'NIETE');
-    if(bonusNeu){ slSnd.bonus(); SL.led = 'BONUSRUNDE MANÖVER: 8 FREISPIELE!'; SL.talk = 'Drei Feldpost-Pakete! Bonusrunde „Manöver“: 8 Freispiele, alle Gewinne doppelt.'; }
-    else if(bonusMehr){ slSnd.bonus(); SL.led = '+5 FREISPIELE'; SL.talk = 'Nachschub! Fünf weitere Freispiele.'; }
-    else if(fin) SL.talk = 'Bonusrunde beendet. Ausbeute: ' + eur(fin.win) + '.';
-    else if(win === 0) SL.talk = Math.random() < .3 ? pick(SL_KALLE) : Math.random() < .04 ? pick(SL_BROCK) : pick(SL_NIETE);
-    else if(Math.random() < .2) SL.talk = pick(SL_KALLE);
-    else SL.talk = '';
-    if(jp && typeof slJpKnacken === 'function') slJpKnacken();
-    slRefresh(); setTimeout(() => { if(!SL.spinning) slRefresh(); }, 1800);
-    if(S.slx && S.slx.n >= 50 && !S.slx.warned){ S.slx.warned = true; save(); setTimeout(slWarn, 1500); }
+    const after = () => {
+      SL.spinning = false; SL.grid = g;
+      if(S.slPend){ S.money += S.slPend; S.slPend = 0; }
+      const fin = S.slFree && S.slFree.left <= 0 ? S.slFree : null;
+      if(fin){ st.bonus++; st.bestBonus = Math.max(st.bestBonus, fin.win); S.slFree = null; }
+      save(); renderRes();
+      slShowWins(ev, expWin ? lines : 0);
+      const big = win >= total * 10;
+      if(win > 0){ big ? slSnd.big() : slSnd.win(); slCount(win, big ? 'GROSSER GEWINN ' : 'GEWINN '); if(big) slCoins(win >= total*50 ? 60 : 30); }
+      else slLed(undefined, free ? 'FREISPIEL OHNE GEWINN' : 'NIETE');
+      if(bonusNeu){ slSnd.bonus(); SL.led = 'BONUSRUNDE ' + m.bonus.toUpperCase() + '!'; SL.talk = 'Drei Feldpost-Pakete! Bonusrunde „' + m.bonus + '“ mit ' + m.fsN + ' Freispielen.'; setTimeout(slIntro, 700); }
+      else if(bonusMehr){ slSnd.bonus(); SL.led = '+' + bonusMehr + ' FREISPIELE'; SL.talk = 'Nachschub! ' + bonusMehr + ' weitere Freispiele.'; }
+      else if(fin){ SL.talk = 'Bonusrunde beendet. Ausbeute: ' + eur(fin.win) + '.'; setTimeout(() => slOutro(fin, m), 900); }
+      else if(expWin) SL.talk = 'Das Spezialsymbol breitet sich aus: ' + eur(expWin) + ' extra!';
+      else if(wildReel >= 0) SL.talk = 'Sturmflut! Walze ' + (wildReel + 1) + ' steht komplett unter Joker.';
+      else if(win === 0) SL.talk = free ? '' : Math.random() < .3 ? pick(SL_KALLE) : Math.random() < .04 ? pick(SL_BROCK) : pick(SL_NIETE);
+      else if(!free && Math.random() < .2) SL.talk = pick(SL_KALLE);
+      else SL.talk = '';
+      if(jp && typeof slJpKnacken === 'function') slJpKnacken();
+      slRefresh(); setTimeout(() => { if(!SL.spinning) slRefresh(); }, 1800);
+      if(S.slx && S.slx.n >= 50 && !S.slx.warned && !S.slFree){ S.slx.warned = true; save(); setTimeout(slWarn, 1500); }
+    };
+    if(wildReel >= 0) slWildFx(wildReel);
+    if(free && free.feat === 'sticky') slStickyFx(free.sticky);
+    if(expReels.length) setTimeout(() => slExpand(expReels, free.sym, after), 250); else after();
   });
+}
+function slWildFx(r){
+  const reel = document.getElementById('slxStrip' + r); if(!reel) return;
+  reel.parentNode.classList.add('wave'); slTone(220, .5, 'sawtooth', .04); slTone(330, .5, 'sawtooth', .03, .1);
+  setTimeout(() => reel.parentNode.classList.remove('wave'), 1600);
+}
+function slStickyFx(st){
+  for(let r = 0; r < 3; r++){ const cells = document.querySelectorAll('#slxStrip' + r + ' .slx-cell'); for(let i = 0; i < 3; i++) if(st[r][i] && cells[i]) cells[i].classList.add('sticky'); }
+}
+function slExpand(reels, sym, cb){
+  let k = 0;
+  const next = () => {
+    if(k >= reels.length){ setTimeout(cb, 350); return; }
+    const r = reels[k++], el = document.getElementById('slxStrip' + r);
+    if(el){ el.innerHTML = [0,1,2].map(() => '<div class="slx-cell exp" data-s="' + sym + '">' + slxIcon(sym, 54) + '</div>').join(''); }
+    slTone(440 + k*110, .25, 'triangle', .08);
+    setTimeout(next, 380);
+  };
+  next();
+}
+function slOverlay(html){
+  const cab = SLWRAP && SLWRAP.querySelector('.slx-cab'); if(!cab) return null;
+  let ov = cab.querySelector('.slx-ov'); if(!ov){ ov = document.createElement('div'); ov.className = 'slx-ov'; cab.appendChild(ov); }
+  ov.innerHTML = '<div class="slx-ovin">' + html + '</div>'; return ov;
+}
+function slIntro(){
+  const f = S.slFree; if(!f || !f.intro || (SLWRAP && SLWRAP.querySelector('.slx-ov'))) return;
+  const m = SL_M.find(x => x.id === f.m) || SL_M[0];
+  const ov = slOverlay('<div class="slx-ovk">Bonusrunde</div><div class="slx-ovt">' + esc(m.bonus) + '</div>'
+    + (f.feat === 'exp' ? '<div class="slx-pick" id="slxPick">' + slxIcon('epa', 72) + '</div><div class="slx-ovs" id="slxPickName">Das Spezialsymbol wird gezogen …</div>' : '')
+    + '<p class="slx-ovd">' + esc(m.fdesc) + '</p>'
+    + '<button class="btn gold wide" data-act="sl_ovclose" id="slxOvBtn" ' + (f.feat === 'exp' ? 'disabled' : '') + '>' + f.total + ' Freispiele starten</button>');
+  if(!ov) return;
+  if(f.feat === 'exp'){
+    const box = document.getElementById('slxPick'); let i = 0; const t0 = Date.now();
+    const iv = setInterval(() => {
+      const el = document.getElementById('slxPick'); if(!el){ clearInterval(iv); return; }
+      if(Date.now() - t0 < 2200){ el.innerHTML = slxIcon(SLX_SPEC[i++ % SLX_SPEC.length], 72); slTone(600 + (i%6)*60, .04, 'square', .02); }
+      else {
+        clearInterval(iv); el.innerHTML = slxIcon(f.sym, 72); el.classList.add('done'); slSnd.bonus();
+        const n = document.getElementById('slxPickName'); if(n) n.textContent = 'Spezialsymbol: ' + SLX_SYM[f.sym].name;
+        const b = document.getElementById('slxOvBtn'); if(b){ b.disabled = false; b.focus(); }
+      }
+    }, 90);
+  } else { const b = document.getElementById('slxOvBtn'); if(b) b.focus(); }
+}
+function slOutro(fin, m){
+  const ov = slOverlay('<div class="slx-ovk">Bonusrunde „' + esc(m.bonus) + '“ beendet</div><div class="slx-ovt">' + eur(fin.win) + '</div>'
+    + '<p class="slx-ovd">' + fin.total + ' Freispiele, ' + (fin.win >= fin.lb*fin.lines*20 ? 'eine Ausbeute, von der Kalle noch Wochen erzählt.' : fin.win > 0 ? 'nicht schlecht für einen Feierabend.' : 'leider ohne Beute. Das Manöver war trotzdem lehrreich.') + '</p>'
+    + '<button class="btn gold wide" data-act="sl_ovclose">Weiter</button>');
+  if(ov && fin.win >= fin.lb*fin.lines*20) slCoins(60);
 }
 function slAnimate(g, done){
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -5621,10 +5831,11 @@ function slAnimate(g, done){
     setTimeout(() => el.parentNode.classList.remove('blur'), dur * .7);
   }
 }
-function slShowWins(ev){
+function slShowWins(ev, allLines){
   const svg = document.getElementById('slxLines'); if(!svg) return;
   const y = [SL_CELL*.5, SL_CELL*1.5, SL_CELL*2.5], x = [50, 150, 250];
-  svg.innerHTML = ev.wins.map(w => { const L = SLX_LINES[w.l]; return '<polyline points="0,' + y[L[0]] + ' ' + x.map((xx, i) => xx + ',' + y[L[i]]).join(' ') + ' 300,' + y[L[2]] + '" class="blink"/>'; }).join('');
+  const ls = allLines ? SLX_LINES.slice(0, allLines).map((_, l) => ({l})) : ev.wins;
+  svg.innerHTML = ls.map(w => { const L = SLX_LINES[w.l]; return '<polyline points="0,' + y[L[0]] + ' ' + x.map((xx, i) => xx + ',' + y[L[i]]).join(' ') + ' 300,' + y[L[2]] + '" class="blink"/>'; }).join('');
   for(const w of ev.wins){
     const L = SLX_LINES[w.l];
     for(let r = 0; r < w.n; r++){ const c = document.querySelectorAll('#slxStrip' + r + ' .slx-cell')[L[r]]; if(c) c.classList.add('win'); }
@@ -5662,7 +5873,8 @@ function renderSpielothek(){
   h += '<details class="panel pad slx-info"><summary><b>Gewinntabelle</b></summary>'
     + '<p class="small muted">Gewinne gelten pro Linie, von links nach rechts, als Vielfaches des Linieneinsatzes. Die Trillerpfeife ersetzt jedes Symbol außer dem Paket.</p><div class="slx-pay">'
     + ['joker','stern','orden','helm','bier','stiefel','epa'].map(s => '<div>' + slxIcon(s, 34) + '<span><b>' + esc(SLX_SYM[s].name) + '</b><br>3×: ' + SLX_P3[s] + '-fach' + (SLX_P2[s] ? ', 2×: ' + SLX_P2[s] + '-fach' : '') + '</span></div>').join('')
-    + '<div>' + slxIcon('paket', 34) + '<span><b>Feldpost-Paket</b><br>3 irgendwo: 8 Freispiele mit doppelten Gewinnen und 2× Gesamteinsatz. In der Bonusrunde gibt es 5 weitere.</span></div></div>'
+    + '<div>' + slxIcon('paket', 34) + '<span><b>Feldpost-Paket</b><br>3 irgendwo: Bonusrunde und 2× Gesamteinsatz. In der Bonusrunde gibt es weitere Freispiele.</span></div></div>'
+    + '<p class="small" style="margin:10px 0 0"><b>Bonusrunde „' + esc(slMachine().bonus) + '“:</b> ' + esc(slMachine().fdesc) + '</p>'
     + '<p class="small muted" style="margin:10px 0 0">Gewinnlinien: 1 = Mitte, 3 = alle waagerechten, 5 = dazu beide Diagonalen.'
     + (typeof SLJ !== 'undefined' ? ' Kasernen-Jackpot: drei echte Generalssterne auf der Mittellinie bei 5 Linien. 1 % jedes Einsatzes aller Spieler fließt hinein. Knackbar einmal in 30 Tagen pro Spieler.' : '')
     + ' Auszahlungsquote rund 93 %. Höchstens ' + SL_MAX + ' bezahlte Spiele am Tag, nur Spielgeld.</p></details>'
