@@ -205,6 +205,14 @@ p{margin:0 0 10px}
 .choices{display:flex;flex-direction:column;gap:8px;margin-top:14px}
 .choice{text-align:left;white-space:normal;line-height:1.3;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
+.storylog{margin:12px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:10px}
+.row.funk{gap:12px;justify-content:flex-start}
+.wx{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.wxnote{color:var(--signal);margin:-2px 0 6px}
+.warow{padding:10px 0;border-top:1px solid var(--line)}
+.warow:first-of-type{border-top:0}
+.wat{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.wab{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:36px}
 .chip{font-size:14px;font-weight:600;padding:3px 9px;border-radius:3px;background:var(--surface2);color:var(--ok)}
 .chip.neg{color:var(--bad)}
 .stamp.small-stamp{font-size:22px;margin:0 0 12px}
@@ -971,7 +979,7 @@ function pfStart(id){
   S.fa = {type:'pfand', route:id, start:now(), end:now()+r.min*60000/S.speed};
   return null;
 }
-function pfFinish(a, events){
+function pfFinish(a, events){ waAdd('pfand');
   const r = PF_ROUTES.find(x=>x.id===a.route), f = (1 + .02*S.stats.fitness) * lageF('pfand');
   let ew = Math.round(ri(r.ew[0], r.ew[1])*f), mw = Math.round(ri(r.mw[0], r.mw[1])*f);
   let note = '';
@@ -1055,7 +1063,7 @@ function marktOffers(){
 }
 function salesRecent(){ const cut = now() - 30*864e5/S.speed; S.garage.sales = S.garage.sales.filter(t => t >= cut); return S.garage.sales.length; }
 function darfVerkaufen(){ return S.ntg.status === 'ok' || salesRecent() < NTG_FREI; }
-function fixFinish(a, events){
+function fixFinish(a, events){ waAdd('fix');
   const c = S.garage.cars.find(x => x.uid === a.uid); if(!c) return;
   const d = c.defs.find(x => x.id === a.def); if(d) d.done = true;
   events.push(CAR_I[c.model].name+': '+DEF_I[a.def].name+' erledigt.');
@@ -1432,7 +1440,7 @@ function notifyEvents(ev){
 /* ---------- Seitenaufbau: Hauptbereiche mit Unterreitern ---------- */
 const SUBS = {
   stube: [
-    {id:'uebersicht', label:'Übersicht', src:'stube', rest:true, match:['Grundausbildung','Dienstzeitende','Meldungen','Auslandseinsatz','Beurteilung','Werte']},
+    {id:'uebersicht', label:'Übersicht', src:'stube', rest:true, match:['Grundausbildung','Dienstzeitende','Meldungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Beurteilung','Werte']},
     {id:'stube', label:'Stube', src:'raum', rest:true, match:['Deine Stube','Ausrüstung']},
     {id:'vorsorge', label:'Vorsorge', src:'raum', match:['Anwartschaftsversicherung','Pflegepflichtversicherung']},
     {id:'kameraden', label:'Kameraden', src:'raum', match:['Kompanie','Sammelalbum']},
@@ -1445,6 +1453,7 @@ const SUBS = {
   ausb: [
     {id:'ausbildung', label:'Ausbildung', src:'ausb', rest:true, match:['Ausbildung']},
     {id:'lehrgaenge', label:'Lehrgänge', src:'ausb', match:['Lehrgänge']},
+    {id:'fahrschule', label:'Fahrschule', src:'ausb', match:['Fahrschule']},
     {id:'laufbahn', label:'Laufbahn', src:'laufbahn', rest:true, match:['Dienstgrade','Nächste Beförderung','Werdegang']},
     {id:'dv', label:'Dienstverhältnis', src:'laufbahn', match:['Teilstreitkraft','Dienstverhältnis','Verwendung','Standort']},
     {id:'orden', label:'Orden', src:'laufbahn', match:['Orden']},
@@ -1488,6 +1497,7 @@ function runStrip(){
   if(S.ausb) it.push(['ausb', STAT_NAME[S.ausb.id] + ' auf Stufe ' + (S.stats[S.ausb.id] + 1)]);
   if(S.lg) it.push(['lg', L[S.lg.id].name + (S.lg.exam ? ', Prüfung wartet' : '')]);
   if(S.fa) it.push(['fa', S.fa.type === 'pfand' ? 'Leergut sammeln' : 'Schrauben']);
+  if(S.fs) it.push(['fs', 'Fahrschule: ' + FS_I[S.fs.id].name + (S.fs.exam ? ', Prüfung wartet' : '')]);
   if(!it.length) return '<div class="strip idle"><span>Gerade nichts zu tun. Das fällt auf.</span><button class="btn mini" data-act="tab" data-id="dienst">Dienst antreten</button></div>';
   return '<div class="strip" aria-label="Läuft gerade">' + it.map(([k, n]) => '<div><div class="sh"><span>' + esc(n) + '</span><span class="num" data-left="' + k + '"></span></div><div class="prog"><i data-prog="' + k + '"></i></div></div>').join('') + '</div>';
 }
@@ -1669,6 +1679,52 @@ DIENSTE.push(
   {id:'v_m_funk',  name:'Funkwache',               min:60, st:15, pay:170, bp:9, t:1, verw:'m_funk', desc:'Kopfh\u00f6rer auf, Block bereit, und immer die richtige Frequenz.'},
   {id:'v_m_smut',  name:'Komb\u00fcse',            min:75, st:25, pay:190, bp:7, t:1, verw:'m_smut', desc:'Labskaus f\u00fcr zweihundert. Bei Windst\u00e4rke sieben.'},
 );
+/* ---------- Fahrschule: Führerscheine schalten Fahrdienste frei ---------- */
+const FAHRSCHULE = [
+  {id:'b', name:'Klasse B', sub:'Pkw', min:30, cost:300, t:0, art:'car',
+   desc:'Erst mal das Dienstauto. Rechts vor links gilt auch auf dem Kasernengelände.'},
+  {id:'stapler', name:'Staplerschein', sub:'Flurförderzeug', min:20, cost:150, t:0, art:'forklift',
+   desc:'Paletten bewegen wie ein Profi. Oder wie Kalle, also schnell und ohne Fragen.'},
+  {id:'c', name:'Klasse C', sub:'Lkw', min:90, cost:900, t:1, need:'b', art:'truck',
+   desc:'Ab 7,5 Tonnen. Spiegel einstellen dauert länger als die Fahrt.'},
+  {id:'ce', name:'Klasse CE', sub:'Lkw mit Anhänger', min:150, cost:1800, t:2, need:'c', art:'truck',
+   desc:'Rückwärts mit Anhänger. Der Fahrlehrer betet leise.'},
+  {id:'kette', name:'Kettenfahrzeug', sub:'Panzer', min:180, cost:2500, t:3, need:'c', tsk:'heer', art:'tank',
+   desc:'Kein Gaspedal für Zögerer. Bordsteine sind ab jetzt eher Vorschläge.'},
+  {id:'schlepp', name:'Flugzeugschlepper', sub:'Vorfeld', min:120, cost:1600, t:2, need:'b', tsk:'lw', art:'plane',
+   desc:'Ein Eurofighter am Haken. Langsam fahren ist hier keine Schwäche.'},
+  {id:'boot', name:'Bootsführerschein', sub:'Hafen und Küste', min:120, cost:1600, t:2, need:'b', tsk:'marine', art:'ship',
+   desc:'Anlegen ohne Kratzer. Der Hafenkapitän schaut zu, die Möwen auch.'},
+];
+const FS_I = Object.fromEntries(FAHRSCHULE.map(x=>[x.id,x]));
+DIENSTE.push(
+  {id:'kurier', name:'Kurierfahrt', min:20, st:8, pay:55, bp:3, t:0, fs:'b', hideFor:['G'],
+   desc:'Akten zur Standortverwaltung bringen. Unterwegs tanken, nicht frühstücken.'},
+  {id:'lager', name:'Lagerdienst', min:25, st:10, pay:60, bp:3, t:0, fs:'stapler', hideFor:['O','G'],
+   desc:'Paletten von links nach rechts. Und wieder zurück, weil die Liste falsch war.'},
+  {id:'transport', name:'Transportfahrt', min:60, st:15, pay:190, bp:8, t:0, fs:'c', hideFor:['G'],
+   desc:'Material zum Truppenübungsplatz fahren. Das Navi kennt die Panzerstraße nicht.'},
+  {id:'schwer', name:'Schwertransport', min:150, st:30, pay:560, bp:18, t:0, fs:'ce', hideFor:['G'],
+   desc:'Ein Anhänger, eine Brücke, drei Zentimeter Luft.'},
+  {id:'kette_d', name:'Kettenfahrzeug bewegen', min:120, st:30, pay:470, bp:16, t:0, fs:'kette', tsk:'heer', hideFor:['G'],
+   desc:'Auf dem Übungsplatz darfst du alles. Außer bremsen müssen.'},
+  {id:'schlepp_d', name:'Flugzeug schleppen', min:60, st:15, pay:200, bp:8, t:0, fs:'schlepp', tsk:'lw', hideFor:['G'],
+   desc:'Vom Shelter zur Startbahn, Schritttempo, alle Augen auf dir.'},
+  {id:'boot_d', name:'Hafenbootfahrt', min:60, st:15, pay:200, bp:8, t:0, fs:'boot', tsk:'marine', hideFor:['G'],
+   desc:'Post und Proviant zu den Schiffen auf Reede. Spritzwasser inklusive.'},
+  {id:'schnee', name:'Schneeräumen', min:30, st:15, pay:95, bp:5, t:0, wx:['schnee','frost'],
+   desc:'Nur bei Schnee und Frost. Der Kasernenhof muss frei sein, bevor Brockmann aufsteht.'},
+  {id:'freibad', name:'Badeaufsicht Standortbad', min:45, st:10, pay:110, bp:4, t:0, wx:['sonne','hitze'], season:'sommer',
+   desc:'Nur an sonnigen Sommertagen. Pfeife, Sonnencreme, wichtige Miene.'}
+);
+Object.assign(DIENST_ART, {kurier:'car', lager:'forklift', transport:'truck', schwer:'truck', kette_d:'tank', schlepp_d:'plane', boot_d:'ship', schnee:'snow', freibad:'pool'});
+Object.assign(ARTS, {
+  tank:'<rect x="24" y="30" width="72" height="14" rx="3" fill="var(--olive)"/><rect x="44" y="20" width="30" height="12" rx="3" fill="var(--olive)"/><rect x="72" y="24" width="30" height="4" fill="var(--olive)"/><rect x="20" y="42" width="80" height="10" rx="5" fill="#1C2217"/><circle cx="30" cy="47" r="3" fill="var(--metal)"/><circle cx="45" cy="47" r="3" fill="var(--metal)"/><circle cx="60" cy="47" r="3" fill="var(--metal)"/><circle cx="75" cy="47" r="3" fill="var(--metal)"/><circle cx="90" cy="47" r="3" fill="var(--metal)"/>',
+  forklift:'<rect x="30" y="26" width="34" height="20" rx="3" fill="var(--signal)"/><path d="M36 26v-12h18l6 12" fill="none" stroke="#1C2217" stroke-width="3"/><rect x="66" y="10" width="4" height="40" fill="#1C2217"/><rect x="70" y="44" width="22" height="4" fill="#1C2217"/><rect x="72" y="32" width="20" height="12" fill="#A0673A"/><circle cx="38" cy="48" r="5" fill="#1C2217"/><circle cx="58" cy="48" r="5" fill="#1C2217"/>',
+  snow:'<path d="M20 52q20-12 40-6t40-4v10H20z" fill="#F2F4F6"/><rect x="40" y="24" width="4" height="26" fill="#7A5A1E"/><path d="M30 50h24l-4-8H34z" fill="var(--olive)"/><circle cx="30" cy="14" r="2" fill="#fff"/><circle cx="60" cy="10" r="2" fill="#fff"/><circle cx="84" cy="18" r="2" fill="#fff"/><circle cx="96" cy="8" r="2" fill="#fff"/><circle cx="70" cy="26" r="2" fill="#fff"/>',
+  pool:'<rect x="14" y="36" width="92" height="16" fill="#5E87A3"/><path d="M14 40q8-4 16 0t16 0 16 0 16 0 16 0 12 0" stroke="#BCD1DC" stroke-width="2" fill="none"/><rect x="80" y="10" width="4" height="26" fill="#F2F2EA"/><rect x="72" y="10" width="20" height="4" fill="#F2F2EA"/><circle cx="34" cy="16" r="8" fill="var(--signal)"/>',
+});
+
 const D = Object.fromEntries(DIENSTE.map(d=>[d.id,d]));
 D.uvd.hideFor = ['A','O','G']; D.spez.hideFor = ['U','F','A','O','G'];
 D.innen.hideFor = ['O','G']; D.wache.hideFor = ['O','G']; D.formal.hideFor = ['G'];
@@ -1725,7 +1781,7 @@ function rel(k){ return (S && S.rel && S.rel[k]) || 0; }
 function migrate(){
   S.rel = Object.assign({spiess:0,chef:0,kalle:0,lena:0,dennis:0,krueger:0}, S.rel||{});
   S.lgNote = S.lgNote || {}; S.lgRetry = S.lgRetry || {};
-  S.flags = S.flags || {}; S.pending = S.pending || []; S.seen = S.seen || {};
+  S.flags = S.flags || {}; S.pending = S.pending || []; S.seen = S.seen || {}; storyEnsure();
   S.stube = Object.assign({bett:0,spind:0,kaffee:0,kuehl:0,hantel:0}, S.stube||{});
   if(S.verw === undefined) S.verw = null;
   if(!S.tsk) S.tsk = 'heer';
@@ -2478,6 +2534,714 @@ const EVENTS = [
    {t:'Die Plane nachts heimlich zurückbringen', out:{t:'Eine Nacht weniger Schlaf, aber niemand weiß etwas.', fx:{st:-15, unflag:'plane'}}},
   ]},
 ];
+/* =========================================================
+   STORY: Staffel 1 – Der letzte Sommer des Spießes
+   Kapitel kommen nacheinander. Entscheidungen setzen Flags (s1_*),
+   auf die spätere Kapitel und der Stubenfunk reagieren.
+   ========================================================= */
+const STORY_GAP = 16*3600e3;   // Mindestabstand zwischen Kapiteln (echte Zeit)
+const STORY_DIENSTE = 2;       // und so viele beendete Dienste dazwischen
+const STORY_TITLE = 'Staffel 1: Der letzte Sommer des Spießes';
+const STORY = [
+ {id:'s1_01', story:1, title:'Ein Gerücht im Flur', who:'dennis',
+  text:'Dennis stolpert in die Stube, plötzlich hellwach. „Ich hab’s im Geschäftszimmer gehört. Brockmann geht im Sommer in Pension. Mit Urkunde und allem.“ Kalle lässt vor Schreck eine Dose Energy fallen.',
+  ch:[
+   {t:'Brockmann direkt fragen', out:{t:'„Wer erzählt so was?“ Brockmann sortiert drei Kugelschreiber nach Länge. „Gehen Sie wieder an die Arbeit.“ Ein Nein ist das nicht.', fx:{rel:{spiess:2}, flag:'s1_gefragt'}}},
+   {t:'Es in die Kompanie-Gruppe posten', out:{t:'Nach zwölf Minuten wissen es alle. Nach fünfzehn Minuten weiß Brockmann, wer es gepostet hat.', fx:{bp:-2, rel:{spiess:-4, kalle:3}, flag:'s1_gepostet'}}},
+   {t:'Für dich behalten', out:{t:'Du sagst nichts. Dennis schläft wieder ein. Kalle starrt nachdenklich an die Decke. Er plant etwas.', fx:{rel:{dennis:2}, flag:'s1_still'}}},
+  ]},
+ {id:'s1_02', story:2, title:'Kalles Wettbüro', who:'kalle',
+  text:'Am Schwarzen Brett hängt ein neuer Putzplan. Es ist kein Putzplan. Es sind Quoten. „Wer wird der neue Spieß? Lena steht bei 3 zu 1, du bei 12 zu 1, Krüger vom Lehrgang bei 40 zu 1. Einsatz ab zwanzig Euro.“',
+  alt:[{if:'s1_gepostet', text:'Seit deinem Post kennt die ganze Kaserne das Gerücht, und Kalle hat daraus ein Geschäft gemacht. Am Schwarzen Brett hängt ein „Putzplan“ mit Quoten: Lena 3 zu 1, du 12 zu 1, Krüger vom Lehrgang 40 zu 1. „Danke übrigens für die Werbung.“'}],
+  ch:[
+   {t:'Zwanzig Euro auf dich selbst', out:{t:'Kalle schreibt deinen Namen in Schönschrift. „Mutig. Gefällt mir.“', fx:{money:-20, rel:{kalle:4}, flag:'s1_wette_selbst'}}},
+   {t:'Zwanzig Euro auf Lena', out:{t:'Lena erfährt davon und ist geschmeichelt. „Aber nur, weil es stimmt.“', fx:{money:-20, rel:{lena:5, kalle:2}, flag:'s1_wette_lena'}}},
+   {t:'„Kalle, das gibt Ärger.“', out:{t:'Kalle hängt die Tabelle ab. Zwei Stunden später hängt sie wieder da, diesmal als Speiseplan getarnt.', fx:{bp:2, rel:{kalle:-3}, flag:'s1_wette_nein'}}},
+  ]},
+ {id:'s1_03', story:3, title:'Projekt Glanz', who:'chef',
+  text:'Hauptmann von Ahlen ruft die Kompanie zusammen. „Kameraden, in zwei Wochen kommt die Brigadeinspektion. General Hartmann persönlich. Ich nenne es: Projekt Glanz.“ Er zeigt eine Folie mit einem Diamanten. Dann zeigt er auf dich.',
+  ch:[
+   {t:'„Ich übernehme die Präsentation.“', out:{t:'Von Ahlen strahlt. Du bekommst einen USB-Stick mit 140 Folien und den Auftrag, „das Ganze knackiger zu machen“.', fx:{st:-5, rel:{chef:6}, flag:'s1_folien'}}},
+   {t:'„Erst mal die Heizung in Block C reparieren?“', out:{t:'Kurze Stille. Dann: „Pragmatisch. Gefällt mir. Machen Sie das.“ Block C ist seit drei Wintern kalt. Jetzt ist es dein Problem.', fx:{bp:3, rel:{chef:2}, flag:'s1_heizung'}}},
+   {t:'„Lena wäre perfekt dafür.“', out:{t:'Lena wirft dir einen Blick zu, irgendwo zwischen Dank und Mordlust. Sie macht es trotzdem hervorragend.', fx:{rel:{lena:-2, chef:2}, flag:'s1_lena_projekt'}}},
+  ]},
+ {id:'s1_04', story:4, title:'Das verschwundene Notizbuch', who:'spiess',
+  text:'Brockmann durchsucht im Flur einen Mülleimer. Mit Handschuhen. „Mein schwarzes Notizbuch ist weg. Sechsundzwanzig Jahre Spindkontrollen. Wer es findet, hat bei mir was gut. Wer reingeschaut hat, nicht.“ Zum ersten Mal wirkt er nervös.',
+  ch:[
+   {t:'Beim Suchen helfen', roll:{stat:'fachwissen', base:35},
+     ok:{t:'Kein Notizbuch, aber eine Spur: In der Ausgabeliste der Kleiderkammer steht „1x Buch, schwarz, ausgegeben an: K.“', fx:{rel:{spiess:4}, flag:'s1_spur'}},
+     fail:{t:'Zwei Stunden Mülleimer, kein Notizbuch. Aber Brockmann hat gesehen, dass du gesucht hast.', fx:{st:-8, rel:{spiess:3}}}},
+   {t:'Kalle fragen, ob er was weiß', out:{t:'Kalle wird sehr still. „Ich? Bücher? Ich lese nicht mal Beipackzettel.“ Er schwitzt.', fx:{rel:{kalle:-2}, flag:'s1_spur'}}},
+   {t:'Weitergehen, nicht dein Problem', out:{t:'Hinter dir hörst du Brockmann seufzen. So hast du ihn noch nie gehört.', fx:{}}},
+  ]},
+ {id:'s1_05', story:5, title:'Lenas großer Plan', who:'lena',
+  text:'Lena sitzt mit drei Ordnern auf dem Bett. „Ich bewerbe mich für die Offizierlaufbahn. Dafür brauche ich eine Stellungnahme vom Spieß. Aber Brockmann denkt gerade nur an sein Notizbuch. Hilfst du mir?“',
+  ch:[
+   {t:'Mit ihr fürs Auswahlverfahren üben', out:{t:'Bis Mitternacht Staatsbürgerkunde und Kopfrechnen. Lena ist gnadenlos. Du lernst nebenbei auch was.', fx:{st:-10, rel:{lena:8}, flag:'s1_lena_hilfe'}}},
+   {t:'Bei Brockmann ein gutes Wort einlegen', minRel:{spiess:10}, out:{t:'Brockmann hört zu und notiert etwas auf einem Zettel. „Brandt. Gute Soldatin. Wird erledigt.“', fx:{rel:{lena:10, spiess:1}, flag:'s1_lena_hilfe'}}},
+   {t:'„Warte, bis das mit dem Notizbuch vorbei ist.“', out:{t:'Lena nickt knapp. „Vernünftig.“ Sie klingt enttäuscht.', fx:{rel:{lena:-3}}}},
+  ]},
+ {id:'s1_06', story:6, title:'Dennis’ Geheimnis', who:'dennis',
+  text:'Drei Uhr nachts. Unter Dennis’ Decke leuchtet ein Laptop, er tippt wie besessen. Als er dich bemerkt, klappt er ihn zu. „Okay. Ich schreibe einen Roman. Neunhundert Seiten, Fantasy. Deshalb bin ich immer so müde.“',
+  ch:[
+   {t:'„Darf ich mal reinlesen?“', out:{t:'Die Hauptfigur heißt Feldwebel Brakemann, trägt einen schwarzen Umhang und kontrolliert Drachenhöhlen auf Staub. Es ist erschreckend gut.', fx:{rel:{dennis:8}, flag:'s1_roman'}}},
+   {t:'„Dein Geheimnis ist bei mir sicher.“', out:{t:'Dennis atmet aus. „Danke. Wenn das rauskommt, liest Brockmann Kapitel sieben. Kapitel sieben handelt von ihm.“', fx:{rel:{dennis:5}, flag:'s1_roman'}}},
+   {t:'„Schlaf lieber, morgen ist Dienst.“', out:{t:'Dennis klappt den Laptop zu. Am nächsten Morgen ist er zum ersten Mal pünktlich. Und unglücklich.', fx:{bp:1, rel:{dennis:-2}}}},
+  ]},
+ {id:'s1_07', story:7, title:'Die Spur führt zu Kalle', who:'kalle',
+  text:'Kalle zieht dich in den Heizungskeller. „Ich hab das Notizbuch. Lag bei der Inventur zwischen den Feldjacken. Ich wollte es zurückbringen, dann hab ich reingeschaut.“ Er schluckt. „Da steht über jeden von uns was drin.“',
+  alt:[{if:'s1_spur', text:'Kalle wartet schon im Heizungskeller. „Du weißt es eh, oder? Ja, ich hab das Notizbuch. Lag bei der Inventur zwischen den Feldjacken. Ich hab reingeschaut.“ Er schluckt. „Da steht über jeden von uns was drin.“'}],
+  ch:[
+   {t:'„Gib her. Ich bringe es anonym zurück.“', out:{t:'Am nächsten Morgen liegt das Notizbuch in Packpapier auf Brockmanns Schreibtisch. Er sagt den ganzen Tag kein Wort. Aber er pfeift.', fx:{rel:{kalle:6, spiess:3}, flag:'s1_anonym'}}},
+   {t:'„Das bringst du selbst zurück.“', out:{t:'Kalle geht mit hängenden Schultern ins Geschäftszimmer. Zwanzig Minuten später kommt er raus, mit einem Monat Stubendienst und einem Grinsen.', fx:{bp:2, rel:{kalle:-2, spiess:6}, flag:'s1_beichte'}}},
+   {t:'Erst mal selbst reinschauen', out:{t:'Über dich steht da eine einzige Zeile. Sie ist netter, als du erwartet hast. Auf der letzten Seite steht ein Gedicht. Du klappst das Buch schnell zu.', fx:{rel:{kalle:3}, flag:'s1_gelesen'}}},
+  ]},
+ {id:'s1_08', story:8, title:'Generalprobe', who:'chef',
+  text:'Einen Tag vor der Inspektion ist Generalprobe. Von Ahlen steht mit dem Laserpointer im Besprechungsraum, da knallt es im Sicherungskasten. Der Beamer ist tot, im ganzen Block ist der Strom weg.',
+  alt:[{if:'s1_heizung', text:'Einen Tag vor der Inspektion ist Generalprobe. Deine Heizung in Block C läuft seit gestern, und zwar zu gut: 31 Grad im Besprechungsraum. Dann knallt es im Sicherungskasten. Der Beamer ist tot, der Strom weg, und von Ahlen schwitzt.'}],
+  ch:[
+   {t:'Improvisieren: Flipchart und Edding', roll:{stat:'fuehrung', base:30},
+     ok:{t:'Du zeichnest die Kompanie in sechs Strichen. Von Ahlen ist gerührt. „Reduktion aufs Wesentliche. Das ist Führung.“', fx:{bp:5, rel:{chef:6}}},
+     fail:{t:'Der Edding ist leer, der zweite auch. Von Ahlen hält die Folien jetzt einfach hoch.', fx:{bp:-2, rel:{chef:-2}}}},
+   {t:'Kalle fragen, ob er einen Generator „besorgen“ kann', minRel:{kalle:10}, out:{t:'Zwanzig Minuten später brummt ein Generator im Flur. Auf der Seite steht „Freiwillige Feuerwehr“. Niemand fragt nach.', fx:{rel:{chef:4, kalle:4}, flag:'s1_generator'}}},
+   {t:'Den Hausmeister holen', out:{t:'Der Hausmeister ist in der Mittagspause. Bis 14 Uhr. Seit 1994.', fx:{st:-5}}},
+  ]},
+ {id:'s1_09', story:9, title:'Inspektionstag', who:'chef',
+  text:'Sieben Uhr. General Hartmann steigt aus dem Wagen, zwei Adjutanten hinter ihm. Die Kompanie steht. Brockmann steht ganz vorne, das Notizbuch in der Brusttasche. Der General geht direkt auf dich zu.',
+  alt:[{if:'s1_heizung', text:'Sieben Uhr. General Hartmann steigt aus dem Wagen und betritt Block C. Er bleibt stehen und reibt sich die Hände. „Endlich mal eine warme Kaserne.“ Brockmann steht ganz vorne, das Notizbuch in der Brusttasche. Der General geht direkt auf dich zu.'}],
+  ch:[
+   {t:'Ehrlich melden, was gut läuft und was nicht', out:{t:'Der General hört lange zu. „Endlich jemand, der nicht nur Folien zeigt.“ Von Ahlen lächelt tapfer.', fx:{bp:8, rel:{chef:-1}}}},
+   {t:'Projekt Glanz präsentieren', need:'s1_folien', out:{t:'Du schaffst es in acht Minuten statt neunzig. Der General nickt anerkennend. Von Ahlen hat Tränen in den Augen.', fx:{bp:6, rel:{chef:10}}}},
+   {t:'Brockmann das Wort überlassen', out:{t:'„Herr General, die Kompanie ist einsatzbereit. Und die Spinde sind sauber. Ich habe nachgesehen.“ Der General lacht. Brockmann nicht.', fx:{bp:4, rel:{spiess:6}}}},
+  ]},
+ {id:'s1_10', story:10, title:'Kaffee mit dem Spieß', who:'spiess',
+  text:'Abends klopft Brockmann an deine Stube, zwei Becher Kaffee in der Hand. Er setzt sich auf Dennis’ Bett. „Sechsundzwanzig Jahre. Und im Sommer soll ich einfach gehen. Meine Frau hat schon einen Gartenplan gezeichnet. Mit Hochbeeten.“ Er starrt in den Kaffee.',
+  alt:[{if:'s1_gelesen', text:'Abends klopft Brockmann an deine Stube, zwei Becher Kaffee in der Hand. „Sie haben in mein Notizbuch geschaut. Kalle lügt schlecht.“ Er winkt ab und setzt sich auf Dennis’ Bett. „Egal. Sechsundzwanzig Jahre, und im Sommer soll ich einfach gehen. Meine Frau plant schon Hochbeete.“'}],
+  ch:[
+   {t:'„Darf ich Ihre Abschiedsfeier organisieren?“', out:{t:'Brockmann sieht dich lange an. „Kein Mett-Igel.“ Pause. „Doch. Ein kleiner.“', fx:{rel:{spiess:8}, flag:'s1_feier'}}},
+   {t:'„Hochbeete sind auch nur Spinde für Gemüse.“', out:{t:'Brockmann prustet in den Kaffee. Zum ersten Mal hörst du ihn richtig lachen.', fx:{rel:{spiess:10}}}},
+   {t:'Einfach zuhören', out:{t:'Er erzählt eine Stunde lang. Von seiner ersten Spindkontrolle 1998 und dem Rekruten, der heute General ist. Du sagst nichts, und das ist richtig so.', fx:{st:-5, rel:{spiess:6}}}},
+  ]},
+ {id:'s1_11', story:11, title:'Der Nachfolger', who:'kalle',
+  text:'Aushang am Schwarzen Brett: „Nachfolger als Kompaniefeldwebel: Oberfeldwebel Krüger.“ Krüger vom Lehrgang. Niemand hat auf ihn gewettet, außer Dennis. Fünf Euro bei 40 zu 1. Kalle ist kreidebleich.',
+  alt:[{if:'s1_wette_nein', text:'Aushang am Schwarzen Brett: „Nachfolger als Kompaniefeldwebel: Oberfeldwebel Krüger.“ Kalle hat das Wettbüro trotz deiner Warnung weitergeführt. Nur Dennis hat auf Krüger gesetzt, fünf Euro bei 40 zu 1. Kalle ist kreidebleich.'}],
+  ch:[
+   {t:'Kalle bei der Auszahlung helfen', out:{t:'Ihr kratzt zusammen, was die Stube hergibt. Dennis bekommt 200 Euro in Münzen und einen Gutschein für die Waschmaschine.', fx:{money:-30, rel:{kalle:8, dennis:4}}}},
+   {t:'„Und mein Einsatz?“', need:'s1_wette_selbst', out:{t:'Kalle sieht dich an wie jemand, der gerade sein Lebenswerk verliert. Du verzichtest großzügig. Das wird er dir nie vergessen.', fx:{rel:{kalle:12}}}},
+   {t:'Krüger gratulieren', out:{t:'Krüger nickt. „Danke. Und richten Sie Herrn Kallweit aus: Ich weiß von dem Wettbüro.“', fx:{rel:{krueger:8, kalle:-2}}}},
+  ]},
+ {id:'s1_12', story:12, title:'Die letzte Spindkontrolle', who:'spiess',
+  text:'Abschiedsfeier im Mannschaftsheim: Musikkorps, die ganze Kompanie, Krüger mit Klemmbrett. Brockmann macht eine letzte Spindkontrolle mit weißem Handschuh, nur zur Show. Vor deinem Spind bleibt er stehen. Da klingelt im Geschäftszimmer das Telefon.',
+  alt:[{if:'s1_feier', text:'Deine Abschiedsfeier ist ein Erfolg: Musikkorps, die ganze Kompanie und ein kleiner Mett-Igel in Form eines Spinds. Brockmann macht eine letzte Spindkontrolle mit weißem Handschuh, nur zur Show. Vor deinem Spind bleibt er stehen. Da klingelt im Geschäftszimmer das Telefon.'}],
+  ch:[
+   {t:'Ans Telefon gehen', out:{t:'Das Personalamt. Der Antrag auf Zurruhesetzung wurde auf dem Formular von 2019 gestellt und ist ungültig. Brockmann bleibt zwei weitere Jahre. Er nimmt dir den Hörer ab, hört zu und sagt: „Bedauerlich.“ Dann lächelt er. Breit.', fx:{bp:10, money:150, rel:{spiess:10}, flag:'s1_ende'}}},
+   {t:'Brockmann rangehen lassen', out:{t:'Brockmann hört zu und legt auf. „Das Personalamt. Mein Antrag war auf dem falschen Formular.“ Pause. „Ich bleibe noch zwei Jahre.“ Das Musikkorps spielt sicherheitshalber weiter.', fx:{bp:10, money:150, rel:{spiess:10}, flag:'s1_ende'}}},
+   {t:'„Lesen Sie uns Ihr Gedicht vor.“', need:'s1_gelesen', out:{t:'Stille. Dann liest Brockmann vier Zeilen über einen Spind, der nie ganz ordentlich war, und über Soldaten, die es trotzdem wurden. Danach das Telefon: falsches Formular, er bleibt zwei Jahre. Niemand ist enttäuscht.', fx:{bp:12, money:150, rel:{spiess:15}, flag:'s1_ende'}}},
+  ]},
+];
+
+/* ---------- Zusätzliche Ereignisse, damit sich weniger wiederholt ---------- */
+const MORE_EVENTS = [
+ {id:'n_paket', who:'kalle', text:'Bei der Feldpost ist ein Paket für „Kallweit, K.“ bei dir gelandet. Es tickt leise.',
+  ch:[
+   {t:'Ungeöffnet an Kalle geben', out:{t:'Kalle nimmt es dankbar. „Ist nur ein Wecker. Ein sehr spezieller Wecker.“', fx:{rel:{kalle:4}}}},
+   {t:'Reinschauen', out:{t:'Eine Eieruhr, vierzig Packungen Kaugummi und ein Zettel: „Nicht für Brockmann“.', fx:{rel:{kalle:-3}}}},
+   {t:'Beim Spieß abgeben', out:{t:'Brockmann öffnet es mit einem Brieföffner, den er nur für solche Fälle besitzt. Kalle muss einiges erklären.', fx:{bp:2, rel:{spiess:2, kalle:-6}}}},
+  ]},
+ {id:'n_wlan', who:'dennis', text:'Das WLAN im Block ist ausgefallen. Dennis behauptet, er habe auf dem Dach Empfang gefunden. „Zwei Balken. Aber stabil.“',
+  ch:[
+   {t:'Mit aufs Dach', roll:{stat:'fitness', base:35},
+     ok:{t:'Zwei Balken. Ihr schaut zusammen Fußball bis zur Halbzeit. Dann regnet es.', fx:{st:-5, rel:{dennis:5}}},
+     fail:{t:'Du rutschst von der Leiter. Nichts passiert, außer dass Brockmann zuschaut.', fx:{bp:-2}}},
+   {t:'Endlich mal ein Buch lesen', out:{t:'Das erste Buch seit Monaten. Es ist überraschend gut.', fx:{st:10}}},
+   {t:'Kalle fragen', out:{t:'Natürlich hat Kalle einen Router. Fünf Euro pro Tag.', fx:{money:-5, rel:{kalle:2}}}},
+  ]},
+ {id:'n_rasur', who:'spiess', text:'Morgenappell. Brockmann bleibt vor dir stehen. „Haben Sie sich heute rasiert?“ Hast du. Gestern. Ungefähr.',
+  ch:[
+   {t:'„Jawohl, Herr Hauptfeldwebel!“', roll:{stat:'vitaminb', base:30},
+     ok:{t:'Er glaubt dir. Oder er hat heute keine Lust auf Diskussionen.', fx:{}},
+     fail:{t:'Er zieht einen Einwegrasierer aus der Brusttasche. Er hat immer einen dabei.', fx:{bp:-3, rel:{spiess:-2}}}},
+   {t:'„Nein, Herr Hauptfeldwebel.“', out:{t:'„Wenigstens ehrlich. Zwei Minuten, Waschraum.“', fx:{bp:-1, rel:{spiess:2}}}},
+  ]},
+ {id:'n_knoechel', who:'lena', text:'Lena hat sich beim Sport den Knöchel verdreht und will trotzdem zum Leistungsmarsch. „Geht schon.“ Es geht nicht.',
+  ch:[
+   {t:'Sie zum Sanitätsbereich bringen', out:{t:'Lena flucht den ganzen Weg. Am Ende bedankt sie sich. Leise.', fx:{st:-5, rel:{lena:6}}}},
+   {t:'Ihren Rucksack mittragen', roll:{stat:'fitness', base:30},
+     ok:{t:'Zwei Rucksäcke, zwölf Kilometer. Lena sagt, sie hätte es auch allein geschafft. Dann umarmt sie dich.', fx:{st:-15, bp:4, rel:{lena:10}}},
+     fail:{t:'Nach acht Kilometern trägt Lena deinen Rucksack.', fx:{st:-15, rel:{lena:2}}}},
+   {t:'„Du musst wissen, was du tust.“', out:{t:'Sie humpelt los. Nach drei Kilometern holt sie der Sanka ab.', fx:{rel:{lena:-4}}}},
+  ]},
+ {id:'n_podcast', who:'chef', minT:1, text:'Von Ahlen startet einen Kompanie-Podcast: „Führung im Feld, Folge 1“. Er sucht einen Gast. Der Gast bist du.',
+  ch:[
+   {t:'Mitmachen', roll:{stat:'fuehrung', base:30},
+     ok:{t:'Die Folge hat 14 Hörer, elf davon aus dem Stab. Von Ahlen ist begeistert.', fx:{bp:3, rel:{chef:6}}},
+     fail:{t:'Du sagst 41-mal „äh“. Nach dem Schnitt bleiben drei Minuten übrig.', fx:{rel:{chef:2}}}},
+   {t:'Dennis vorschlagen', out:{t:'Dennis schläft während der Aufnahme ein. Die Folge „Stille als Führungsmittel“ wird ein Hit.', fx:{rel:{dennis:3, chef:2}}}},
+   {t:'Leider keine Zeit', out:{t:'„Schade. Ich setze Sie auf die Warteliste.“ Die Warteliste ist eine Folie.', fx:{rel:{chef:-2}}}},
+  ]},
+ {id:'n_mett', who:'kalle', text:'Mettbrötchen-Freitag. Kalle hat die Bestellung übernommen und „aus Versehen“ vierzig Brötchen zu viel bestellt.',
+  ch:[
+   {t:'Beim Verkaufen helfen', out:{t:'Bis zur Mittagspause ist alles weg. Kalle teilt fair, für seine Verhältnisse.', fx:{money:15, rel:{kalle:4}}}},
+   {t:'Zwei kaufen, Rest ignorieren', out:{t:'Gute Brötchen. Kalle hat sogar extra Zwiebeln besorgt.', fx:{money:-4, st:8}}},
+   {t:'Die ganze Stube einladen', out:{t:'Du gibst eine Runde aus. Die Stube vergisst das nicht.', fx:{money:-20, rel:{lena:3, dennis:3, kalle:3}}}},
+  ]},
+ {id:'n_dackel', who:'spiess', text:'Im Gang liegt ein Portemonnaie. Darin fünfzig Euro und das Foto eines Dackels.',
+  ch:[
+   {t:'Im Geschäftszimmer abgeben', out:{t:'Es gehört Brockmann. Der Dackel heißt Major. Brockmann wird rot und gibt dir die Hälfte als Finderlohn.', fx:{money:25, rel:{spiess:8}, flag:'dackel'}}},
+   {t:'Einen Aushang machen', out:{t:'Drei Leute melden sich. Nur einer kennt den Namen des Dackels: Brockmann. Er heißt Major.', fx:{bp:2, rel:{spiess:4}, flag:'dackel'}}},
+   {t:'Kalle fragen, was man da macht', out:{t:'Kalle bietet dir zwanzig Euro für das Portemonnaie, ohne zu wissen, was drin ist. Du lehnst ab und gibst es ab.', fx:{rel:{spiess:3, kalle:-1}, flag:'dackel'}}},
+  ]},
+ {id:'n_schiessstand', who:'lena', text:'Schießstand. Lena wettet zehn Euro, dass sie mehr Ringe schießt als du.',
+  ch:[
+   {t:'Wette annehmen', roll:{stat:'schiessen', base:25},
+     ok:{t:'Ein Ring Vorsprung. Lena zahlt und verlangt sofort Revanche.', fx:{money:10, bp:2, rel:{lena:3}}},
+     fail:{t:'Lena trifft dreimal die Mitte. Hintereinander.', fx:{money:-10, rel:{lena:2}}}},
+   {t:'„Ich schieße nicht um Geld.“', out:{t:'„Um Kuchen?“ Ihr schießt um Kuchen. Am Ende essen beide.', fx:{st:5, rel:{lena:2}}}},
+  ]},
+ {id:'n_thermos', who:'dennis', ctx:['wache','uvd','m_seewache','m_hafenwache','lw_flugplatz'], text:'Nachtdienst. Dennis bringt Kaffee in einer Thermoskanne, die verdächtig nach Limonade riecht.',
+  ch:[
+   {t:'Trotzdem trinken', out:{t:'Kaffee mit Orangennote. Du bist bis zum Morgen hellwach. Und leicht verwirrt.', fx:{st:10, rel:{dennis:3}}}},
+   {t:'Selbst Kaffee kochen', out:{t:'Dennis schläft ein, während das Wasser kocht. Du übernimmst seine Runde.', fx:{st:-5, bp:2, rel:{dennis:2}}}},
+  ]},
+ {id:'n_regen', who:'lena', ctx:['gelaende','uebung'], text:'Seit sechs Stunden Regen im Gelände. Das Zelt ist undicht, Lenas Laune auch.',
+  ch:[
+   {t:'Das Zelt neu abspannen', roll:{stat:'fachwissen', base:35},
+     ok:{t:'Dicht. Lena nickt anerkennend. Das ist bei ihr ein Orden.', fx:{st:-5, bp:3, rel:{lena:5}}},
+     fail:{t:'Das Zelt fällt komplett zusammen. Lena sagt gar nichts mehr.', fx:{st:-8, rel:{lena:-3}}}},
+   {t:'Witze erzählen', out:{t:'Beim dritten Witz lacht Lena. Beim vierten bittet sie dich aufzuhören.', fx:{rel:{lena:2}}}},
+  ]},
+ {id:'n_drucker', who:'spiess', ctx:['innen','stab','spiess_v'], text:'Der Drucker im Geschäftszimmer druckt nur noch Seite vier. Immer. Brockmann schaut dich an.',
+  ch:[
+   {t:'Ausschalten und wieder einschalten', roll:{stat:'fachwissen', base:40},
+     ok:{t:'Er druckt wieder. Brockmann behandelt dich ab sofort wie einen Zauberer.', fx:{bp:3, rel:{spiess:5}}},
+     fail:{t:'Jetzt druckt er nur noch Seite sieben.', fx:{rel:{spiess:-1}}}},
+   {t:'Alles per Hand abschreiben', out:{t:'Zwei Stunden Schönschrift. Brockmann ist angetan von deiner Handschrift.', fx:{st:-10, bp:2, rel:{spiess:3}}}},
+  ]},
+ {id:'n_socken', who:'chef', ctx:['formal'], text:'Formaldienst. Deine Stiefel glänzen, aber du trägst zwei verschiedene Socken. Von Ahlen schreitet die Reihe ab.',
+  ch:[
+   {t:'Hosenbeine unauffällig runterziehen', roll:{stat:'vitaminb', base:35},
+     ok:{t:'Von Ahlen lobt deine Stiefel. Die Socken bleiben dein Geheimnis.', fx:{bp:2, rel:{chef:2}}},
+     fail:{t:'„Interessante Sockenwahl. Ist das ein Statement?“ Es ist jetzt eins.', fx:{bp:-2}}},
+   {t:'Selbstbewusst stehen bleiben', out:{t:'Von Ahlen bleibt stehen. „Individualität im Rahmen. Gefällt mir.“ Brockmann im Hintergrund gefällt das nicht.', fx:{rel:{chef:3, spiess:-2}}}},
+  ]},
+];
+
+/* ---------- Stubenfunk: kurze Nachrichten ohne Entscheidung, jede nur einmal ----------
+   p:[min,max] = Story-Fortschritt (abgeschlossene Kapitel), rel:{npc:min}, relMax:{npc:max}, flag, g:[Gruppen] */
+const FUNK = [
+ {id:'a1', who:'dennis', t:'Hat jemand mein Kissen gesehen? Das blaue. Es ist wichtig.'},
+ {id:'a2', who:'kalle', t:'Biete: zwölf Paar Schnürsenkel, oliv. Suche: Ausreden für Montag.'},
+ {id:'a3', who:'lena', t:'Hindernisbahn heute in 2:41. Neuer Rekord. Wer schlägt das?'},
+ {id:'a4', who:'spiess', t:'An alle: Der Kühlschrank im Gemeinschaftsraum ist kein Labor.'},
+ {id:'a5', who:'chef', t:'Impuls zum Wochenstart: Jeder Tag ist ein Gefechtstag für die Exzellenz.'},
+ {id:'a6', who:'dennis', t:'Heute im Unterricht mit offenen Augen geschlafen. Persönlicher Bestwert.'},
+ {id:'a7', who:'kalle', t:'Falls jemand fragt: Ich war die ganze Zeit hier.'},
+ {id:'a8', who:'lena', t:'Morgen 5:30 Laufen. Wer nicht kommt, schuldet mir Liegestütze.'},
+ {id:'a9', who:'spiess', t:'Wer seine Stiefel im Trockenraum vergessen hat: Sie riechen nach Ihnen. Holen Sie sie ab.'},
+ {id:'a10', who:'chef', t:'Danke für die Teilnahme an der Motivationsumfrage. Die Teilnahme war verpflichtend.'},
+ {id:'a11', who:'krueger', t:'Hinweis für künftige Lehrgangsteilnehmer: Die Antwort ist fast immer „Lage beurteilen“.'},
+ {id:'a12', who:'kalle', t:'Truppenküche hat heute Spaghetti. Ich hab Parmesan. Ab zwei Euro.'},
+ {id:'a13', who:'dennis', t:'Wenn ich beim Appell umfalle: bitte nicht wecken.'},
+ {id:'a14', who:'lena', t:'Wer hat meinen Kompass? Ich brauche ihn nicht, ich will nur wissen, wer.'},
+ {id:'a15', who:'spiess', t:'Ich sag’s nur einmal: Der Rasen ist kein Parkplatz.'},
+ {id:'a16', who:'chef', t:'Neue Folie fertig: „Kompanie im Wandel“, 63 Seiten. Feedback erwünscht, Lob bevorzugt.'},
+ {id:'a17', who:'kalle', t:'Wer braucht noch ein Barett? Zwei Größen zu groß, dafür sofort lieferbar.'},
+ {id:'a18', who:'dennis', t:'Die Matratze in Stube 12 ist die beste im Block. Ich habe alle getestet.'},
+ {id:'a19', who:'lena', t:'Neue Bestzeit beim Leistungsmarsch. Kalle hat unterwegs ein Fahrrad gefunden. Zählt nicht.'},
+ {id:'a20', who:'spiess', t:'Die Mikrowelle ist für Essen. Nicht für Stiefel, nicht für Handys, nicht für Experimente, Hoffmann.'},
+ {id:'r1', who:'kalle', rel:{kalle:30}, t:'Hab dir was zurückgelegt. Frag nicht, was. Und frag nicht, woher.'},
+ {id:'r2', who:'lena', rel:{lena:30}, t:'Du bist heute gut gelaufen. Sag ich nicht oft.'},
+ {id:'r3', who:'dennis', rel:{dennis:30}, t:'Ich hab dir mein zweitbestes Kissen aufs Bett gelegt. Das ist Freundschaft.'},
+ {id:'r4', who:'spiess', rel:{spiess:30}, t:'Ihr Spind war heute in Ordnung. Ich erwähne es nur einmal.'},
+ {id:'r5', who:'chef', rel:{chef:30}, t:'Sie haben das richtige Mindset. Ich habe Sie auf eine Folie geschrieben.'},
+ {id:'r6', who:'krueger', rel:{krueger:30}, t:'Ihr letzter Lehrgang wird inzwischen als Beispiel vorgelesen. Als gutes.'},
+ {id:'r7', who:'spiess', relMax:{spiess:-20}, t:'Ich habe Sie im Blick. Das ist keine Drohung, das ist eine Lagefeststellung.'},
+ {id:'r8', who:'kalle', relMax:{kalle:-20}, t:'Für dich ab heute zwanzig Prozent Aufschlag. Nichts Persönliches.'},
+ {id:'r9', who:'lena', relMax:{lena:-20}, t:'Ich hab dich beim Laufen ganz nach vorne gestellt. Damit ich dich sehen kann.'},
+ {id:'g1', who:'spiess', g:['U','F'], t:'An die Unteroffiziere: Ihre Rekruten spiegeln Sie. Rasieren Sie sich.'},
+ {id:'g2', who:'chef', g:['O','A'], t:'Sie verstehen das als Offizier sicher: Eine gute Folie ist die halbe Miete.'},
+ {id:'g3', who:'kalle', g:['M'], t:'Mannschaften halten zusammen. Und Mannschaften kaufen bei Mannschaften.'},
+ {id:'f1', who:'spiess', flag:'dackel', t:'Major lässt grüßen. Er hat heute die Spindkontrolle begleitet. Er war strenger als ich.'},
+ {id:'s1', who:'kalle', p:[1,10], t:'Wettbüro geöffnet. Quoten am Schwarzen Brett, getarnt als Putzplan.'},
+ {id:'s2', who:'dennis', p:[1,4], t:'Brockmann hat heute zweimal gelächelt. Ich mach mir Sorgen.'},
+ {id:'s3', who:'lena', p:[1,3], t:'Falls Brockmann wirklich geht: Wer macht dann die Spindkontrollen? Frage für eine Freundin.'},
+ {id:'s4', who:'chef', p:[3,8], t:'Projekt Glanz läuft! Bitte keine Fingerabdrücke mehr auf irgendwas.'},
+ {id:'s5', who:'spiess', p:[4,6], t:'Wer mein Notizbuch hat: Es gibt keine Konsequenzen. Fast keine.'},
+ {id:'s6', who:'kalle', p:[4,6], t:'Ich verkaufe ab sofort grundsätzlich keine Bücher mehr. Warum fragt ihr?'},
+ {id:'s7', who:'dennis', p:[6,12], flag:'s1_roman', t:'Kapitel 23 ist fertig. Feldwebel Brakemann hat einen Drachen wegen Staub abgemahnt.'},
+ {id:'s8', who:'lena', p:[5,11], t:'Auswahlverfahren in drei Wochen. Ich lerne Kopfrechnen beim Zähneputzen.'},
+ {id:'s9', who:'spiess', p:[7,12], flag:'s1_anonym', t:'Mein Notizbuch ist wieder da. Ich danke dem unbekannten Spender. Ich finde ihn trotzdem.'},
+ {id:'s10', who:'kalle', p:[7,12], flag:'s1_beichte', t:'Ein Monat Stubendienst. Der Flur ist so sauber, dass Brockmann misstrauisch wird.'},
+ {id:'s11', who:'chef', p:[8,8], t:'Morgen kommt der General. Bitte heute Nacht nichts mehr anfassen.'},
+ {id:'s12', who:'chef', p:[9,12], t:'Der General war zufrieden. Ich hatte das genau so geplant.'},
+ {id:'s13', who:'spiess', p:[10,11], t:'Ich gehe nicht in Rente. Ich wechsle nur das Gelände.'},
+ {id:'s14', who:'lena', p:[10,12], flag:'s1_lena_hilfe', t:'Brockmann hat meine Stellungnahme geschrieben. Zwei Seiten. Ich hab kurz geweint. Sehr kurz.'},
+ {id:'s15', who:'dennis', p:[11,12], t:'Ich habe 200 Euro gewonnen. Ich kaufe mir ein Kissen. Ein richtiges.'},
+ {id:'s16', who:'krueger', p:[12,12], t:'Ich übernehme in zwei Jahren. Bis dahin bitte keine Wetten mehr auf mich.'},
+ {id:'s17', who:'spiess', p:[12,12], t:'Noch zwei Jahre. Freuen Sie sich nicht zu früh. Ich habe neue Handschuhe.'},
+ {id:'s18', who:'kalle', p:[12,12], t:'Wettbüro bis auf Weiteres geschlossen. Neues Geschäftsfeld: Hochbeete.'},
+ {id:'s19', who:'dennis', p:[12,12], flag:'s1_roman', t:'Brockmann hat Kapitel sieben gelesen. Er hat nur gesagt: „Der Umhang ist zu lang.“'},
+];
+
+/* ---------- Logik ---------- */
+const STORY_I = Object.fromEntries(STORY.map(e=>[e.id,e]));
+EVENTS.push(...MORE_EVENTS, ...STORY);
+function storyEnsure(){
+  if(!S.story) S.story = {ch:0, next:0, d:0, log:[]};
+  if(!S.funk) S.funk = [];
+  if(!S.funkUsed) S.funkUsed = {};
+  if(!S.seenAt) S.seenAt = {};
+  if(!S.fsDone) S.fsDone = {};
+  if(!S.fsRetry) S.fsRetry = {};
+  if(S.fs === undefined) S.fs = null;
+}
+function evText(e){
+  for(const a of (e.alt||[])) if(S.flags[a.if]) return a.text;
+  return e.text;
+}
+function choiceOk(c){
+  if(c.need && !S.flags[c.need]) return false;
+  for(const [k,v] of Object.entries(c.minRel||{})) if(rel(k) < v) return false;
+  return true;
+}
+function storyNext(){ storyEnsure(); return STORY[S.story.ch] || null; }
+function storyTick(events){
+  storyEnsure();
+  const nx = storyNext();
+  if(!nx || S.einsatz || S.pending.includes(nx.id)) return;
+  if(S.story.ch > 0 && (now() < S.story.next || S.story.d < STORY_DIENSTE)) return;
+  S.pending.unshift(nx.id);
+  events.push('Neue Meldung von ' + NPCS[nx.who].short);
+}
+function storyDone(e, c, out){
+  storyEnsure();
+  S.story.log.push({id:e.id, c:c.t, o:out.t});
+  S.story.ch = Math.max(S.story.ch, e.story);
+  S.story.next = now() + STORY_GAP / (S.speed||1);
+  S.story.d = 0;
+}
+function funkTick(events){
+  storyEnsure();
+  const today = dateStr();
+  const n = S.funk.filter(x => x.day === today).length;
+  if(n >= 4 || Math.random() > .45) return;
+  const p = S.story.ch, gr = R[S.rank].g;
+  const fkey = f => f.id + (f.when ? ':' + new Date().getFullYear() : '');
+  const ok = FUNK.filter(f => !S.funkUsed[fkey(f)] && (!f.when || inWindow(f.when))
+    && (!f.p || (p >= f.p[0] && p <= f.p[1]))
+    && (!f.flag || S.flags[f.flag])
+    && (!f.g || f.g.includes(gr))
+    && Object.entries(f.rel||{}).every(([k,v]) => rel(k) >= v)
+    && Object.entries(f.relMax||{}).every(([k,v]) => rel(k) <= v));
+  if(!ok.length) return;
+  // Story- und Beziehungsnachrichten zuerst, damit sie nicht verpasst werden
+  const special = ok.filter(f => f.p || f.rel || f.relMax || f.flag || f.when);
+  const pool = special.length && Math.random() < .6 ? special : ok;
+  const f = pool[Math.floor(Math.random()*pool.length)];
+  S.funkUsed[fkey(f)] = 1;
+  S.funk.unshift({id:f.id, who:f.who, t:f.t, ts:now(), day:today});
+  S.funk = S.funk.slice(0, 12);
+  S.funkNew = (S.funkNew||0) + 1;
+  events.push(NPCS[f.who].short + ': ' + f.t);
+}
+let STORY_OPEN = false;
+function storyCard(){
+  storyEnsure();
+  const st = S.story, nx = storyNext(), total = STORY.length;
+  let h = '';
+  if(false){ h += '<div>';
+  h += '<div class="prog" style="margin:2px 0 10px"><i style="width:' + Math.round(st.ch/total*100) + '%"></i></div>';
+  if(!nx){
+    h += '<p><b>Staffel abgeschlossen.</b> Brockmann bleibt, Krüger wartet, und Kalle züchtet Tomaten. Staffel 2 folgt mit einem der nächsten Updates.</p>';
+  } else if(S.pending.includes(nx.id)){
+    h += '<p><b>Kapitel ' + nx.story + ' von ' + total + ': ' + esc(nx.title) + '</b></p><button class="btn" data-act="event" data-id="' + nx.id + '">Weiterlesen</button>';
+  } else if(st.ch === 0){
+    h += '<p class="small">Gerüchte machen die Runde in der Kompanie. Das erste Kapitel beginnt nach deinem nächsten beendeten Dienst.</p>';
+  } else {
+    const wait = Math.max(0, st.next - now()), dl = Math.max(0, STORY_DIENSTE - st.d);
+    h += '<p class="small"><b>Als Nächstes: Kapitel ' + nx.story + ' von ' + total + '.</b> '
+      + (wait > 0 ? 'Frühestens in ' + fmtRest(wait) + (dl ? ' und' : '') + ' ' : '')
+      + (dl ? 'nach ' + (dl === 1 ? 'einem weiteren Dienst' : dl + ' weiteren Diensten') : (wait > 0 ? '' : 'nach deinem nächsten Dienst')) + '.</p>';
+  }
+  if(st.log.length){
+    h += '<button class="btn ghost" data-act="storybook" style="margin-top:10px">' + (STORY_OPEN ? 'Tagebuch schließen' : 'Tagebuch lesen (' + st.log.length + ')') + '</button>';
+    if(STORY_OPEN) h += '<ol class="storylog">' + st.log.map(x => { const e = STORY_I[x.id]; return e ? '<li><b>' + esc(e.title) + '</b><div class="small muted">Du: ' + esc(x.c) + '</div><div class="small">' + esc(x.o) + '</div></li>' : ''; }).join('') + '</ol>';
+  }
+  h += '</div>'; }
+  if(S.funk.length){
+    h += '<h2>Stubenfunk</h2><div class="panel">' + S.funk.slice(0, 5).map(m => '<div class="row funk">' + npcBadge(m.who, 32)
+      + '<div class="info" style="flex:1;min-width:0"><div class="title">' + esc(NPCS[m.who].short) + ' <span class="small muted">' + esc(fmtAgo(m.ts)) + '</span></div><div class="small">' + esc(m.t) + '</div></div></div>').join('') + '</div>';
+    S.funkNew = 0;
+  }
+  return h;
+}
+function fmtAgo(ts){
+  const m = Math.floor((now() - ts) / 60000);
+  if(m < 1) return 'gerade eben';
+  if(m < 60) return 'vor ' + m + ' Min.';
+  const h = Math.floor(m / 60);
+  if(h < 24) return 'vor ' + h + ' Std.';
+  const d = Math.floor(h / 24);
+  return d === 1 ? 'gestern' : 'vor ' + d + ' Tagen';
+}
+
+/* =========================================================
+   WETTER UND JAHRESZEITEN – gilt für alle Spieler gleich, ändert sich täglich
+   ========================================================= */
+const OUT_IDS = ['formal','wache','gelaende','uebung','ga_marsch','v_inf','lw_vorfeld','lw_flugplatz','m_seewache','m_hafenwache','kette_d','schlepp_d','boot_d','schnee','freibad','e_patr','e_wache','e_konvoi'];
+const WETTER = {
+  sonne:   {name:'Sonnig',      fx:{}, desc:'Bestes Dienstwetter. Keine Ausreden.'},
+  wolken:  {name:'Bewölkt',     fx:{}, desc:'Grau, aber trocken. Typisch norddeutsch.'},
+  regen:   {name:'Regen',       fx:{st:1.15, pay:1.1}, desc:'Draußen kosten Dienste 15 % mehr Ausdauer, bringen aber 10 % mehr Geld.'},
+  gewitter:{name:'Gewitter',    fx:{dur:1.2, bp:1.15}, desc:'Draußen dauern Dienste 20 % länger, bringen aber 15 % mehr Beurteilungspunkte.'},
+  nebel:   {name:'Nebel',       fx:{bp:1.2}, desc:'Wer draußen bei Nebel aufpasst, fällt auf: 20 % mehr Beurteilungspunkte.'},
+  hitze:   {name:'Hitze',       fx:{st:1.25}, desc:'Draußen kosten Dienste 25 % mehr Ausdauer. Wasser trinken!'},
+  frost:   {name:'Frost',       fx:{st:1.15, bp:1.1}, desc:'Draußen 15 % mehr Ausdauer, dafür 10 % mehr Beurteilungspunkte. Schneeräumen möglich.'},
+  schnee:  {name:'Schneefall',  fx:{dur:1.15, pay:1.15}, desc:'Draußen dauern Dienste 15 % länger und bringen 15 % mehr Geld. Schneeräumen möglich.'},
+  sturm:   {name:'Sturm',       fx:{st:1.1, pay:1.15}, desc:'Draußen 10 % mehr Ausdauer, aber 15 % Sturmzuschlag.'},
+};
+const SAISON = {
+  winter:   {name:'Winter',   temp:[-6,5],  w:{sonne:1, wolken:3, regen:2, nebel:2, frost:3, schnee:3, sturm:1}},
+  fruehling:{name:'Frühling', temp:[4,19],  w:{sonne:3, wolken:3, regen:3, gewitter:1, nebel:1}},
+  sommer:   {name:'Sommer',   temp:[17,34], w:{sonne:4, wolken:2, regen:1, gewitter:2, hitze:3}},
+  herbst:   {name:'Herbst',   temp:[3,16],  w:{sonne:2, wolken:3, regen:3, nebel:2, sturm:2}},
+};
+function saisonHeute(d=new Date()){ const m = d.getMonth(); return m===11||m<=1 ? 'winter' : m<=4 ? 'fruehling' : m<=7 ? 'sommer' : 'herbst'; }
+function wetterHeute(){
+  const d = Math.floor(Date.now()/864e5), s = SAISON[saisonHeute()];
+  const ent = Object.entries(s.w), sum = ent.reduce((a,[,v])=>a+v,0);
+  let x = hnoise(d*17 + 5) * sum, id = ent[0][0];
+  for(const [k,v] of ent){ if(x < v){ id = k; break; } x -= v; }
+  let t = Math.round(s.temp[0] + hnoise(d*23 + 11) * (s.temp[1]-s.temp[0]));
+  if(id==='schnee' || id==='frost') t = Math.min(t, -1);
+  if(id==='hitze') t = Math.max(t, 30);
+  if(id==='sonne' && saisonHeute()==='sommer') t = Math.max(t, 22);
+  return Object.assign({id, temp:t, saison:saisonHeute()}, WETTER[id]);
+}
+function wxF(d, k){
+  if(!OUT_IDS.includes(d.id)) return 1;
+  const v = wetterHeute().fx[k]; return typeof v === 'number' ? v : 1;
+}
+function wxLock(d){
+  if(!d.wx) return null;
+  const w = wetterHeute();
+  if(d.season && w.saison !== d.season) return 'nur im ' + SAISON[d.season].name;
+  return d.wx.includes(w.id) ? null : 'nur bei ' + d.wx.map(x=>WETTER[x].name).join(' oder ');
+}
+function wxNote(d){
+  if(!OUT_IDS.includes(d.id)) return '';
+  const w = wetterHeute(); if(!Object.keys(w.fx).length) return '';
+  return '<div class="wxnote small">Wetter: ' + esc(w.name) + ', ' + w.temp + ' °C</div>';
+}
+function wetterLine(){
+  const w = wetterHeute(), ort = S.standort ? S.standort.ort : 'der Kaserne';
+  return '<div class="wx"><div><div class="small muted">' + esc(SAISON[w.saison].name) + ', Wetter in ' + esc(ort) + '</div>'
+    + '<div style="font-weight:700">' + esc(w.name) + ', ' + w.temp + ' °C</div><div class="small">' + esc(w.desc) + '</div></div></div>';
+}
+/* Feiertage und Jahreszeiten-Fenster für Meldungen */
+function ostern(y){
+  const a=y%19, b=Math.floor(y/100), c=y%100, d=Math.floor(b/4), e=b%4, f=Math.floor((b+8)/25), g=Math.floor((b-f+1)/3),
+    h=(19*a+b-d-g+15)%30, i=Math.floor(c/4), k=c%4, l=(32+2*e+2*i-h-k)%7, m=Math.floor((a+11*h+22*l)/451),
+    mo=Math.floor((h+l-7*m+114)/31), da=((h+l-7*m+114)%31)+1;
+  return new Date(y, mo-1, da);
+}
+function inWindow(w, d=new Date()){
+  const m = d.getMonth()+1, day = d.getDate(), md = m*100 + day;
+  const easter = ostern(d.getFullYear()), diff = Math.round((new Date(d.getFullYear(), d.getMonth(), day) - easter)/864e5);
+  switch(w){
+    case 'winter': case 'fruehling': case 'sommer': case 'herbst': return saisonHeute(d) === w;
+    case 'neujahr': return md >= 101 && md <= 106;
+    case 'karneval': return diff >= -52 && diff <= -46;
+    case 'ostern': return diff >= -3 && diff <= 1;
+    case 'mai': return md >= 430 && md <= 501;
+    case 'tdbw': return md >= 610 && md <= 620;
+    case 'oktoberfest': return md >= 920 && md <= 1005;
+    case 'halloween': return md >= 1029 && md <= 1031;
+    case 'martin': return md >= 1108 && md <= 1111;
+    case 'advent': return md >= 1127 && md <= 1217;
+    case 'nikolaus': return md >= 1205 && md <= 1206;
+    case 'weihnachten': return md >= 1218 && md <= 1226;
+    case 'silvester': return md >= 1229 && md <= 1231;
+  }
+  return false;
+}
+const SEASON_EVENTS = [
+ {id:'sz_schneeball', who:'dennis', when:'winter', text:'Über Nacht hat es geschneit. Dennis steht vor dem Block, einen perfekt geformten Schneeball in der Hand, und schaut zum Fenster des Geschäftszimmers.',
+  ch:[
+   {t:'„Tu es nicht.“', out:{t:'Dennis wirft trotzdem. Er trifft das Fenster daneben. Das von von Ahlen.', fx:{rel:{dennis:2, chef:-2}}}},
+   {t:'Mitmachen', roll:{stat:'schiessen', base:30},
+     ok:{t:'Volltreffer auf Kalle, der gerade um die Ecke kommt. Die Schneeballschlacht dauert eine Stunde. Beste Stunde der Woche.', fx:{st:-8, rel:{dennis:5, kalle:2}}},
+     fail:{t:'Du triffst Brockmann. Er bleibt stehen, wischt sich den Schnee vom Barett und geht wortlos weiter. Das ist schlimmer als Schreien.', fx:{bp:-3, rel:{spiess:-4, dennis:4}}}},
+   {t:'Schneeschieber holen', out:{t:'Du räumst den Weg zum Geschäftszimmer frei. Brockmann sieht es und nickt.', fx:{st:-8, bp:3, rel:{spiess:3}}}},
+  ]},
+ {id:'sz_heizung', who:'kalle', when:'winter', text:'Die Heizung im Block ist ausgefallen. Es hat 14 Grad in der Stube. Kalle kommt mit einem Heizlüfter, dessen Kabel verdächtig repariert aussieht.',
+  ch:[
+   {t:'Heizlüfter anschließen', roll:{stat:'fachwissen', base:35},
+     ok:{t:'Er läuft. Die Stube wird warm, und der Heizlüfter riecht nur ein bisschen nach Plastik.', fx:{st:10, rel:{kalle:4}}},
+     fail:{t:'Die Sicherung fliegt raus. Im ganzen Block. Alle wissen, welche Stube es war.', fx:{bp:-3, rel:{kalle:2}}}},
+   {t:'Doppelt Socken anziehen und Schadensmeldung schreiben', out:{t:'Die Schadensmeldung geht durch. In drei bis sechs Wochen kommt jemand.', fx:{bp:2, st:-5}}},
+  ]},
+ {id:'sz_pollen', who:'lena', when:'fruehling', text:'Frühling. Die Birken blühen, und halb die Kompanie niest beim Formaldienst im Takt.',
+  ch:[
+   {t:'Tapfer stillstehen', roll:{stat:'fitness', base:35},
+     ok:{t:'Du stehst wie eine Eins. Lena neben dir niest elfmal und flucht leise.', fx:{bp:3}},
+     fail:{t:'Du niest genau beim „Stillgestanden!“. Die Kompanie lacht, Brockmann nicht.', fx:{bp:-2}}},
+   {t:'Lena ein Taschentuch reichen', out:{t:'Ohne Bewegung, aus dem Ärmel, in einer flüssigen Geste. Lena ist beeindruckt.', fx:{rel:{lena:4}}}},
+  ]},
+ {id:'sz_hitzefrei', who:'dennis', when:'sommer', text:'32 Grad im Schatten. Dennis fragt Brockmann, ob es Hitzefrei gibt. Brockmann antwortet nicht. Er schaut nur.',
+  ch:[
+   {t:'Wasserkanister für die Kompanie organisieren', out:{t:'Du schleppst sechs Kanister zum Antreteplatz. Die Kompanie liebt dich, Brockmann notiert sich deinen Namen. Positiv.', fx:{st:-10, bp:4, rel:{spiess:3}}}},
+   {t:'Im Schatten verschwinden', roll:{stat:'vitaminb', base:30},
+     ok:{t:'Eine Stunde im kühlen Waffenkammerflur. Niemand vermisst dich.', fx:{st:10}},
+     fail:{t:'Der Schatten gehört schon Brockmann.', fx:{bp:-3}}},
+  ]},
+ {id:'sz_grill', who:'kalle', when:'sommer', text:'Sommerabend. Kalle hat hinter dem Block einen Grill aufgebaut. Woher der Grill kommt, weiß niemand. Die Würstchen auch nicht.',
+  ch:[
+   {t:'Zehn Euro in die Grillkasse', out:{t:'Bester Abend des Monats. Sogar Lena isst zwei Würstchen.', fx:{money:-10, st:10, rel:{kalle:3, lena:2}}}},
+   {t:'„Ist das genehmigt?“', out:{t:'Kalle zeigt dir einen Zettel. Darauf steht „genehmigt“. In Kalles Handschrift.', fx:{rel:{kalle:-1}}}},
+  ]},
+ {id:'sz_laub', who:'spiess', when:'herbst', text:'Herbst. Der Kasernenhof liegt voller Laub. Brockmann drückt dir einen Rechen in die Hand. „Bis zum Mittagessen.“ Es ist ein sehr großer Hof.',
+  ch:[
+   {t:'Gründlich rechen', out:{t:'Drei Stunden, zwanzig Säcke. Dann kommt Wind auf.', fx:{st:-12, bp:4, rel:{spiess:3}}}},
+   {t:'Den Laubbläser aus der Instandsetzung leihen', roll:{stat:'vitaminb', base:30},
+     ok:{t:'In zwanzig Minuten ist alles weg. Ins Nachbargebäude, aber weg.', fx:{bp:2, rel:{spiess:1}}},
+     fail:{t:'Der Laubbläser ist reserviert. Für Brockmann.', fx:{st:-6}}},
+  ]},
+ {id:'sz_sturm', who:'chef', when:'herbst', text:'Herbststurm. Das Flaggenseil am Antreteplatz ist gerissen, die Bundesflagge hängt in einem Baum. Von Ahlen schaut nach oben, dann zu dir.',
+  ch:[
+   {t:'Hochklettern', roll:{stat:'fitness', base:30},
+     ok:{t:'Flagge gerettet, sauber gefaltet. Von Ahlen will ein Foto für die Kompaniechronik.', fx:{bp:5, rel:{chef:5}}},
+     fail:{t:'Du hängst jetzt neben der Flagge im Baum. Die Feuerwehr holt euch beide.', fx:{bp:-2, st:-10}}},
+   {t:'Leiter aus der Instandsetzung holen', out:{t:'Sicher, langsam, korrekt. Von Ahlen nennt es „vorbildliches Risikomanagement“.', fx:{bp:3, rel:{chef:3}}}},
+  ]},
+ {id:'sz_neujahr', who:'lena', when:'neujahr', text:'Neujahr. Lena hängt eine Liste mit Vorsätzen an die Stubentür. Sie hat für jeden von euch einen geschrieben. Deiner: „Mehr Liegestütze.“',
+  ch:[
+   {t:'Gleich zwanzig Stück machen', out:{t:'Lena hakt deinen Vorsatz ab. „Bis morgen dann.“', fx:{st:-8, bp:2, rel:{lena:4}}}},
+   {t:'Für Lena auch einen Vorsatz schreiben', out:{t:'„Öfter mal Pause machen.“ Lena liest es, schnaubt und hängt es trotzdem auf.', fx:{rel:{lena:3}}}},
+  ]},
+ {id:'sz_karneval', who:'chef', when:'karneval', text:'Weiberfastnacht. Eine Kameradin aus dem Stab kommt mit einer Schere ins Geschäftszimmer. Von Ahlens Krawatte ist in Gefahr.',
+  ch:[
+   {t:'Von Ahlen warnen', out:{t:'Er versteckt die Krawatte in der Schublade. Ab jetzt bist du sein Vertrauter.', fx:{rel:{chef:5}}}},
+   {t:'Die Schere halten', out:{t:'Schnipp. Von Ahlen lacht tapfer und erklärt es zu einer Teambuilding-Maßnahme.', fx:{rel:{chef:-2, lena:3}}}},
+  ]},
+ {id:'sz_ostern', who:'dennis', when:'ostern', text:'Ostern. Jemand hat auf dem Übungsplatz bunte Eier versteckt. Dennis ist überzeugt, dass es eine Geländeübung ist.',
+  ch:[
+   {t:'Mitsuchen', roll:{stat:'fachwissen', base:30},
+     ok:{t:'Zwölf Eier, eins davon mit 20 Euro drin. Brockmann hat sie versteckt. Er bestreitet es.', fx:{money:20, rel:{dennis:3}}},
+     fail:{t:'Du findest nur ein Ei, und das ist vom letzten Jahr.', fx:{st:-5}}},
+   {t:'Dennis die Karte zeigen', out:{t:'Er findet mit deiner Hilfe alle. Er teilt die Schokolade gerecht. Fast.', fx:{rel:{dennis:5}, st:5}}},
+  ]},
+ {id:'sz_tdbw', who:'chef', when:'tdbw', text:'Tag der Bundeswehr. Tausende Besucher in der Kaserne. Von Ahlen braucht jemanden, der Kindern einen Lkw erklärt.',
+  ch:[
+   {t:'Freiwillig melden', out:{t:'Sechs Stunden Hupe, Fragen und klebrige Finger. Ein Kind will später Soldat werden. Ein anderes Lkw.', fx:{st:-10, bp:5, rel:{chef:4}}}},
+   {t:'Lieber Würstchen verkaufen', out:{t:'Der Stand macht Rekordumsatz. Kalle fragt, ob du Teilhaber werden willst.', fx:{money:30, rel:{kalle:3}}}},
+  ]},
+ {id:'sz_oktoberfest', who:'kalle', when:'oktoberfest', text:'Oktoberfest im Mannschaftsheim. Kalle trägt eine Lederhose, die eindeutig aus der Kleiderkammer der Gebirgsjäger stammt.',
+  ch:[
+   {t:'Mitfeiern', out:{t:'Ein fröhlicher Abend. Am nächsten Morgen ist der Antreteplatz sehr hell.', fx:{money:-15, st:-5, rel:{kalle:4, dennis:2}}}},
+   {t:'„Wo hast du die Lederhose her?“', out:{t:'„Leihgabe.“ Mehr sagt er nicht. In Mittenwald sucht jemand seine Lederhose.', fx:{rel:{kalle:-1}}}},
+  ]},
+ {id:'sz_halloween', who:'dennis', when:'halloween', text:'Halloween. Nachts um drei steht eine Gestalt mit weißem Handschuh an deinem Bett. Es ist Dennis. Er hat sich als Brockmann verkleidet.',
+  ch:[
+   {t:'Mitspielen: „Spind ist sauber, Herr Hauptfeldwebel!“', out:{t:'Dennis zieht weiter zur nächsten Stube. Drei Rekruten stehen in Unterhose stramm.', fx:{rel:{dennis:5}}}},
+   {t:'Kissen werfen', out:{t:'Volltreffer. Dennis erklärt die Verkleidung für beendet.', fx:{rel:{dennis:2}}}},
+  ]},
+ {id:'sz_martin', who:'spiess', when:'martin', text:'Martinstag. In der Truppenküche gibt es Gans. Genau eine Portion ist noch übrig, und Brockmann steht direkt hinter dir.',
+  ch:[
+   {t:'Brockmann den Vortritt lassen', out:{t:'„Danke.“ Er isst die Gans, ohne eine Miene zu verziehen. Am nächsten Tag ist dein Spind bei der Kontrolle „in Ordnung“.', fx:{rel:{spiess:6}}}},
+   {t:'Die Gans nehmen', out:{t:'Köstlich. Brockmann isst Linsensuppe und sieht dich dabei die ganze Zeit an.', fx:{st:10, rel:{spiess:-3}}}},
+  ]},
+ {id:'sz_advent', who:'lena', when:'advent', text:'Adventszeit. Lena hat für die Stube einen Adventskalender gebastelt. Hinter jedem Türchen: eine Liegestütz-Aufgabe.',
+  ch:[
+   {t:'Das heutige Türchen öffnen', out:{t:'„24 Liegestütze.“ Es ist der 3. Dezember. Lena sagt, das sei Motivation.', fx:{st:-8, bp:2, rel:{lena:4}}}},
+   {t:'Heimlich Schokolade dazulegen', out:{t:'Ab heute steht hinter jedem Türchen eine Aufgabe und ein Stück Schokolade. Lena tut so, als hätte sie es nicht bemerkt.', fx:{money:-5, rel:{lena:3, dennis:3}}}},
+  ]},
+ {id:'sz_nikolaus', who:'spiess', when:'nikolaus', text:'Nikolaus. Vor jeder Stubentür steht ein Stiefel. In deinem liegt ein Schokoladen-Nikolaus und ein Zettel: „Spind. Heute. B.“',
+  ch:[
+   {t:'Spind aufräumen, dann Schokolade', out:{t:'Brockmann kontrolliert um 16 Uhr. Kein Kommentar. Bei Brockmann ist das ein Lob.', fx:{st:-5, bp:3, rel:{spiess:3}}}},
+   {t:'Erst die Schokolade', out:{t:'Sie schmeckt nach Spindkontrolle. Die um 16 Uhr geht schief.', fx:{st:5, bp:-2}}},
+  ]},
+ {id:'sz_weihnachten', who:'chef', when:'weihnachten', text:'Weihnachtsfeier der Kompanie. Von Ahlen hält eine Rede mit 23 Folien. Bei Folie 4 schläft Dennis. Bei Folie 9 braucht der Kompaniechef jemanden, der das Wichteln organisiert.',
+  ch:[
+   {t:'Wichteln organisieren', out:{t:'Alle bekommen etwas. Brockmann bekommt Socken und freut sich sichtbar. Zwei Sekunden lang.', fx:{st:-5, bp:3, rel:{chef:3, spiess:3}}}},
+   {t:'Dennis wecken', out:{t:'Dennis wacht auf, applaudiert sofort und ruft „Sehr gute Folie!“. Von Ahlen ist gerührt.', fx:{rel:{dennis:3, chef:2}}}},
+  ]},
+ {id:'sz_silvester', who:'kalle', when:'silvester', text:'Silvester in der Kaserne, du hast Bereitschaft. Kalle hat Raketen. Viele Raketen. Woher, fragt besser keiner.',
+  ch:[
+   {t:'Mit Kalle anstoßen, keine Raketen', out:{t:'Um Mitternacht steht ihr auf dem Dach und schaut dem Feuerwerk der Stadt zu. Ein guter Start ins Jahr.', fx:{rel:{kalle:4}}}},
+   {t:'Die Raketen konfiszieren', out:{t:'Kalle ist beleidigt, Brockmann beeindruckt. Am Neujahrsmorgen sind die Raketen trotzdem weg.', fx:{bp:3, rel:{kalle:-4, spiess:4}}}},
+  ]},
+];
+EVENTS.push(...SEASON_EVENTS);
+FUNK.push(
+ {id:'w1', who:'dennis', when:'winter', t:'Ich habe herausgefunden: Unter zwei Wolldecken und einem Feldparka kann man auch bei 14 Grad schlafen.'},
+ {id:'w2', who:'spiess', when:'winter', t:'Wer gelbe Muster in den Schnee vor Block C macht: Ich weiß, wer Sie sind.'},
+ {id:'w3', who:'kalle', when:'winter', t:'Biete Handwärmer, Stück einen Euro. Gestern waren es noch fünfzig Cent. Angebot und Nachfrage.'},
+ {id:'w4', who:'lena', when:'fruehling', t:'Endlich wieder kurze Hose beim Laufen. Wer mitkommt, darf meine Zeit messen.'},
+ {id:'w5', who:'chef', when:'fruehling', t:'Frühjahrsputz ist auch ein Mindset. Bitte heute alle Fensterbänke.'},
+ {id:'w6', who:'dennis', when:'sommer', t:'Das Standortbad hat einen Schattenplatz. Ich habe ihn reserviert. Für immer.'},
+ {id:'w7', who:'spiess', when:'sommer', t:'Hitzefrei gibt es bei der Bundeswehr nicht. Es gibt Wasser. Trinken Sie es.'},
+ {id:'w8', who:'kalle', when:'sommer', t:'Eis am Stiel, gekühlt im Waffenkammer-Kühlschrank. Fragt nicht.'},
+ {id:'w9', who:'lena', when:'herbst', t:'Laufen im Nebel: Man sieht niemanden, der einen überholt. Perfekt.'},
+ {id:'w10', who:'chef', when:'herbst', t:'Herbst ist die Zeit der Ernte. Ernten wir Ergebnisse. Folie folgt.'},
+ {id:'w11', who:'kalle', when:'advent', t:'Adventskalender mit 24 Energy-Drinks. Nur noch drei Stück. Ab 30 Euro.'},
+ {id:'w12', who:'spiess', when:'weihnachten', t:'Frohe Weihnachten, Kameraden. Die Spindkontrolle nach den Feiertagen ist bereits angesetzt.'},
+ {id:'w13', who:'dennis', when:'silvester', t:'Mein Vorsatz fürs neue Jahr: mehr schlafen. Ich bin optimistisch.'},
+ {id:'w14', who:'lena', when:'ostern', t:'Wer das Osterei mit den 20 Euro gefunden hat: Brockmann sucht dich. Er sagt, es war seins.'},
+);
+
+/* ---------- Fahrprüfungen ---------- */
+const FS_EXAMS = FAHRSCHULE.map(x => ({id:'fsx_'+x.id, who:'krueger', ctx:['fsx'], fsExam:x.id,
+  text:{b:'Fahrprüfung Klasse B. Der Prüfer setzt sich auf den Beifahrersitz und schnallt sich zweimal an. „Fahren Sie einfach normal.“',
+        stapler:'Staplerprüfung im Materiallager. Drei Paletten, ein enger Gang und Kalle, der „nur mal zuschauen“ will.',
+        c:'Fahrprüfung Klasse C. Rückwärts in die Rampe, rechts ein Pfosten, links der Wagen des Kommandeurs.',
+        ce:'Prüfung Klasse CE. Anhänger ankuppeln, rückwärts um die Ecke, und der Prüfer hat heute schlechte Laune.',
+        kette:'Prüfung Kettenfahrzeug auf dem Übungsplatz. Schlamm bis zur Kette und eine Brücke, die schon bessere Tage gesehen hat.',
+        schlepp:'Prüfung Flugzeugschlepper. Ein Eurofighter am Haken, der Staffelkapitän schaut von der Tür aus zu.',
+        boot:'Prüfung Bootsführerschein. Anlegen an der Pier bei auflandigem Wind. Die halbe Besatzung schaut zu.'}[x.id] || 'Fahrprüfung.',
+  ch:[
+   {t:'Konzentriert und nach Vorschrift', roll:{stat:'fachwissen', base:45},
+     ok:{t:'Fehlerfrei. Der Prüfer unterschreibt, ohne aufzusehen. Bei ihm ist das ein Kompliment.', fx:{fs:x.id, bp:3}},
+     fail:{t:'Ein Spiegelblick zu wenig. Durchgefallen. Die Wiederholung kostet nur die Hälfte.', fx:{fsFail:x.id}}},
+   {t:'Locker und mit Gefühl', roll:{stat:'vitaminb', base:40},
+     ok:{t:'Du plauderst dich durch die Prüfung. Bestanden, und der Prüfer erzählt dir noch von seinem Urlaub.', fx:{fs:x.id, bp:2}},
+     fail:{t:'Zu locker. Der Prüfer hat Kaffee auf der Hose und schreibt „nicht bestanden“.', fx:{fsFail:x.id}}},
+  ]}));
+EVENTS.push(...FS_EXAMS);
+function fsCost(x){ return Math.round(x.cost * (S.fsRetry && S.fsRetry[x.id] ? .5 : 1) * (vb()==='kfz' ? .8 : 1)); }
+function fsMin(x){ return x.min * (S.fsRetry && S.fsRetry[x.id] ? .5 : 1) * (vb()==='kfz' ? .7 : 1); }
+function fsHas(id){ return !!(S.fsDone && S.fsDone[id]); }
+function fsReqs(x){
+  const out = [];
+  if(x.need) out.push({label:'Führerschein ' + FS_I[x.need].name, ok:fsHas(x.need)});
+  if(x.t) out.push({label:'Dienstgrad ab ' + RANKS.find(r=>r.t===x.t).name, ok:G.rank().t >= x.t});
+  return out;
+}
+function fsStart(id){
+  const x = FS_I[id]; S.fsDone = S.fsDone || {};
+  if(!x || (x.tsk && x.tsk !== S.tsk)) return 'Nicht verfügbar.';
+  if(S.fs) return 'Es läuft schon eine Fahrausbildung.';
+  if(fsHas(id)) return 'Führerschein schon vorhanden.';
+  if(!fsReqs(x).every(r=>r.ok)) return 'Voraussetzungen fehlen.';
+  const c = fsCost(x); if(S.money < c) return 'Zu wenig Geld.';
+  S.money -= c;
+  S.fs = {id, start:now(), end:now() + fsMin(x)*60000/S.speed, exam:false};
+  return null;
+}
+function fsTick(events){
+  if(S.fs && !S.fs.exam && now() >= S.fs.end){
+    S.fs.exam = true; S.pending.push('fsx_' + S.fs.id);
+    events.push('Fahrprüfung ' + FS_I[S.fs.id].name + ' wartet');
+    return true;
+  }
+  return false;
+}
+function renderFahrschule(){
+  S.fsDone = S.fsDone || {};
+  let h = '<h2>Fahrschule</h2><p class="small muted">Führerscheine laufen parallel zu Ausbildung, Lehrgang und Dienst. Jeder Schein schaltet neue Fahrdienste frei.'
+    + (vb()==='kfz' ? ' Als Kraftfahrer bist du 30 % schneller und zahlst 20 % weniger.' : '') + '</p><div class="cards">';
+  h += FAHRSCHULE.filter(x => !x.tsk || x.tsk === S.tsk).map(x => {
+    const done = fsHas(x.id), run = S.fs && S.fs.id === x.id, reqs = fsReqs(x), ok = reqs.every(r=>r.ok), c = fsCost(x);
+    const frei = DIENSTE.filter(d => d.fs === x.id).map(d => d.name).join(', ');
+    let inner = '<p class="flv">' + esc(x.desc) + '</p>' + (frei ? '<p class="eff">Schaltet frei: ' + esc(frei) + '</p>' : '');
+    if(done) inner += '<div class="stamp good small-stamp" style="margin:8px auto 2px;font-size:17px">BESTANDEN</div>';
+    else if(run) inner += '<div class="small">' + (S.fs.exam ? 'Die Prüfung wartet in den Meldungen.' : 'Prüfung in <span class="num" data-left="fs"></span>') + '</div><div class="prog" style="margin:0"><i data-prog="fs"></i></div>';
+    else inner += facts([['Dauer', fmtMin(fsMin(x)/S.speed)], ['Kosten', eur(c)]]) + (reqs.length ? reqMini(reqs) : '')
+      + (S.fsRetry && S.fsRetry[x.id] ? '<div class="small muted">Wiederholung zum halben Preis</div>' : '')
+      + '<button class="btn wide" data-act="fs" data-id="' + x.id + '" ' + ((!ok || S.fs || S.money < c) ? 'disabled' : '') + '>Anmelden<small>' + eur(c) + '</small></button>';
+    return acard(x.name + ' · ' + x.sub, x.art, inner, run);
+  }).join('') + '</div>';
+  return h;
+}
+
+/* =========================================================
+   WOCHENAUFTRÄGE VOM SPIESS
+   ========================================================= */
+const WA_INTRO = [
+  'Ich sag’s nur einmal: Diese Woche will ich Ergebnisse sehen.',
+  'Neue Woche, neue Aufträge. Und nein, das ist nicht verhandelbar.',
+  'Die Kompanie schaut auf Sie. Ich auch. Vor allem ich.',
+  'Erledigen Sie das, und wir verstehen uns.',
+  'Wer das bis Sonntag schafft, hat bei mir einen Stein im Brett. Einen kleinen.',
+];
+const WA_TYPES = [
+  {id:'dienste', ev:'dienst', n:[4,7,10], txt:n=>n+' Dienste beenden'},
+  {id:'draussen', ev:'draussen', n:[3,5,7], txt:n=>n+' Dienste draußen bei Wind und Wetter'},
+  {id:'dienst_x', ev:'dienst_x', n:[2,3,4], txt:(n,w)=>n+'× ' + (D[w.d] ? D[w.d].name : 'Dienst')},
+  {id:'verdienst', ev:'pay', n:[4,7,11], money:true, txt:n=>eur(n)+' mit Diensten verdienen'},
+  {id:'ausb', ev:'ausb', n:[1,2,3], txt:n=>n===1 ? 'Eine Ausbildungsstufe abschließen' : n+' Ausbildungsstufen abschließen'},
+  {id:'meldung', ev:'meldung', n:[2,3,5], txt:n=>n+' Meldungen bearbeiten'},
+  {id:'pfand', ev:'pfand', n:[1,2,3], txt:n=>n===1 ? 'Eine Leergut-Tour machen' : n+' Leergut-Touren machen'},
+  {id:'fix', ev:'fix', n:[1,2,3], txt:n=>n===1 ? 'Ein Fahrzeug fertig schrauben' : n+' Fahrzeuge fertig schrauben'},
+];
+function waWeek(d=new Date()){ const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return dateStr(x); }
+function waEnsure(){
+  const wk = waWeek();
+  if(S.wa && S.wa.week === wk) return S.wa;
+  const sold = G.rank().sold, types = WA_TYPES.slice().sort(() => Math.random() - .5);
+  const list = [];
+  for(const ty of types){
+    if(list.length >= 3) break;
+    const lvl = list.length;            // erster leicht, zweiter mittel, dritter schwer
+    const w = {ty:ty.id, prog:0, done:false, claimed:false, lvl};
+    if(ty.id === 'dienst_x'){
+      const pool = DIENSTE.filter(d => !G.dienstLock(d) && !d.einsatz && !d.wx && !(d.hideFor && d.hideFor.includes(G.rank().g)) && d.min <= 120);
+      if(!pool.length) continue;
+      w.d = pool[Math.floor(Math.random()*pool.length)].id;
+    }
+    w.goal = ty.money ? Math.round(ty.n[lvl] * sold * 2.5 / 10) * 10 : ty.n[lvl];
+    w.money = Math.round(sold * [2, 3.5, 5][lvl]);
+    w.bp = [3, 5, 8][lvl];
+    list.push(w);
+  }
+  S.wa = {week:wk, list, bonus:false, intro:Math.floor(Math.random()*WA_INTRO.length)};
+  return S.wa;
+}
+function waAdd(ev, v=1, extra){
+  if(!S) return; const wa = waEnsure();
+  for(const w of wa.list){
+    if(w.done) continue;
+    const ty = WA_TYPES.find(t => t.id === w.ty); if(!ty) continue;
+    let hit = ty.ev === ev;
+    if(ty.ev === 'dienst_x') hit = ev === 'dienst' && extra === w.d;
+    if(ty.ev === 'draussen') hit = ev === 'dienst' && OUT_IDS.includes(extra);
+    if(!hit) continue;
+    w.prog = Math.min(w.goal, w.prog + v);
+    if(w.prog >= w.goal){ w.done = true; try{ toast('Wochenauftrag erfüllt: ' + ty.txt(w.goal, w)); }catch(e){} }
+  }
+}
+function waClaim(i){
+  const wa = waEnsure(), w = wa.list[i]; if(!w || !w.done || w.claimed) return;
+  w.claimed = true; S.money += w.money; G.addPoints(w.bp);
+  let msg = 'Belohnung: ' + eur(w.money) + ' und ' + w.bp + ' Beurteilungspunkte';
+  if(!wa.bonus && wa.list.every(x => x.claimed)){
+    wa.bonus = true; S.pakete = Math.min(9, (S.pakete||0) + 1); G.addPoints(10);
+    S.rel.spiess = Math.min(100, (S.rel.spiess||0) + 3);
+    msg = 'Alle Wochenaufträge erledigt! Brockmann legt dir ein Paket aufs Bett. +10 Beurteilungspunkte';
+  }
+  save(); toast(msg); render();
+}
+function renderWA(){
+  const wa = waEnsure();
+  const end = new Date(wa.week + 'T00:00:00'); end.setDate(end.getDate() + 7);
+  const open = wa.list.filter(w => w.done && !w.claimed).length;
+  let h = '<h2>Wochenaufträge</h2><div class="panel pad wa">'
+    + '<div class="evhead" style="margin-bottom:8px">' + npcBadge('spiess', 36) + '<div><div class="small muted">Hauptfeldwebel Brockmann</div><div class="small"><i>„' + esc(WA_INTRO[wa.intro] || WA_INTRO[0]) + '“</i></div></div></div>';
+  h += wa.list.map((w, i) => {
+    const ty = WA_TYPES.find(t => t.id === w.ty); if(!ty) return '';
+    const pct = Math.round(w.prog / w.goal * 100);
+    return '<div class="warow"><div class="wat"><b>' + esc(ty.txt(w.goal, w)) + '</b><span class="small muted">' + (ty.money ? eur(w.prog) + ' / ' + eur(w.goal) : w.prog + ' / ' + w.goal) + '</span></div>'
+      + '<div class="prog" style="margin:4px 0"><i style="width:' + pct + '%"></i></div>'
+      + '<div class="wab small"><span class="muted">' + eur(w.money) + ' · ' + w.bp + ' Punkte</span>'
+      + (w.claimed ? '<span class="small"><b>✓ Erledigt</b></span>' : w.done ? '<button class="btn mini" data-act="wa" data-id="' + i + '">Abholen</button>' : '') + '</div></div>';
+  }).join('');
+  h += '<p class="small muted" style="margin:10px 0 0">' + (wa.bonus ? 'Wochenbonus abgeholt. ' : 'Alle drei erledigt: Bonus-Paket und 10 Punkte extra. ')
+    + 'Neue Aufträge in ' + fmtRest(Math.max(0, end - Date.now())).replace(/\.$/, '') + '.</p></div>';
+  if(open) S.waOpen = open;
+  return h;
+}
+function waReady(){ return !!(S && S.wa && S.wa.week === waWeek() && S.wa.list.some(w => w.done && !w.claimed)); }
+
 const EV = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
 const LG_EV = {ual:['lg_ual1','lg_ual2','lg_ual3'], fwl:['lg_fwl1','lg_fwl2','lg_fwl3'], ofl:['lg_ofl1','lg_ofl2','lg_ofl3'], stu:['lg_stu1','lg_stu2','lg_stu3']};
 function lgCost(l){ let c = (S.lgRetry && S.lgRetry[l.id]) ? l.cost/2 : l.cost; if(hasGear('tablet')) c *= .8; return Math.round(c); }
@@ -2500,19 +3264,27 @@ function finishLehrgang(){
 function maybeEvent(ctx, chance){
   if(S.einsatz || S.pending.length >= 3 || Math.random() > chance) return null;
   const t = R[S.rank].t;
-  const ok = EVENTS.filter(e => !S.pending.includes(e.id)
+  storyEnsure();
+  const ok = EVENTS.filter(e => !e.story && !S.pending.includes(e.id)
     && (!e.minT || t >= e.minT)
     && (!e.groups || e.groups.includes(R[S.rank].g))
     && (!e.tsk || e.tsk === S.tsk)
     && (!e.ctx || e.ctx.includes(ctx))
     && (!e.need || S.flags[e.need])
     && (!e.blockIf || !S.flags[e.blockIf])
+    && (!e.when || inWindow(e.when))
     && e.id !== S.lastEvent);
   if(!ok.length) return null;
   const follow = ok.filter(e=>e.need), normal = ok.filter(e=>!e.need);
   const pool = (follow.length && (Math.random() < .7 || !normal.length)) ? follow : normal;
-  pool.sort((a,b)=>(S.seen[a.id]||0)-(S.seen[b.id]||0)); // Seltenes bevorzugen
-  const e = pool[Math.floor(Math.random()*Math.min(pool.length,4))];
+  // Erst alles Ungesehene; Gesehenes frühestens nach 10 Tagen wieder, sonst lieber keine Meldung
+  const fresh = pool.filter(e => !S.seen[e.id]);
+  const cool = 10*864e5/(S.speed||1);
+  const old = pool.filter(e => S.seen[e.id] && now() - (S.seenAt[e.id]||0) > cool).sort((a,b)=>(S.seenAt[a.id]||0)-(S.seenAt[b.id]||0));
+  const use = fresh.length ? fresh : old.slice(0, 3);
+  if(!use.length) return null;
+  const sea = use.filter(x => x.when), pl = sea.length && Math.random() < .5 ? sea : use;
+  const e = pl[Math.floor(Math.random()*pl.length)];
   S.pending.push(e.id); S.lastEvent = e.id;
   return e;
 }
@@ -2528,6 +3300,8 @@ function applyFx(fx){
     S.lg.score = (S.lg.score||0) + v; chips.push('Lehrgang '+(v>0?'+':'−')+Math.abs(v));
   }
   if(fx.ep && S.einsatz){ S.einsatz.score += fx.ep; chips.push('Einsatz '+(fx.ep>0?'+':'−')+Math.abs(fx.ep)); }
+  if(fx.fs){ S.fsDone = S.fsDone || {}; S.fsDone[fx.fs] = now(); if(S.fsRetry) delete S.fsRetry[fx.fs]; chips.push('Führerschein ' + FS_I[fx.fs].name); }
+  if(fx.fsFail){ S.fsRetry = S.fsRetry || {}; S.fsRetry[fx.fsFail] = 1; chips.push('Nicht bestanden'); }
   if(fx.flag) S.flags[fx.flag] = 1;
   if(fx.unflag) delete S.flags[fx.unflag];
   return chips;
@@ -2541,17 +3315,18 @@ function showEvent(id){
   const e = EV[id]; if(!e) return; curEvent = id; const n = NPCS[e.who];
   document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="et"><div class="sheet ev">'
     + '<div class="evhead">'+npcBadge(e.who)+'<div><div id="et" class="evname">'+esc(n.name)+'</div><div class="small muted">'+esc(n.role)+'</div></div></div>'
-    + '<p class="evtext">'+esc(e.text)+'</p><div class="choices">'
-    + e.ch.map((c,i)=>'<button class="btn ghost choice" data-act="choose" data-id="'+i+'"><span>'+esc(c.t)+'</span>'
+    + '<p class="evtext">'+esc(evText(e))+'</p><div class="choices">'
+    + e.ch.map((c,i)=>!choiceOk(c) ? '' : '<button class="btn ghost choice" data-act="choose" data-id="'+i+'"><span>'+esc(c.t)+'</span>'
       + (c.roll ? '<span class="small muted">'+STAT_NAME[c.roll.stat]+'-Probe, '+rollChance(c.roll)+' % Chance</span>' : '')+'</button>').join('')
     + '</div></div></div>';
   document.querySelector('.choice').focus();
 }
 function chooseEvent(i){
-  const e = EV[curEvent]; if(!e) return; const c = e.ch[i]; if(!c) return;
+  const e = EV[curEvent]; if(!e) return; const c = e.ch[i]; if(!c || !choiceOk(c)) return;
   let out = c.out, roll = null;
   if(c.roll){ const hit = Math.random()*100 < rollChance(c.roll); out = hit ? c.ok : c.fail; roll = hit ? 'GESCHAFFT' : 'DANEBEN'; }
   const chips = applyFx(out.fx||{});
+  storyEnsure(); S.seenAt[curEvent] = now(); if(e.story) storyDone(e, c, out); if(e.fsExam) S.fs = null; waAdd('meldung');
   const lgLine = e.exam ? finishLehrgang() : e.einsatzEnd ? finishEinsatz() : '';
   S.pending = S.pending.filter(x=>x!==curEvent); S.seen[curEvent] = (S.seen[curEvent]||0)+1; curEvent = null; save();
   render();
@@ -2641,9 +3416,9 @@ const G = {
   },
   payMult(){ return (1 + .01*ordenCount()) * (G.rank().sold/40) * (1 + .03*S.stats.fachwissen) * (1 + .02*S.stats.vitaminb) * (vb()==='inst' ? 1.1 : 1) * (1 + .05*Math.min(5, S.res||0)) * (hasGear('stander') ? 1.1 : 1) * (albumSet('g') ? 1.05 : 1) * (albumSet('l') ? 1.1 : 1) * (1 + .01*kStufe('betreuung') + .02*kpStufe('mannschaftsheim')); },
   bpMult(){ return lageF('bp') * Math.max(.2, 1 + .01*medalCount() + .03*S.stats.vitaminb + .02*S.stats.fuehrung + rel('spiess')/500 + Math.max(0,rel('chef'))/1000 + .04*S.stube.spind + (vb()==='fm' ? .1 : 0) + (hasGear('kalender') ? .05 : 0) + (albumSet('e') ? .05 : 0) + .02*kpStufe('geschaeftszimmer')); },
-  dienstPay(d){ return Math.round(lagePay(d) * d.pay * G.payMult() * ((vb()==='inf' && (d.id==='gelaende'||d.id==='uebung')) ? 1.15 : 1)); },
-  dienstSt(d){ return Math.round(lageF('st') * d.st * (vb()==='kfz' ? .8 : 1) * (hasGear('stiefel') ? .95 : 1) * (1 - .02*kpStufe('fahrzeughalle'))); },
-  dienstMin(d){ return d.min * (hasGear('uhr') ? .95 : 1) * lageF('dur'); },
+  dienstPay(d){ return Math.round(wxF(d,'pay') * lagePay(d) * d.pay * G.payMult() * ((vb()==='inf' && (d.id==='gelaende'||d.id==='uebung')) ? 1.15 : 1)); },
+  dienstSt(d){ return Math.round(wxF(d,'st') * lageF('st') * d.st * (vb()==='kfz' ? .8 : 1) * (hasGear('stiefel') ? .95 : 1) * (1 - .02*kpStufe('fahrzeughalle'))); },
+  dienstMin(d){ return d.min * (hasGear('uhr') ? .95 : 1) * lageF('dur') * wxF(d,'dur'); },
   addPoints(p){ S.log.push({ts:now(), p: p>0 ? Math.round(p*G.bpMult()*10)/10 : p}); },
   points(){
     const cut = now() - 7*864e5/S.speed;
@@ -2655,6 +3430,8 @@ const G = {
     const r = G.rank();
     if(S.einsatz && !d.einsatz) return 'im Auslandseinsatz';
     if(d.einsatz && !S.einsatz) return 'nur im Auslandseinsatz';
+    if(d.fs && !fsHas(d.fs)) return 'nur mit Führerschein ' + FS_I[d.fs].name;
+    { const wl = wxLock(d); if(wl) return wl; }
     if(d.tsk && d.tsk !== S.tsk) return 'nur '+TSK[d.tsk].name;
     if(d.verw && S.verw !== d.verw) return 'nur für ' + VERW[d.verw].name;
     if(G.dzOver()) return 'Dienstzeitende';
@@ -2686,7 +3463,7 @@ const G = {
     G.normStamina();
     if(S.stamina < G.dienstSt(d)) return 'Zu wenig Ausdauer.';
     S.stamina -= G.dienstSt(d); if(S.staminaTs > now()) S.staminaTs = now();
-    S.dienst = {id, start:now(), end:now()+G.dienstMin(d)*60000/S.speed, pay:G.dienstPay(d), bp:d.bp};
+    S.dienst = {id, start:now(), end:now()+G.dienstMin(d)*60000/S.speed, pay:G.dienstPay(d), bp:Math.round(d.bp*wxF(d,'bp'))};
     return null;
   },
   startStat(id){
@@ -2770,6 +3547,7 @@ const G = {
       if(Math.random() < (D[S.dienst.id].einsatz ? .25 : .12)){ S.pakete = Math.min(9, (S.pakete||0)+1); events.push('Feldpost ist da!'); }
       events.push(d.name + ' beendet: +' + eur(S.dienst.pay));
       { const ev = maybeEvent(d.id, .55); if(ev) events.push('Neue Meldung von ' + NPCS[ev.who].short); }
+      storyEnsure(); S.story.d++; storyTick(events); funkTick(events); waAdd('dienst', 1, d.id); waAdd('pay', S.dienst.pay);
       S.dienst = null; changed = true;
     }
     if(S.lg && S.lg.cps){
@@ -2796,7 +3574,7 @@ const G = {
     if(S.ausb && now() >= S.ausb.end && !S.ausb.cps){
       if(S.ausb.type === 'stat'){
         S.stats[S.ausb.id]++; G.addPoints(2);
-        events.push(STAT_NAME[S.ausb.id] + ' jetzt auf Stufe ' + S.stats[S.ausb.id]);
+        events.push(STAT_NAME[S.ausb.id] + ' jetzt auf Stufe ' + S.stats[S.ausb.id]); waAdd('ausb');
       } else {
         S.lehrgaenge[S.ausb.id] = now(); G.addPoints(10);
         events.push(L[S.ausb.id].name + ' bestanden');
@@ -2804,6 +3582,7 @@ const G = {
       S.ausb = null; changed = true;
       { const ev = maybeEvent('ausb', .3); if(ev) events.push('Neue Meldung von ' + NPCS[ev.who].short); }
     }
+    if(fsTick(events)) changed = true;
     if(ordenCheck(events)) changed = true;
     if(changed) save();
     if(events.length) notifyEvents(events);
@@ -2883,7 +3662,7 @@ function renderNav(){
   nav.style.gridTemplateColumns = 'repeat('+TABS.length+',1fr)';
   nav.innerHTML = TABS.map(([id,label]) =>
     '<button data-act="main" data-id="'+id+'" '+(tab===id?'aria-current="page"':'')+'>'+(id==='stube' ? ICONS.raum : ICONS[id])+label
-    + (id==='stube' && (S.pending.length || S.pakete) ? '<span class="dot" aria-label="neue Meldung"></span>' : '')+'</button>').join('');
+    + (id==='stube' && (S.pending.length || S.pakete || waReady()) ? '<span class="dot" aria-label="neue Meldung"></span>' : '')+'</button>').join('');
 }
 
 function renderRes(){
@@ -2935,6 +3714,8 @@ function renderStube(){
         + '<div class="info"><div class="title">Meldung von '+esc(n.short)+'</div><div class="meta">'+esc(n.role)+'</div></div></div>'
         + '<button class="btn" data-act="event" data-id="'+id+'">Ansehen</button></div>'; }).join('') + '</div>';
   }
+  h += renderWA();
+  h += storyCard();
   if(!S.gaDone){
     const req = G.gaReqs(), ok = req.every(x=>x.ok);
     h += '<h2>Grundausbildung</h2><div class="panel pad"><p class="small">Bevor es richtig losgeht: zwei Wochen Grundausbildung. Am Ende steht das feierliche Gelöbnis.</p>'
@@ -2955,7 +3736,7 @@ function renderStube(){
     h += '<div class="panel pad" style="margin-top:16px"><p><b>Wo dienst du?</b> Leg deinen Heimatstandort fest.</p><button class="btn ghost" data-act="tab" data-id="laufbahn">Standort wählen</button></div>';
   if(!S.verw && G.rank().t >= 1)
     h += '<div class="panel pad" style="margin-top:16px"><p><b>Wähle deine Verwendung.</b> Als Gefreiter darfst du dich jetzt spezialisieren.</p><button class="btn" data-act="tab" data-id="laufbahn">Fachrichtung wählen</button></div>';
-  h += '<div class="panel pad lage" style="margin-top:16px"><div class="small muted">Tageslage, gilt heute für alle</div><div style="font-weight:700;font-size:18px">'+esc(lageHeute().name)+'</div><p class="small" style="margin:4px 0 0">'+esc(lageHeute().desc)+'</p></div>'
+  h += '<div class="panel pad lage" style="margin-top:16px"><div class="small muted">Tageslage, gilt heute für alle</div><div style="font-weight:700;font-size:18px">'+esc(lageHeute().name)+'</div><p class="small" style="margin:4px 0 0">'+esc(lageHeute().desc)+'</p>'+wetterLine()+'</div>'
     + '<p class="quote">„'+esc(lageHeute().spruch || pick(SPIESS))+'“ – Hauptfeldwebel Brockmann, Spieß</p>';
   if(S.einsatz){
     const E = EINSATZ_I[S.einsatz.id];
@@ -2996,11 +3777,12 @@ function renderDienst(){
     if(d.tsk && d.tsk !== S.tsk) return '';
     if(d.verw && d.verw !== S.verw) return '';
     if(d.ga && S.gaDone) return '';
+    if(d.wx && wxLock(d)) return '';
     if(d.hideFor && d.hideFor.includes(G.rank().g)) return '';
     if(lock && (d.spec || d.groups) && G.rank().t < 3) return ''; // Fortgeschrittene Dienste erst zeigen, wenn sie in Reichweite sind
     const running = S.dienst && S.dienst.id === d.id;
     const dis = !!lock || !!S.dienst || S.stamina < G.dienstSt(d);
-    const inner = '<p class="flv">'+esc(d.desc)+'</p>'
+    const inner = '<p class="flv">'+esc(d.desc)+'</p>' + wxNote(d)
       + facts([['Dauer', fmtMin(G.dienstMin(d)/S.speed)], ['Ausdauer', G.dienstSt(d)], ['Verdienst', eur(G.dienstPay(d))], ['Punkte', d.bp]])
       + (running ? '<div class="small">Fertig in <span class="num" data-left="dienst"></span></div><div class="prog" style="margin:0"><i data-prog="dienst"></i></div>'
         : lock ? '<div class="lock">Gesperrt: '+esc(lock)+'</div>'
@@ -3041,6 +3823,7 @@ function renderAusb(){
       + '<button class="btn wide" data-act="lehrgang" data-id="'+l.id+'" '+((!ok || S.lg || S.einsatz) ? 'disabled' : '')+'>Anmelden<small>'+eur(lgCost(l))+'</small></button>';
     return acard(l.name, 'books', inner, running);
   }).join('') + '</div>';
+  h += renderFahrschule();
   return h;
 }
 
@@ -3109,7 +3892,7 @@ function render(){
 
 function live(){
   if(!S) return;
-  for(const k of ['dienst','ausb','lg','einsatz','fa']){
+  for(const k of ['dienst','ausb','lg','einsatz','fa','fs']){
     const a = S[k]; if(!a) continue;
     const pct = Math.min(100, (now()-a.start)/(a.end-a.start)*100);
     document.querySelectorAll('[data-prog="'+k+'"]').forEach(e=>e.style.width=pct+'%');
@@ -3171,6 +3954,9 @@ const ACT = {
   },
   close(){ document.getElementById('modalHost').innerHTML=''; curEvent = null; },
   event(id){ showEvent(id); },
+  storybook(){ STORY_OPEN = !STORY_OPEN; render(); },
+  fs(id){ const e = fsStart(id); if(e) toast(e); else { save(); toast('Fahrschule ' + FS_I[id].name + ' gestartet'); } render(); },
+  wa(i){ waClaim(+i); },
   choose(i){ chooseEvent(Number(i)); },
   geloebnis(){
     if(S.gaDone || !G.gaReqs().every(x=>x.ok)) return;
@@ -3645,6 +4431,7 @@ async function loadTruppe(){
   await loadKarte();
   await loadKompanie();
   await abholen();
+  await kpBonusFlush();
   if(tab==='truppe') render();
   loadRangliste();
 }
@@ -3675,6 +4462,7 @@ async function afterLogin(){
   await loadOnline();
   await loadKompanie();
   if(S) await abholen();
+  await kpBonusFlush();
 }
 
 const SPLASH_TXT = ['Antrag auf Ladebildschirm wird bearbeitet …', 'Warte auf Freigabe durch den Spieß …', 'Stiefel werden geputzt …', 'Spind wird auf Kante gebracht …',
@@ -3986,13 +4774,19 @@ function renderLager(){
 }
 
 // Zuschuss vom Oberführungskommando: Verdienste sammeln und regelmäßig melden
-let kpBonusQueue = 0;
-function kpBonusAdd(v){ if(ONLINE.kp && v > 0) kpBonusQueue += v; }
+// Verdienste werden im Spielstand vorgemerkt (S.kpq), damit nichts verloren geht,
+// auch wenn ein Dienst bei geschlossener App endet oder die App direkt danach geschlossen wird.
+let kpBonusBusy = false, kpBonusErr = false;
+function kpBonusAdd(v){ if(S && v > 0) S.kpq = (S.kpq || 0) + v; }
 async function kpBonusFlush(){
-  if(!sb || !USER || !ONLINE.kp || kpBonusQueue <= 0) return;
-  const v = Math.round(kpBonusQueue); kpBonusQueue = 0;
+  if(!sb || !USER || !S || !(S.kpq > 0) || kpBonusBusy) return;
+  if(!ONLINE.kp){ S.kpq = 0; return; } // ohne Kompanie gibt es keinen Zuschuss
+  kpBonusBusy = true;
+  const v = Math.round(S.kpq);
   const { error } = await sb.rpc('kompanie_dienstbonus', {p_verdienst:v});
-  if(error) kpBonusQueue += v;
+  if(!error){ S.kpq = Math.max(0, (S.kpq || 0) - v); kpBonusErr = false; save(); }
+  else if(!kpBonusErr){ kpBonusErr = true; toast('Zuschuss f\u00fcr die Kompaniekasse konnte nicht gebucht werden: ' + (error.message || 'Serverfehler')); }
+  kpBonusBusy = false;
 }
 setInterval(() => { kpBonusFlush(); if(ONLINE.lag && ONLINE.lag.aufraeumen && new Date(ONLINE.lag.aufraeumen.ende).getTime() <= Date.now()) aufAbschliessen().then(() => { if(tab==='truppe') render(); }); }, 20000);
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') kpBonusFlush(); });
