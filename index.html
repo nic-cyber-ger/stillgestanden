@@ -3464,7 +3464,7 @@ function dgFragen(pool){
   const shuf = a => a.slice().sort(() => Math.random() - .5);
   const ids = shuf(pool).slice(0, 5);
   return ids.map((id, k) => {
-    const g = R[id].g, same = RANKS.filter(x => x.id !== id && x.g === g && !x.spec).map(x => x.id), other = RANKS.filter(x => x.id !== id && x.g !== g && !x.spec).map(x => x.id);
+    const g = R[id].g, same = RANKS.filter(x => x.id !== id && x.g === g).map(x => x.id), other = RANKS.filter(x => x.id !== id && x.g !== g).map(x => x.id);
     const wrong = shuf(same).slice(0, 3), near = other.slice().sort((p, q) => Math.abs(R[p].t - R[id].t) - Math.abs(R[q].t - R[id].t));
     while(wrong.length < 3) wrong.push(near.find(x => !wrong.includes(x)));
     const opts = shuf([id, ...wrong]), c = opts.indexOf(id);
@@ -3474,7 +3474,7 @@ function dgFragen(pool){
 }
 function dgPool(){
   // In der Grundausbildung Mannschaften und Unteroffiziere, später alle Dienstgrade
-  return RANKS.filter(x => !x.spec && (S.gaDone || x.g === 'M' || x.g === 'U' || x.g === 'F')).map(x => x.id);
+  return RANKS.filter(x => (S.gaDone || x.g === 'M' || x.g === 'U' || x.g === 'F')).map(x => x.id);
 }
 function dgDue(){ return S.gaDone && S.dgNext && now() >= S.dgNext; }
 function dgTick(events){
@@ -3950,26 +3950,80 @@ function star(cx,cy,r){
   let d=''; for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, rr=i%2?r*.45:r; d+=(i?'L':'M')+(cx+rr*Math.cos(a)).toFixed(1)+' '+(cy+rr*Math.sin(a)).toFixed(1); }
   return '<path d="'+d+'Z" fill="var(--mark)"/>';
 }
+let INS_N = 0;
 function insignia(id, size=56){
-  const r = R[id], list = RANKS.filter(x=>x.g===r.g), k = list.indexOf(r);
+  const r = R[id]; if(!r) return '';
+  const u = 'ins' + (++INS_N), dark = '#141B0E', gold = '#E8C33A', silver = '#C9CDD2';
+  const camo = (y0, y1) => '<g clip-path="url(#' + u + 'c)"><rect x="0" y="' + y0 + '" width="56" height="' + (y1 - y0) + '" fill="#6E7B4C"/>'
+    + '<ellipse cx="14" cy="' + (y0+6) + '" rx="9" ry="5" fill="#8C6A43"/><ellipse cx="36" cy="' + (y0+10) + '" rx="10" ry="6" fill="#3E4B2B"/>'
+    + '<ellipse cx="26" cy="' + (y0+3) + '" rx="6" ry="3.5" fill="#2A2F22"/><ellipse cx="44" cy="' + (y0+18) + '" rx="7" ry="4" fill="#8C6A43"/>'
+    + '<ellipse cx="18" cy="' + (y0+17) + '" rx="8" ry="4" fill="#A2AC7E"/>'
+    + (y1 - y0 > 30 ? '<ellipse cx="34" cy="' + (y0+32) + '" rx="10" ry="6" fill="#8C6A43"/><ellipse cx="16" cy="' + (y0+40) + '" rx="9" ry="6" fill="#3E4B2B"/><ellipse cx="38" cy="' + (y0+52) + '" rx="8" ry="5" fill="#2A2F22"/><ellipse cx="20" cy="' + (y0+62) + '" rx="10" ry="5" fill="#A2AC7E"/><ellipse cx="40" cy="' + (y0+74) + '" rx="9" ry="6" fill="#8C6A43"/><ellipse cx="14" cy="' + (y0+80) + '" rx="7" ry="4" fill="#3E4B2B"/>' : '')
+    + '</g>';
+  // Schrägstreifen „/“ von unten links nach oben rechts
+  const slash = (y, w) => '<path d="M20 ' + (y + 13) + ' L36 ' + (y - 1) + '" stroke="' + dark + '" stroke-width="' + (w || 4) + '" stroke-linecap="butt"/>';
+  // Tresse: offen (Unteroffizier, Fahnenjunker) oder geschlossen
+  const tresse = closed => '<path d="M15 ' + (closed ? 82 : 86) + ' V33 Q15 24 28 23 Q41 24 41 33 V' + (closed ? 82 : 86) + (closed ? ' Z' : '') + '" fill="none" stroke="' + dark + '" stroke-width="4.6" stroke-linejoin="round"/>';
+  const chev = y => '<path d="M21 ' + (y + 6) + ' L28 ' + (y - 1) + ' L35 ' + (y + 6) + '" fill="none" stroke="' + dark + '" stroke-width="3.6"/>';
+  const raute = y => '<path d="M28 ' + (y - 8) + ' L35 ' + y + ' L28 ' + (y + 8) + ' L21 ' + y + 'Z" fill="none" stroke="' + dark + '" stroke-width="2.8"/><path d="M24.5 ' + (y - 4) + ' L31.5 ' + (y + 4) + 'M31.5 ' + (y - 4) + ' L24.5 ' + (y + 4) + '" stroke="' + dark + '" stroke-width="2.2"/>';
+  const cord = '<rect x="9" y="82.5" width="38" height="4" fill="' + silver + '"/><path d="M11 86.5l3-4M15 86.5l3-4M19 86.5l3-4M23 86.5l3-4M27 86.5l3-4M31 86.5l3-4M35 86.5l3-4M39 86.5l3-4M43 86.5l3-4" stroke="#8A8F95" stroke-width="1"/>';
+  const star = (x, y, c, s) => { s = s || 6.5; const k = s * .32;
+    return '<path d="M' + x + ' ' + (y - s) + ' L' + (x + k) + ' ' + (y - k) + ' L' + (x + s) + ' ' + y + ' L' + (x + k) + ' ' + (y + k) + ' L' + x + ' ' + (y + s) + ' L' + (x - k) + ' ' + (y + k) + ' L' + (x - s) + ' ' + y + ' L' + (x - k) + ' ' + (y - k) + 'Z" fill="' + c + '"/>'
+      + '<path d="M' + (x - s*.62) + ' ' + (y - s*.62) + ' L' + x + ' ' + (y - k*.7) + ' L' + (x + s*.62) + ' ' + (y - s*.62) + ' L' + (x + k*.7) + ' ' + y + ' L' + (x + s*.62) + ' ' + (y + s*.62) + ' L' + x + ' ' + (y + k*.7) + ' L' + (x - s*.62) + ' ' + (y + s*.62) + ' L' + (x - k*.7) + ' ' + y + 'Z" fill="' + c + '" opacity=".85"/>'; };
+  const kranz = c => {
+    // Eichenlaub: zwei Zweige, die sich unten kreuzen und seitlich nach oben laufen
+    let p = '';
+    for(const side of [-1, 1]){
+      const P0 = [28 - side*4, 82], P1 = [28 + side*16, 80], P2 = [28 + side*14, 54];
+      for(let n = 0; n < 8; n++){
+        const t = .08 + n * .13, x = (1-t)*(1-t)*P0[0] + 2*(1-t)*t*P1[0] + t*t*P2[0], y = (1-t)*(1-t)*P0[1] + 2*(1-t)*t*P1[1] + t*t*P2[1];
+        const dx = 2*(1-t)*(P1[0]-P0[0]) + 2*t*(P2[0]-P1[0]), dy = 2*(1-t)*(P1[1]-P0[1]) + 2*t*(P2[1]-P1[1]);
+        const ang = Math.atan2(dy, dx) * 180 / Math.PI, off = (n % 2 ? 2.4 : -2.4), len = Math.hypot(dx, dy) || 1;
+        const lx = x + off * (-dy/len), ly = y + off * (dx/len);
+        p += '<ellipse cx="' + lx.toFixed(1) + '" cy="' + ly.toFixed(1) + '" rx="3.4" ry="1.7" transform="rotate(' + (ang + (n % 2 ? 35 : -35)).toFixed(0) + ' ' + lx.toFixed(1) + ' ' + ly.toFixed(1) + ')" fill="' + c + '"/>';
+      }
+      p += '<path d="M' + P0[0] + ' ' + P0[1] + ' Q' + P1[0] + ' ' + P1[1] + ' ' + P2[0] + ' ' + P2[1] + '" stroke="' + c + '" stroke-width="1.2" fill="none"/>';
+    }
+    return p;
+  };
   let m = '';
-  const stripe = (y,h=4) => '<rect x="13" y="'+y+'" width="30" height="'+h+'" rx="1" fill="var(--mark)"/>';
-  const chev = y => '<path d="M17 '+y+' L28 '+(y+7)+' L39 '+y+'" fill="none" stroke="var(--mark)" stroke-width="3"/>';
-  const frameOpen = '<path d="M9 86 V24 Q9 9 28 7 Q47 9 47 24 V86" fill="none" stroke="var(--mark)" stroke-width="2.5"/>';
-  const frameClosed = frameOpen + '<path d="M9 84.5 H47" stroke="var(--mark)" stroke-width="2.5"/>';
-  const leaf = '<path d="M17 76 Q28 62 39 76 Q28 71 17 76Z" fill="var(--mark)"/>';
-  if(r.g==='M'){
-    if(id==='korp'||id==='skorp'){ m += stripe(60,9); if(id==='skorp') m += stripe(50); }
-    else for(let i=0;i<k;i++) m += stripe(72-i*8);
-  } else if(r.g==='U'){ m += frameOpen; for(let i=0;i<k;i++) m += chev(62-i*9); }
-  else if(r.g==='F'){ m += frameClosed; for(let i=0;i<=k;i++) m += chev(64-i*9); }
-  else if(r.g==='A'){ m += frameClosed + '<circle cx="28" cy="70" r="4.5" fill="none" stroke="var(--mark)" stroke-width="2.5"/>'; for(let i=0;i<k;i++) m += chev(52-i*9); }
-  else if(r.g==='O'){ const n = k<3 ? k+1 : k-2; if(k>=3) m += leaf; for(let i=0;i<n;i++) m += star(28, (k>=3?56:66)-i*15, 6); }
-  else { m += '<path d="M9 86 V24 Q9 9 28 7 Q47 9 47 24 V86" fill="none" stroke="var(--signal)" stroke-width="3"/>' + leaf.replace('var(--mark)','var(--signal)');
-         for(let i=0;i<=k;i++) m += star(28, 58-i*12, 5.5).replace('var(--mark)','var(--signal)'); }
-  return '<svg viewBox="0 0 56 90" width="'+size+'" height="'+Math.round(size*90/56)+'" aria-hidden="true">'
-    + '<path d="M4 88 V24 Q4 4 28 2 Q52 4 52 24 V88 Z" fill="var(--board)"/>'
-    + '<circle cx="28" cy="15" r="3.5" fill="var(--mark)" opacity=".75"/>' + m + '</svg>';
+  switch(id){
+    case 'gefr': m = slash(66); break;
+    case 'ogefr': m = slash(66) + slash(58); break;
+    case 'hgefr': m = slash(66) + slash(58) + slash(50); break;
+    case 'sgefr': m = slash(66) + slash(58) + slash(50) + slash(42); break;
+    case 'osgefr': m = slash(66) + slash(58) + slash(50) + slash(42) + slash(34); break;
+    case 'korp': m = slash(62, 9); break;
+    case 'skorp': m = slash(64, 9) + slash(52); break;
+    case 'uffz': m = tresse(false); break;
+    case 'stuffz': m = tresse(true); break;
+    case 'fw': m = tresse(true) + chev(68); break;
+    case 'ofw': m = tresse(true) + chev(68) + chev(60); break;
+    case 'hfw': m = tresse(true) + raute(64); break;
+    case 'sfw': m = tresse(true) + raute(54) + chev(70); break;
+    case 'osfw': m = tresse(true) + raute(48) + chev(64) + chev(72); break;
+    case 'fj': m = tresse(false) + cord; break;
+    case 'fhr': m = tresse(true) + chev(68) + cord; break;
+    case 'ofhr': m = tresse(true) + raute(64) + cord; break;
+    case 'lt': m = star(28, 74, dark); break;
+    case 'olt': m = star(28, 74, dark) + star(28, 58, dark); break;
+    case 'hptm': m = star(28, 74, dark) + star(28, 58, dark) + star(28, 42, dark); break;
+    case 'shptm': m = star(20, 74, dark) + star(36, 74, dark) + star(28, 58, dark) + star(28, 42, dark); break;
+    case 'maj': m = kranz(dark) + star(28, 68, dark); break;
+    case 'oberstlt': m = kranz(dark) + star(28, 68, dark) + star(28, 52, dark); break;
+    case 'oberst': m = kranz(dark) + star(28, 68, dark) + star(28, 52, dark) + star(28, 36, dark); break;
+    case 'bg': m = kranz(gold) + star(28, 68, gold); break;
+    case 'gm': m = kranz(gold) + star(28, 68, gold) + star(28, 54, gold); break;
+    case 'gl': m = kranz(gold) + star(28, 68, gold) + star(28, 54, gold) + star(28, 40, gold); break;
+    case 'gen': m = kranz(gold) + star(28, 68, gold, 6) + star(28, 55, gold, 6) + star(28, 42, gold, 6) + star(28, 29, gold, 6); break;
+  }
+  const soldat = id === 'sdt';
+  return '<svg viewBox="0 0 56 90" width="' + size + '" height="' + Math.round(size*90/56) + '" aria-hidden="true">'
+    + '<defs><clipPath id="' + u + 'c"><path d="M7 88 L9 22 Q9 4 28 3 Q47 4 47 22 L49 88 Z"/></clipPath></defs>'
+    + '<path d="M7 88 L9 22 Q9 4 28 3 Q47 4 47 22 L49 88 Z" fill="#5E6A4B"/>'
+    + (soldat ? camo(0, 90) : camo(0, 22))
+    + '<path d="M9 22 H47" stroke="rgba(0,0,0,.25)" stroke-width="1"/>'
+    + m + '<path d="M7 88 L9 22 Q9 4 28 3 Q47 4 47 22 L49 88 Z" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="1"/></svg>';
 }
 
 /* =========================================================
@@ -4892,10 +4946,10 @@ async function authSubmit(mode){
    RECHTLICHES – BITTE AUSFÜLLEN, bevor der Link öffentlich wird.
    ========================================================= */
 const RECHT = {
-  name:     '',   // Vor- und Nachname, z. B. 'Max Mustermann'
-  strasse:  '',   // Straße und Hausnummer
-  ort:      '',   // PLZ und Ort
-  email:    '',   // Kontakt-E-Mail
+  name:     'Niclas Schoth',   // Vor- und Nachname, z. B. 'Max Mustermann'
+  strasse:  'Buchenhain 2',   // Straße und Hausnummer
+  ort:      '23701 Eutin',   // PLZ und Ort
+  email:    'niclasschoth@gmail.com',   // Kontakt-E-Mail
   stand:    'November 2026',
 };
 const TESTMODE = /[?&]test\b/.test(location.search);
