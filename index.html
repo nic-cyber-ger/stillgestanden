@@ -4,9 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Stillgestanden!</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Black Ops One';font-style:normal;font-weight:400;font-display:swap;src:url(black-ops-one-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:400;font-display:swap;src:url(barlow-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:500;font-display:swap;src:url(barlow-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:600;font-display:swap;src:url(barlow-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:700;font-display:swap;src:url(barlow-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:500;font-display:swap;src:url(barlow-condensed-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:600;font-display:swap;src:url(barlow-condensed-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:700;font-display:swap;src:url(barlow-condensed-latin-700-normal.woff2) format('woff2')}
+</style>
 <style>
 :root{
   --bg:#1E2416; --surface:#2C3420; --surface2:#262D1B; --ink:#ECEEE2; --muted:#AEB59C; --line:#4A5535;
@@ -301,11 +308,32 @@ body.landing{padding-bottom:0}
 .lp-form input{width:100%;font:500 17px 'Barlow',sans-serif;padding:12px;border:1px solid var(--line);border-radius:4px;background:var(--surface2);color:var(--ink)}
 .lp-quote{margin:20px 16px 0;padding:12px 14px;border-left:3px solid var(--signal);font-style:italic;color:var(--muted)}
 .lp-foot{margin:22px 16px 28px;font-size:12.5px;color:var(--muted);text-align:center}
+.sheet input[type=password]{display:block;width:100%;box-sizing:border-box;min-height:46px;padding:10px 12px;margin-top:4px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit}
+.lthead{text-align:center}.ltjack{font-family:'Black Ops One',sans-serif;font-size:34px;color:var(--signal);margin:2px 0 6px}
+.ltwin{border-left:4px solid var(--signal)}
+.ltkopf{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.ltschein{background:repeating-linear-gradient(0deg,transparent 0 23px,rgba(227,178,60,.05) 23px 24px),var(--surface)}
+.ltgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.ltn{min-height:46px;border:1.5px solid var(--line);border-radius:6px;background:transparent;color:inherit;font:600 16px Barlow,sans-serif;position:relative}
+.ltn.on{border-color:var(--signal);color:var(--signal)}
+.ltn.on::after{content:'';position:absolute;inset:8px;background:linear-gradient(45deg,transparent 46%,var(--signal) 46% 54%,transparent 54%),linear-gradient(-45deg,transparent 46%,var(--signal) 46% 54%,transparent 54%);opacity:.55}
+.ltn:disabled{opacity:.35}
+.ltbtns{display:flex;gap:8px;margin-top:10px}.ltbtns .btn{flex:1}
+.ltballs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.ltball{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font:700 15px Barlow,sans-serif;background:#F2F2EA;color:#1E2416;box-shadow:inset -3px -3px 0 rgba(0,0,0,.12)}
+.ltball.hit{background:var(--signal)}
+.ltball.anim{animation:ltpop .5s both}
+@keyframes ltpop{0%{transform:scale(0) rotate(-180deg);opacity:0}70%{transform:scale(1.15)}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.ltball.anim{animation:none}}
+.ltrow{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:6px;margin-top:6px}.ltrow .ltballs{margin-top:0}
+.ltrow span.small{text-align:right;min-width:70px}
+.lttab{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}.lttab th,.lttab td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}.lttab th:last-child,.lttab td:last-child{text-align:right}
+.recht h3{margin:16px 0 6px;font-size:16px}.recht p{margin:0 0 10px;font-size:14px;line-height:1.5}
 .pwrow{position:relative}
 .pwrow input{padding-right:52px}
 .pwrow button{position:absolute;right:4px;top:50%;transform:translateY(-50%);min-height:40px;min-width:44px;background:transparent;border:0;color:var(--muted);cursor:pointer}
 </style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#4B582C">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -330,8 +358,8 @@ body.landing{padding-bottom:0}
 <div id="toastHost"></div>
 <div id="modalHost"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
+<script src="leaflet.js"></script>
+<script src="supabase.js"></script>
 <script>
 /* =========================================================
    SPIELDATEN
@@ -1469,6 +1497,7 @@ const SUBS = {
     {id:'leergut', label:'Leergut', src:'feier', rest:true, match:['Leergut']},
     {id:'schrauben', label:'Schrauben', src:'feier', match:['Schrauben','Kleinanzeigen','Werkstatt']},
     {id:'spiele', label:'Spiele', src:'feier', match:['Spielothek','Stubenrunde']},
+    {id:'lotto', label:'Lotto', src:'lotto', match:['Soldatenlotto']},
   ],
   truppe: [
     {id:'kompanie', label:'Kompanie', src:'truppe', rest:true, match:['Kompanie','Mitglieder','Einladen']},
@@ -1488,7 +1517,7 @@ function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LAST
 function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === a[0]), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
   const f = {stube:renderStube, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
-    truppe: typeof renderTruppe === 'function' ? renderTruppe : null}[src];
+    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null}[src];
   return f ? f() : '';
 }
 function splitSecs(html){
@@ -3131,7 +3160,7 @@ function fsStart(id){
   if(fsHas(id)) return 'Führerschein schon vorhanden.';
   if(!fsReqs(x).every(r=>r.ok)) return 'Voraussetzungen fehlen.';
   const c = fsCost(x); if(S.money < c) return 'Zu wenig Geld.';
-  S.money -= c;
+  S.money -= c; lottoAdd(c);
   S.fs = {id, start:now(), end:now() + fsMin(x)*60000/S.speed, exam:false};
   return null;
 }
@@ -3666,7 +3695,7 @@ const G = {
     if(S.stats[id] >= STAT_MAX) return 'Höchststufe erreicht.';
     const c = G.statCost(id);
     if(S.money < c) return 'Zu wenig Geld.';
-    S.money -= c;
+    S.money -= c; lottoAdd(c);
     S.ausb = {type:'stat', id, start:now(), end:now()+G.statMin(id)*60000/S.speed};
     return null;
   },
@@ -3682,7 +3711,7 @@ const G = {
     if(S.lg) return 'Es läuft schon ein Lehrgang.';
     if(S.lehrgaenge[id]) return 'Lehrgang schon abgeschlossen.';
     if(!G.lehrgangReqs(l).every(r=>r.ok)) return 'Voraussetzungen fehlen.';
-    S.money -= lgCost(l);
+    lottoAdd(lgCost(l)); S.money -= lgCost(l);
     const dur = l.min*60000/S.speed, ev = LG_EV[id].slice();
     S.lg = {type:'lehrgang', id, start:now(), end:now()+dur, cps:ev.map((_,i)=>now()+dur*(i+1)/(ev.length+1)), ev, next:0, score:0, exam:false};
     return null;
@@ -3711,6 +3740,7 @@ const G = {
   },
   tick(){
     let events = [], changed = false;
+    if(!TESTMODE && S.speed !== 1) S.speed = 1;
     sparZinsen();
     fe(); ntgTick(events); if(events.length) changed = true;
     if(S.fa && now() >= S.fa.end){
@@ -3957,11 +3987,12 @@ function renderStube(){
   h += '<h2>Einstellungen</h2><div class="panel pad">'
     + '<p style="margin-bottom:6px"><b>Darstellung</b></p><div class="seg" role="group" aria-label="Darstellung">'
     + [['system','System'],['light','Hell'],['dark','Dunkel']].map(([v,l])=>'<button data-act="theme" data-id="'+v+'" aria-pressed="'+(S.theme===v)+'">'+l+'</button>').join('')
-    + '</div><p style="margin:16px 0 6px"><b>Benachrichtigungen</b></p><p class="small muted">Meldet sich, wenn Dienste, Ausbildungen oder Lehrgänge fertig sind, solange das Spiel im Hintergrund geöffnet ist.</p><button class="btn ghost" data-act="notif">'+(S.notify && window.Notification && Notification.permission === 'granted' ? 'Benachrichtigungen ausschalten' : 'Benachrichtigungen einschalten')+'</button><p style="margin:16px 0 6px"><b>Einführung</b></p><button class="btn ghost" data-act="tut_restart">Einführung noch mal ansehen</button><p style="margin:16px 0 6px"><b>Testmodus</b></p><p class="small muted">Alle Zeiten laufen schneller. Nur zum Ausprobieren, nicht zum echten Spielen.</p>'
+    + '</div><p style="margin:16px 0 6px"><b>Benachrichtigungen</b></p><p class="small muted">Meldet sich, wenn Dienste, Ausbildungen oder Lehrgänge fertig sind, solange das Spiel im Hintergrund geöffnet ist.</p><button class="btn ghost" data-act="notif">'+(S.notify && window.Notification && Notification.permission === 'granted' ? 'Benachrichtigungen ausschalten' : 'Benachrichtigungen einschalten')+'</button><p style="margin:16px 0 6px"><b>Einführung</b></p><button class="btn ghost" data-act="tut_restart">Einführung noch mal ansehen</button>'+(TESTMODE ? '<p style="margin:16px 0 6px"><b>Testmodus</b></p><p class="small muted">Alle Zeiten laufen schneller. Nur zum Ausprobieren, nicht zum echten Spielen.</p>'
     + '<div class="seg" role="group" aria-label="Testmodus">'
     + [[1,'Aus'],[10,'10×'],[100,'100×']].map(([v,l])=>'<button data-act="speed" data-id="'+v+'" aria-pressed="'+(S.speed===v)+'">'+l+'</button>').join('')
-    + '</div><p style="margin:16px 0 6px"><b>Spielstand</b></p><p class="small muted">Dein Spielstand wird automatisch in deinem Konto gespeichert'+(USER && USER.email ? ' ('+esc(USER.email)+')' : '')+'.</p>'
-    + '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" data-act="logout">Abmelden</button><button class="btn danger" data-act="reset">Neu anfangen</button></div></div>';
+    + '</div>' : '')+'<p style="margin:16px 0 6px"><b>Spielstand</b></p><p class="small muted">Dein Spielstand wird automatisch in deinem Konto gespeichert'+(USER && USER.email ? ' ('+esc(USER.email)+')' : '')+'.</p>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" data-act="logout">Abmelden</button><button class="btn danger" data-act="reset">Neu anfangen</button></div>'
+    + '<p style="margin:16px 0 6px"><b>Konto</b></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" data-act="pwchange">Passwort ändern</button><button class="btn ghost" data-act="recht">Impressum und Datenschutz</button><button class="btn danger" data-act="kontodel">Konto löschen</button></div></div>';
   return h;
 }
 
@@ -4395,7 +4426,7 @@ const ACT = {
     save(); toast('Abflug nach '+E.ort); tab='stube'; render();
   },
   theme(v){ S.theme=v; save(); render(); },
-  speed(v){ S.speed=Number(v); save(); render(); },
+  speed(v){ if(!TESTMODE) return; S.speed=Number(v); save(); render(); },
   reset(_, ok){
     if(!ok) return ask('Wirklich neu anfangen? Dein Spielstand wird gelöscht.', ()=>ACT.reset(null, true), 'Löschen');
     try{ localStorage.removeItem(KEY); }catch(e){}
@@ -4406,7 +4437,7 @@ const ACT = {
   },
   async login(){ await authSubmit('login'); },
   lmode(m){
-    if(m !== 'login' && m !== 'signup') return;
+    if(m !== 'login' && m !== 'signup' && m !== 'forgot') return;
     const em = (document.getElementById('em')||{}).value || '';
     LOGIN_MODE = m; render();
     const e = document.getElementById('em'); if(e && em) e.value = em;
@@ -4417,6 +4448,19 @@ const ACT = {
     i.type = i.type === 'password' ? 'text' : 'password';
   },
   async signup(){ await authSubmit('signup'); },
+  async forgot(){ await forgotSubmit(); },
+  lt(n){ n = +n; const i = LT_SEL.indexOf(n); if(i >= 0) LT_SEL.splice(i, 1); else if(LT_SEL.length < 6) LT_SEL.push(n); render(); },
+  ltquick(){ const a = []; while(a.length < 6){ const n = 1 + Math.floor(Math.random()*25); if(!a.includes(n)) a.push(n); } LT_SEL = a; render(); },
+  ltclear(){ LT_SEL = []; render(); },
+  async ltabgabe(){ await ltAbgabe(); },
+  async ltabholen(){ await ltAbholen(); },
+  pwchange(){ pwModal(false); },
+  async pwsave(){ await pwSave(); },
+  recht(){ rechtModal(); },
+  kontodel(_, ok){
+    if(!ok) return ask('Konto wirklich löschen? Spielstand, Profil und Kompanie-Mitgliedschaft werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.', ()=>ACT.kontodel(null, true), 'Endgültig löschen');
+    kontoLoeschen();
+  },
   logout(_, ok){
     if(!ok) return ask('Abmelden? Dein Spielstand ist im Konto gesichert.', ()=>ACT.logout(null, true), 'Abmelden');
     cloudPush(true).finally(async () => { await sb.auth.signOut(); USER = null; S = null; ONLINE.profile = null; try{ localStorage.removeItem(KEY); }catch(e){} render(); });
@@ -4700,7 +4744,10 @@ async function boot(){
   USER = data && data.session ? data.session.user : null;
   if(USER){ try{ await afterLogin(); }catch(e){ toast('Laden fehlgeschlagen. Bitte Seite neu laden.'); } }
   BOOTED = true; render(); hideSplash();
+  if(RECOVERY && USER) setTimeout(() => pwModal(true), 400);
+  if(USER) setTimeout(loadLotto, 1500);
   sb.auth.onAuthStateChange((ev, session) => {
+    if(ev === 'PASSWORD_RECOVERY'){ USER = session ? session.user : USER; setTimeout(() => pwModal(true), 400); return; }
     if(ev === 'SIGNED_OUT'){ USER = null; S = null; ONLINE.profile = null; render(); }
     else if(session) USER = session.user;
   });
@@ -4721,7 +4768,174 @@ async function authSubmit(mode){
   USER = res.data.session.user;
   showSplash('Melde mich zum Dienst …'); BOOTED = false; render();
   try{ await afterLogin(); }catch(e){ toast('Laden fehlgeschlagen.'); }
-  BOOTED = true; tab = 'stube'; render(); hideSplash();
+  BOOTED = true; tab = 'stube'; render(); hideSplash(); setTimeout(loadLotto, 1500);
+}
+
+/* =========================================================
+   RECHTLICHES – BITTE AUSFÜLLEN, bevor der Link öffentlich wird.
+   ========================================================= */
+const RECHT = {
+  name:     '',   // Vor- und Nachname, z. B. 'Max Mustermann'
+  strasse:  '',   // Straße und Hausnummer
+  ort:      '',   // PLZ und Ort
+  email:    '',   // Kontakt-E-Mail
+  stand:    'November 2026',
+};
+const TESTMODE = /[?&]test\b/.test(location.search);
+const RECOVERY = /type=recovery/.test(location.hash + location.search);
+function rechtHtml(){
+  const ok = RECHT.name && RECHT.strasse && RECHT.ort && RECHT.email;
+  const v = x => x ? esc(x) : '<i>[noch nicht ausgefüllt]</i>';
+  const anb = v(RECHT.name) + '<br>' + v(RECHT.strasse) + '<br>' + v(RECHT.ort) + '<br>E-Mail: ' + v(RECHT.email);
+  return '<div class="recht">'
+    + (ok ? '' : '<p class="small" style="color:var(--stamp)"><b>Hinweis an den Betreiber:</b> Bitte oben im Code bei RECHT Name, Anschrift und E-Mail eintragen.</p>')
+    + '<h3>Impressum</h3><p>Angaben gemäß § 5 DDG:<br>' + anb + '</p>'
+    + '<p>„Stillgestanden!“ ist ein privates, nicht kommerzielles Hobbyprojekt und ein satirisches Spiel. Es ist kein Angebot der Bundeswehr und steht in keiner Verbindung zu ihr. Alle Figuren sind erfunden.</p>'
+    + '<h3>Datenschutzerklärung</h3>'
+    + '<p><b>Verantwortlich</b> für die Datenverarbeitung ist der oben genannte Betreiber.</p>'
+    + '<p><b>Welche Daten wir speichern.</b> Für dein Konto: E-Mail-Adresse und Passwort (nur verschlüsselt als Hash). Für das Spiel: Spielname, Spielstand, Kompanie, gewählter Standort (Ort und Bundesland) sowie Spielstatistiken für Ranglisten. Andere Spieler sehen nur deinen Spielnamen, Dienstgrad, Punkte und deine Kompanie, nie deine E-Mail-Adresse.</p>'
+    + '<p><b>Zweck und Rechtsgrundlage.</b> Die Daten werden nur verarbeitet, um dir das Spiel bereitzustellen (Art. 6 Abs. 1 lit. b DSGVO). Es gibt keine Werbung, kein Tracking und keine Weitergabe zu Werbezwecken.</p>'
+    + '<p><b>Dienstleister.</b> Die Seite liegt bei GitHub Pages (GitHub Inc., USA). Beim Aufruf verarbeitet GitHub technisch notwendige Daten wie deine IP-Adresse. Konto und Spielstand liegen bei Supabase (Supabase Inc.), mit dem ein Auftragsverarbeitungsvertrag besteht. Für die Standortkarte werden Kartenbilder von OpenStreetMap geladen; dabei wird deine IP-Adresse an die OpenStreetMap Foundation übertragen. Schriften und Programmbibliotheken werden von dieser Seite selbst geladen, nicht von Google oder anderen Anbietern.</p>'
+    + '<p><b>Im Browser</b> speichert das Spiel eine Kopie deines Spielstands und deine Anmeldung (Local Storage). Cookies zu Werbe- oder Analysezwecken gibt es nicht.</p>'
+    + '<p><b>Speicherdauer.</b> Deine Daten bleiben gespeichert, solange dein Konto besteht. Du kannst dein Konto jederzeit in den Einstellungen löschen; dann werden Konto, Spielstand und Profil sofort entfernt. Einträge im Kassenbuch deiner Kompanie bleiben ohne Bezug zu deiner Person erhalten.</p>'
+    + '<p><b>Deine Rechte.</b> Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Schreib dafür an die oben genannte E-Mail-Adresse. Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren.</p>'
+    + '<p class="small muted">Stand: ' + esc(RECHT.stand) + '</p></div>';
+}
+function rechtModal(){
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="rt"><div class="sheet ev" style="max-height:86vh;overflow:auto;text-align:left">'
+    + '<h2 id="rt" style="margin:0 0 8px">Impressum und Datenschutz</h2>' + rechtHtml()
+    + '<button class="btn wide" data-act="close" style="margin-top:12px">Schließen</button></div></div>';
+}
+function pwModal(recovery){
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="pwt"><div class="sheet ev">'
+    + '<h2 id="pwt" style="margin:0 0 6px">' + (recovery ? 'Neues Passwort festlegen' : 'Passwort ändern') + '</h2>'
+    + '<p class="small muted" style="margin:0 0 10px">Mindestens 8 Zeichen.</p>'
+    + '<label for="pwn">Neues Passwort</label><input id="pwn" type="password" autocomplete="new-password" minlength="8" style="width:100%">'
+    + '<label for="pwn2" style="margin-top:8px;display:block">Wiederholen</label><input id="pwn2" type="password" autocomplete="new-password" minlength="8" style="width:100%">'
+    + '<button class="btn wide gold" data-act="pwsave" style="margin-top:14px">Speichern</button>'
+    + (recovery ? '' : '<button class="btn ghost wide" data-act="close" style="margin-top:8px">Abbrechen</button>') + '</div></div>';
+  const i = document.getElementById('pwn'); if(i) i.focus();
+}
+async function pwSave(){
+  const a = (document.getElementById('pwn')||{}).value || '', b = (document.getElementById('pwn2')||{}).value || '';
+  if(a.length < 8){ toast('Das Passwort braucht mindestens 8 Zeichen.'); return; }
+  if(a !== b){ toast('Die beiden Passwörter stimmen nicht überein.'); return; }
+  const { error } = await sb.auth.updateUser({password:a});
+  if(error){ toast('Fehler: ' + (error.message || 'Passwort nicht geändert.')); return; }
+  document.getElementById('modalHost').innerHTML = '';
+  try{ history.replaceState(null, '', location.pathname + location.search.replace(/[?&]type=recovery[^&]*/, '')); }catch(e){}
+  toast('Passwort gespeichert.');
+}
+async function forgotSubmit(){
+  const em = ((document.getElementById('em')||{}).value || '').trim();
+  if(!em.includes('@')){ toast('Bitte deine E-Mail-Adresse eingeben.'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(em, {redirectTo: location.origin + location.pathname});
+  if(error && /rate|limit/i.test(error.message || '')){ toast('Gerade wurden zu viele E-Mails verschickt. Bitte versuch es später noch mal.'); return; }
+  toast('Falls es ein Konto mit dieser Adresse gibt, ist jetzt eine E-Mail mit einem Link unterwegs.');
+  LOGIN_MODE = 'login'; render();
+}
+async function kontoLoeschen(){
+  const { error } = await sb.rpc('konto_loeschen');
+  if(error){ toast('Löschen fehlgeschlagen: ' + (error.message || 'unbekannter Fehler')); return; }
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  try{ await sb.auth.signOut(); }catch(e){}
+  USER = null; S = null; ONLINE.profile = null; render();
+  toast('Dein Konto und alle Spieldaten wurden gelöscht.');
+}
+
+/* =========================================================
+   SOLDATENLOTTO 6 aus 25 (Server: stillgestanden_lotto.sql)
+   ========================================================= */
+let LT_SEL = [], LT_BUSY = false, LT_SEEN = null;
+function lottoAdd(v){ if(S && v > 0) S.ltq = (S.ltq || 0) + Math.round(v * 0.1); }
+let ltFlushBusy = false;
+async function lottoFlush(){
+  if(!sb || !USER || !S || !(S.ltq > 0) || ltFlushBusy) return;
+  ltFlushBusy = true;
+  const v = Math.round(S.ltq);
+  const { error } = await sb.rpc('lotto_einzahlen', {p_betrag:v});
+  if(!error){ S.ltq = Math.max(0, (S.ltq || 0) - v); save(); }   // über dem Tageslimit verfällt der Rest
+  ltFlushBusy = false;
+}
+async function loadLotto(){
+  if(!sb || !USER || ONLINE.ltLoading) return;
+  ONLINE.ltLoading = true;
+  const { data, error } = await sb.rpc('lotto_status');
+  ONLINE.ltLoading = false; ONLINE.ltTs = Date.now();
+  if(error){ ONLINE.ltErr = error.message || 'Serverfehler'; }
+  else {
+    ONLINE.lotto = data; ONLINE.ltErr = null;
+    if(data.offen > 0 && !ONLINE.ltHinweis){ ONLINE.ltHinweis = true; toast('Lottogewinn wartet: ' + eur(data.offen) + '. Abholen unter Feierabend → Lotto.'); }
+  }
+  if(tab === 'feier' && (SUB.feier || LASTSUB.feier) === 'lotto') render();
+}
+function ltDatum(ts){
+  try{ return new Date(ts).toLocaleString('de-DE', {weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Berlin'}) + ' Uhr'; }
+  catch(e){ return new Date(ts).toLocaleString('de-DE'); }
+}
+function ltBalls(zahlen, hits, anim){
+  return '<div class="ltballs">' + zahlen.map((n, i) => '<span class="ltball' + (hits && hits.includes(n) ? ' hit' : '') + (anim ? ' anim' : '') + '"' + (anim ? ' style="animation-delay:' + (i * .45) + 's"' : '') + '>' + n + '</span>').join('') + '</div>';
+}
+function renderLotto(){
+  const L = ONLINE.lotto;
+  if(!L || Date.now() - (ONLINE.ltTs || 0) > 60000 || (L && new Date(L.naechste).getTime() <= Date.now())) setTimeout(loadLotto, 0);
+  let h = '<h2>Soldatenlotto</h2>';
+  if(!L) return h + '<div class="panel pad"><p class="small">' + (ONLINE.ltErr ? 'Lotto nicht erreichbar: ' + esc(ONLINE.ltErr) : 'Lade die Lottozentrale …') + '</p></div>';
+  const bis = new Date(L.naechste).getTime() - Date.now();
+  h += '<div class="panel pad lthead"><div class="small muted">Jackpot</div><div class="ltjack">' + eur(L.jackpot) + '</div>'
+    + '<div class="small">Nächste Ziehung: <b>' + esc(ltDatum(L.naechste)) + '</b>' + (bis > 0 ? ' (in ' + esc(fmtRest(bis).replace(/\.$/, '')) + ')' : '') + '</div>'
+    + '<p class="small muted" style="margin:8px 0 0">6 aus 25, Ziehung mittwochs 18 Uhr und samstags 19 Uhr. Der Topf füllt sich mit allen Lottoscheinen und 10 % von allem, was Spieler für Ausbildung, Lehrgänge und Führerscheine ausgeben.</p></div>';
+  if(L.offen > 0)
+    h += '<div class="panel pad ltwin"><p style="margin:0 0 8px"><b>Glückwunsch!</b> Du hast ' + eur(L.offen) + ' gewonnen.</p><button class="btn gold" data-act="ltabholen">Gewinn abholen</button></div>';
+
+  // Lottoschein
+  const anz = L.meine.length, voll = anz >= L.max, gratis = L.gratis_frei;
+  h += '<div class="panel pad ltschein"><div class="ltkopf"><b>Lottoschein</b><span class="small muted">' + LT_SEL.length + ' von 6 angekreuzt</span></div>'
+    + '<div class="ltgrid" role="group" aria-label="Zahlen 1 bis 25">';
+  for(let n = 1; n <= 25; n++){
+    const on = LT_SEL.includes(n);
+    h += '<button class="ltn' + (on ? ' on' : '') + '" data-act="lt" data-id="' + n + '" aria-pressed="' + on + '" ' + (!on && LT_SEL.length >= 6 ? 'disabled' : '') + '>' + n + '</button>';
+  }
+  h += '</div><div class="ltbtns"><button class="btn ghost" data-act="ltquick">Quicktipp</button><button class="btn ghost" data-act="ltclear" ' + (LT_SEL.length ? '' : 'disabled') + '>Leeren</button></div>'
+    + '<button class="btn wide gold" data-act="ltabgabe" style="margin-top:10px" ' + (LT_SEL.length !== 6 || voll || LT_BUSY || (!gratis && S.money < L.preis) ? 'disabled' : '') + '>'
+    + (voll ? 'Maximal ' + L.max + ' Tipps pro Ziehung' : gratis ? 'Gratistipp abgeben' : 'Tipp abgeben<small>' + eur(L.preis) + '</small>') + '</button>'
+    + '<p class="small muted" style="margin:8px 0 0">' + (gratis ? 'Ein Tipp pro Ziehung ist gratis, jeder weitere kostet ' + eur(L.preis) + '.' : 'Dein Gratistipp ist abgegeben. Weitere Tipps kosten ' + eur(L.preis) + ', höchstens ' + L.max + ' pro Ziehung.') + '</p></div>';
+
+  if(anz)
+    h += '<div class="panel pad"><b>Deine Tipps für ' + esc(ltDatum(L.naechste).split(',')[0]) + '</b>' + L.meine.map(t => '<div class="ltrow">' + ltBalls(t.zahlen) + '<span class="small muted">' + (t.gratis ? 'gratis' : eur(L.preis)) + '</span></div>').join('') + '</div>';
+
+  // Letzte Ziehung
+  if(L.letzte && L.letzte.zahlen){
+    const z = L.letzte, g = z.gewinner || {}, key = String(z.at), neu = LT_SEEN !== key;
+    LT_SEEN = key;
+    h += '<div class="panel pad"><b>Letzte Ziehung, ' + esc(ltDatum(z.at)) + '</b>' + ltBalls(z.zahlen, null, neu)
+      + (z.meine && z.meine.length ? '<div class="small muted" style="margin-top:10px">Deine Tipps</div>' + z.meine.map(t => '<div class="ltrow">' + ltBalls(t.zahlen, z.zahlen) + '<span class="small"><b>' + t.treffer + ' Richtige</b>' + (t.gewinn > 0 ? '<br>' + eur(t.gewinn) : '') + '</span></div>').join('') : '<p class="small muted" style="margin:8px 0 0">Du hattest bei dieser Ziehung keinen Tipp.</p>')
+      + '<table class="lttab"><thead><tr><th>Gewinnklasse</th><th>Gewinner</th><th>Quote</th></tr></thead><tbody>'
+      + [[6,'6 Richtige'],[5,'5 Richtige'],[4,'4 Richtige'],[3,'3 Richtige']].map(([k,l]) => '<tr><td>' + l + '</td><td>' + (g['n'+k]||0) + '</td><td>' + (g['n'+k] ? eur(g['q'+k]) : '–') + '</td></tr>').join('')
+      + '</tbody></table><p class="small muted" style="margin:6px 0 0">' + (g.tipps||0) + ' Tipps, Jackpot ' + eur(z.jackpot||0) + '.' + (g.n6 ? '' : ' Der Jackpot wurde nicht geknackt.') + '</p>'
+      + (g.namen && g.namen.length ? '<p class="small" style="margin:6px 0 0">Glückspilze: ' + g.namen.map(x => esc(x.name) + ' (' + x.treffer + ' Richtige, ' + eur(x.gewinn) + ')').join(', ') + '</p>' : '')
+      + '</div>';
+  }
+  h += '<p class="small muted" style="margin-top:10px">Gewinnplan: 6 Richtige teilen sich 50 % des Jackpots, 5 Richtige 20 %, 4 Richtige 15 %, 3 Richtige bekommen je bis zu 300 €. Was nicht gewonnen wird, bleibt im Topf. Fällt der Topf unter 10.000 €, schießt der Bund nach. Gespielt wird nur mit Spielgeld.</p>';
+  return h;
+}
+async function ltAbgabe(){
+  const L = ONLINE.lotto; if(!L || LT_SEL.length !== 6 || LT_BUSY) return;
+  const gratis = !!L.gratis_frei;
+  if(!gratis && S.money < L.preis){ toast('Zu wenig Geld für einen Lottoschein.'); return; }
+  LT_BUSY = true; render();
+  const { error } = await sb.rpc('lotto_tipp', {p_zahlen:LT_SEL.slice().sort((a,b)=>a-b), p_gratis:gratis});
+  LT_BUSY = false;
+  if(error){ toast(error.message || 'Tipp konnte nicht abgegeben werden.'); render(); return; }
+  if(!gratis){ S.money -= L.preis; save(); }
+  LT_SEL = []; toast('Tipp abgegeben. Viel Glück!');
+  await loadLotto(); render();
+}
+async function ltAbholen(){
+  const { data, error } = await sb.rpc('lotto_abholen');
+  if(error){ toast('Abholen fehlgeschlagen: ' + (error.message || 'Serverfehler')); return; }
+  if(data > 0){ S.money += data; save(); cloudPush(true); toast(eur(data) + ' gutgeschrieben.'); }
+  await loadLotto(); render();
 }
 
 let LOGIN_MODE = 'login';
@@ -4750,12 +4964,13 @@ function renderLogin(){
     + '<section class="lp-form" id="lpform" aria-label="'+(reg ? 'Registrieren' : 'Anmelden')+'">'
     + '<div class="seg" role="group" aria-label="Anmelden oder registrieren"><button data-act="lmode" data-id="login" aria-pressed="'+!reg+'">Anmelden</button><button data-act="lmode" data-id="signup" aria-pressed="'+reg+'">Registrieren</button></div>'
     + '<label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" inputmode="email" placeholder="name@beispiel.de">'
-    + '<label for="pw">Passwort</label><div class="pwrow"><input id="pw" type="password" autocomplete="'+(reg ? 'new-password' : 'current-password')+'" minlength="8" placeholder="'+(reg ? 'mindestens 8 Zeichen' : '')+'"><button type="button" data-act="pwshow" aria-label="Passwort anzeigen">'+LP_ICON.auge+'</button></div>'
-    + '<button class="btn wide gold" style="margin-top:16px" data-act="'+LOGIN_MODE+'">'+(reg ? 'Konto anlegen und zum Dienst melden' : 'Anmelden')+'</button>'
+    + (LOGIN_MODE === 'forgot' ? '' : '<label for="pw">Passwort</label><div class="pwrow"><input id="pw" type="password" autocomplete="'+(reg ? 'new-password' : 'current-password')+'" minlength="8" placeholder="'+(reg ? 'mindestens 8 Zeichen' : '')+'"><button type="button" data-act="pwshow" aria-label="Passwort anzeigen">'+LP_ICON.auge+'</button></div>')
+    + '<button class="btn wide gold" style="margin-top:16px" data-act="'+LOGIN_MODE+'">'+(reg ? 'Konto anlegen und zum Dienst melden' : LOGIN_MODE === 'forgot' ? 'Link zum Zurücksetzen senden' : 'Anmelden')+'</button>'
+    + (reg ? '' : '<button class="linkbtn" style="margin-top:10px;padding:6px 0" data-act="lmode" data-id="'+(LOGIN_MODE === 'forgot' ? 'login' : 'forgot')+'">'+(LOGIN_MODE === 'forgot' ? 'Zurück zur Anmeldung' : 'Passwort vergessen?')+'</button>')
     + '<p class="small muted" style="margin:12px 0 0">'+(reg ? 'Danach wählst du Teilstreitkraft, Spielnamen und Standort. ' : '')+'Deine E-Mail-Adresse ist nur für die Anmeldung da und für andere Spieler nicht sichtbar.</p>'
     + '</section>'
     + '<p class="lp-quote">„Pünktlichkeit ist fünf Minuten vor der Zeit. Alles andere ist Urlaub auf Bewährung.“ – Hauptfeldwebel Brockmann</p>'
-    + '<p class="lp-foot">Ein Spiel mit Humor. Kein Angebot der Bundeswehr und nicht mit ihr verbunden. Alle Personen sind erfunden.</p>'
+    + '<p class="lp-foot">Ein Spiel mit Humor. Kein Angebot der Bundeswehr und nicht mit ihr verbunden. Alle Personen sind erfunden.<br><button class="linkbtn" style="font-size:12.5px;padding:8px 0" data-act="recht">Impressum und Datenschutz</button></p>'
     + '</div>';
 }
 
@@ -4990,11 +5205,12 @@ async function kpBonusFlush(){
   else if(!kpBonusErr){ kpBonusErr = true; toast('Zuschuss f\u00fcr die Kompaniekasse konnte nicht gebucht werden: ' + (error.message || 'Serverfehler')); }
   kpBonusBusy = false;
 }
-setInterval(() => { kpBonusFlush(); if(ONLINE.lag && ONLINE.lag.aufraeumen && new Date(ONLINE.lag.aufraeumen.ende).getTime() <= Date.now()) aufAbschliessen().then(() => { if(tab==='truppe') render(); }); }, 20000);
+setInterval(() => { kpBonusFlush(); lottoFlush(); if(ONLINE.lag && ONLINE.lag.aufraeumen && new Date(ONLINE.lag.aufraeumen.ende).getTime() <= Date.now()) aufAbschliessen().then(() => { if(tab==='truppe') render(); }); }, 20000);
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') kpBonusFlush(); });
 
 // Auszahlungen regelmäßig abholen
 setInterval(() => { if(USER && S && ONLINE.kp) abholen(); }, 60000);
+setInterval(() => { if(USER && S) loadLotto(); }, 300000);
 
 // Regelmäßig und beim Verlassen der Seite speichern
 setInterval(() => { cloudPush(false); }, 15000);

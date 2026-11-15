@@ -1,7 +1,7 @@
 // Stillgestanden! – Service Worker
 // Immer zuerst aus dem Netz laden (damit Updates sofort ankommen),
 // nur ohne Verbindung auf die gespeicherte Version zurückfallen.
-const CACHE = 'stillgestanden-v1';
+const CACHE = 'stillgestanden-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
