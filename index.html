@@ -3951,8 +3951,56 @@ function star(cx,cy,r){
   return '<path d="'+d+'Z" fill="var(--mark)"/>';
 }
 let INS_N = 0;
+// Marine: blaue Schulterklappen mit goldenen Abzeichen (Anwärter-Beispiele wie MA/BA/OA nicht enthalten)
+function insigniaMarine(id, size){
+  const gold = '#E8B923', u = 'mar' + (++INS_N);
+  const slash = (y, w) => '<path d="M20 ' + (y + 13) + ' L36 ' + (y - 1) + '" stroke="' + gold + '" stroke-width="' + (w || 4) + '"/>';
+  const tresse = closed => '<path d="M15 ' + (closed ? 82 : 88) + ' V30 Q15 18 28 17 Q41 18 41 30 V' + (closed ? 82 : 88) + (closed ? ' Z' : '') + '" fill="none" stroke="' + gold + '" stroke-width="4.6" stroke-linejoin="round"/>';
+  const chev = y => '<path d="M21 ' + (y + 6) + ' L28 ' + (y - 1) + ' L35 ' + (y + 6) + '" fill="none" stroke="' + gold + '" stroke-width="3.6"/>';
+  const kopf = y => '<path d="M28 ' + (y - 8) + ' L35 ' + y + ' L28 ' + (y + 8) + ' L21 ' + y + 'Z" fill="none" stroke="' + gold + '" stroke-width="2.8"/><path d="M24.5 ' + (y - 4) + ' L31.5 ' + (y + 4) + 'M31.5 ' + (y - 4) + ' L24.5 ' + (y + 4) + '" stroke="' + gold + '" stroke-width="2.2"/>';
+  const stern = y => { const s = 6.5, k = 2.6; let p = ''; for(let i = 0; i < 5; i++){ const a = -Math.PI/2 + i*2*Math.PI/5, b = a + Math.PI/5; p += (i ? 'L' : 'M') + (28 + s*Math.cos(a)).toFixed(1) + ' ' + (y + s*Math.sin(a)).toFixed(1) + 'L' + (28 + k*Math.cos(b)).toFixed(1) + ' ' + (y + k*Math.sin(b)).toFixed(1); } return '<path d="' + p + 'Z" fill="' + gold + '"/>'; };
+  // Ärmelstreifen als waagerechte Balken von unten nach oben: m = mittelbreit, s = schmal, b = handbreit
+  const balken = list => { let y = 84, p = ''; for(const t of list){ const h = t === 'b' ? 10 : t === 'm' ? 4.5 : 1.8; y -= h; p += '<rect x="8.5" y="' + y.toFixed(1) + '" width="39" height="' + h + '" fill="' + gold + '"/>'; y -= 3; } return p; };
+  let m = '';
+  switch(id){
+    case 'gefr': m = slash(66); break;
+    case 'ogefr': m = slash(66) + slash(58); break;
+    case 'hgefr': m = slash(66) + slash(58) + slash(50); break;
+    case 'sgefr': m = slash(66) + slash(58) + slash(50) + slash(42); break;
+    case 'osgefr': m = slash(66) + slash(58) + slash(50) + slash(42) + slash(34); break;
+    case 'korp': m = slash(62, 9); break;
+    case 'skorp': m = slash(64, 9) + slash(52); break;
+    case 'uffz': m = tresse(false); break;                       // Maat
+    case 'stuffz': m = tresse(true); break;                      // Obermaat
+    case 'fj': m = tresse(false) + stern(50); break;             // Seekadett
+    case 'fw': m = tresse(true) + chev(70); break;               // Bootsmann
+    case 'ofw': m = tresse(true) + chev(70) + chev(62); break;   // Oberbootsmann
+    case 'fhr': m = tresse(true) + stern(48) + chev(70); break;  // Fähnrich zur See
+    case 'hfw': m = tresse(true) + kopf(62); break;              // Hauptbootsmann
+    case 'sfw': m = tresse(true) + kopf(52) + chev(70); break;   // Stabsbootsmann
+    case 'osfw': m = tresse(true) + kopf(46) + chev(64) + chev(72); break; // Oberstabsbootsmann
+    case 'ofhr': m = stern(48) + balken(['s']); break;           // Oberfähnrich zur See
+    case 'lt': m = balken(['m']); break;
+    case 'olt': m = balken(['m','m']); break;
+    case 'hptm': m = balken(['m','s','m']); break;               // Kapitänleutnant
+    case 'shptm': m = balken(['m','s','s','m']); break;          // Stabskapitänleutnant
+    case 'maj': m = balken(['m','m','m']); break;                // Korvettenkapitän
+    case 'oberstlt': m = balken(['m','m','s','m']); break;       // Fregattenkapitän
+    case 'oberst': m = balken(['m','m','m','m']); break;         // Kapitän zur See
+    case 'bg': m = balken(['b','s']); break;                     // Flottillenadmiral
+    case 'gm': m = balken(['b','m']); break;                     // Konteradmiral
+    case 'gl': m = balken(['b','m','m']); break;                 // Vizeadmiral
+    case 'gen': m = balken(['b','m','m','m']); break;            // Admiral
+  }
+  return '<svg viewBox="0 0 56 90" width="' + size + '" height="' + Math.round(size*90/56) + '" aria-hidden="true">'
+    + '<defs><linearGradient id="' + u + 'g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26385A"/><stop offset="1" stop-color="#1A2840"/></linearGradient></defs>'
+    + '<path d="M7 88 L9 18 Q9 6 28 5 Q47 6 47 18 L49 88 Z" fill="url(#' + u + 'g)"/>'
+    + '<circle cx="28" cy="11" r="2.6" fill="#0F1828" opacity=".7"/>'
+    + m + '<path d="M7 88 L9 18 Q9 6 28 5 Q47 6 47 18 L49 88 Z" fill="none" stroke="rgba(0,0,0,.4)" stroke-width="1"/></svg>';
+}
 function insignia(id, size=56){
   const r = R[id]; if(!r) return '';
+  if(typeof S !== 'undefined' && S && S.tsk === 'marine') return insigniaMarine(id, size);
   const u = 'ins' + (++INS_N), dark = '#141B0E', gold = '#E8C33A', silver = '#C9CDD2';
   const camo = (y0, y1) => '<g clip-path="url(#' + u + 'c)"><rect x="0" y="' + y0 + '" width="56" height="' + (y1 - y0) + '" fill="#6E7B4C"/>'
     + '<ellipse cx="14" cy="' + (y0+6) + '" rx="9" ry="5" fill="#8C6A43"/><ellipse cx="36" cy="' + (y0+10) + '" rx="10" ry="6" fill="#3E4B2B"/>'
