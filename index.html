@@ -4085,7 +4085,7 @@ function renderStube(){
     + '</div><p style="margin:16px 0 6px"><b>Benachrichtigungen</b></p><p class="small muted">Meldet sich, wenn Dienste, Ausbildungen oder Lehrgänge fertig sind, solange das Spiel im Hintergrund geöffnet ist.</p><button class="btn ghost" data-act="notif">'+(S.notify && window.Notification && Notification.permission === 'granted' ? 'Benachrichtigungen ausschalten' : 'Benachrichtigungen einschalten')+'</button><p style="margin:16px 0 6px"><b>Einführung</b></p><button class="btn ghost" data-act="tut_restart">Einführung noch mal ansehen</button>'+(TESTMODE || ONLINE.admin ? '<p style="margin:16px 0 6px"><b>Testmodus</b></p><p class="small muted">Alle Zeiten laufen schneller. Nur zum Ausprobieren, nicht zum echten Spielen.</p>'
     + '<div class="seg" role="group" aria-label="Testmodus">'
     + [[1,'Aus'],[10,'10×'],[100,'100×']].map(([v,l])=>'<button data-act="speed" data-id="'+v+'" aria-pressed="'+(S.speed===v)+'">'+l+'</button>').join('')
-    + '</div>' : '')+'<p style="margin:16px 0 6px"><b>Spielstand</b></p><p class="small muted">Dein Spielstand wird automatisch in deinem Konto gespeichert'+(USER && USER.email ? ' ('+esc(USER.email)+')' : '')+'.</p>'
+    + '</div>' : '')+'<p style="margin:16px 0 6px"><b>Spielstand</b></p><p class="small muted">Dein Spielstand wird automatisch in deinem Konto gespeichert'+(USER && USER.email ? ' ('+esc(loginLabel())+')' : '')+'.</p>'
     + '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" data-act="logout">Abmelden</button><button class="btn danger" data-act="reset">Neu anfangen</button></div>'
     + '<p style="margin:16px 0 6px"><b>Konto</b></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" data-act="pwchange">Passwort ändern</button><button class="btn ghost" data-act="recht">Impressum und Datenschutz</button><button class="btn danger" data-act="kontodel">Konto löschen</button></div></div>';
   return h;
@@ -4854,15 +4854,21 @@ async function boot(){
   });
 }
 
+// Anmeldung mit Benutzername: intern wird daraus eine Adresse, die nur beim Betreiber ankommt.
+// Spieler müssen keine E-Mail angeben. Ältere Konten mit echter E-Mail funktionieren weiter.
+function loginEmail(v){ v = String(v || '').trim(); return v.includes('@') ? v : 'niclasschoth+sg.' + v.toLowerCase() + '@gmail.com'; }
+function loginLabel(){ const e = (USER && USER.email) || ''; const m = e.match(/^niclasschoth\+sg\.([^@]+)@gmail\.com$/i); return m ? 'Benutzername ' + m[1] : e; }
 async function authSubmit(mode){
-  const em = (document.getElementById('em')||{}).value || '', pw = (document.getElementById('pw')||{}).value || '';
-  if(!em.includes('@') || pw.length < 8){ toast('Bitte E-Mail und ein Passwort mit mindestens 8 Zeichen eingeben.'); return; }
+  const raw = ((document.getElementById('em')||{}).value || '').trim(), pw = (document.getElementById('pw')||{}).value || '';
+  if(!raw.includes('@') && !/^[A-Za-z0-9_.-]{3,20}$/.test(raw)){ toast('Benutzername: 3 bis 20 Zeichen, nur Buchstaben, Zahlen, Punkt, Unterstrich oder Bindestrich.'); return; }
+  if(pw.length < 8){ toast('Das Passwort braucht mindestens 8 Zeichen.'); return; }
+  const em = loginEmail(raw);
   const res = mode === 'signup'
     ? await sb.auth.signUp({email:em.trim(), password:pw})
     : await sb.auth.signInWithPassword({email:em.trim(), password:pw});
   if(res.error){
     const m = res.error.message || '';
-    toast(/invalid login/i.test(m) ? 'E-Mail oder Passwort falsch.' : /already registered/i.test(m) ? 'Für diese E-Mail gibt es schon ein Konto.' : 'Fehler: '+m);
+    toast(/invalid login/i.test(m) ? 'Benutzername oder Passwort falsch.' : /already registered/i.test(m) ? 'Dieser Benutzername ist schon vergeben.' : 'Fehler: '+m);
     return;
   }
   if(!res.data.session){ toast('Fast geschafft: Bitte bestätige deine E-Mail-Adresse über den Link im Postfach.'); return; }
@@ -4894,7 +4900,7 @@ function rechtHtml(){
     + '<p>„Stillgestanden!“ ist ein privates, nicht kommerzielles Hobbyprojekt und ein satirisches Spiel. Es ist kein Angebot der Bundeswehr und steht in keiner Verbindung zu ihr. Alle Figuren sind erfunden.</p>'
     + '<h3>Datenschutzerklärung</h3>'
     + '<p><b>Verantwortlich</b> für die Datenverarbeitung ist der oben genannte Betreiber.</p>'
-    + '<p><b>Welche Daten wir speichern.</b> Für dein Konto: E-Mail-Adresse und Passwort (nur verschlüsselt als Hash). Für das Spiel: Spielname, Spielstand, Kompanie, gewählter Standort (Ort und Bundesland) sowie Spielstatistiken für Ranglisten. Andere Spieler sehen nur deinen Spielnamen, Dienstgrad, Punkte und deine Kompanie, nie deine E-Mail-Adresse.</p>'
+    + '<p><b>Welche Daten wir speichern.</b> Für dein Konto: Benutzername und Passwort (nur verschlüsselt als Hash). Eine E-Mail-Adresse ist nicht nötig; nur Konten, die früher mit E-Mail angelegt wurden, haben eine hinterlegt. Für das Spiel: Spielname, Spielstand, Kompanie, gewählter Standort (Ort und Bundesland) sowie Spielstatistiken für Ranglisten. Andere Spieler sehen nur deinen Spielnamen, Dienstgrad, Punkte und deine Kompanie, nie deine E-Mail-Adresse.</p>'
     + '<p><b>Zweck und Rechtsgrundlage.</b> Die Daten werden nur verarbeitet, um dir das Spiel bereitzustellen (Art. 6 Abs. 1 lit. b DSGVO). Es gibt keine Werbung, kein Tracking und keine Weitergabe zu Werbezwecken.</p>'
     + '<p><b>Dienstleister.</b> Die Seite liegt bei GitHub Pages (GitHub Inc., USA). Beim Aufruf verarbeitet GitHub technisch notwendige Daten wie deine IP-Adresse. Konto und Spielstand liegen bei Supabase (Supabase Inc.), mit dem ein Auftragsverarbeitungsvertrag besteht. Für die Standortkarte werden Kartenbilder von OpenStreetMap geladen; dabei wird deine IP-Adresse an die OpenStreetMap Foundation übertragen. Schriften und Programmbibliotheken werden von dieser Seite selbst geladen, nicht von Google oder anderen Anbietern.</p>'
     + '<p><b>Im Browser</b> speichert das Spiel eine Kopie deines Spielstands und deine Anmeldung (Local Storage). Cookies zu Werbe- oder Analysezwecken gibt es nicht.</p>'
@@ -5149,11 +5155,14 @@ function renderLogin(){
     + '</section>'
     + '<section class="lp-form" id="lpform" aria-label="'+(reg ? 'Registrieren' : 'Anmelden')+'">'
     + '<div class="seg" role="group" aria-label="Anmelden oder registrieren"><button data-act="lmode" data-id="login" aria-pressed="'+!reg+'">Anmelden</button><button data-act="lmode" data-id="signup" aria-pressed="'+reg+'">Registrieren</button></div>'
-    + '<label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" inputmode="email" placeholder="name@beispiel.de">'
+    + (LOGIN_MODE === 'forgot' ? '<label for="em">E-Mail</label><input id="em" type="email" autocomplete="email" inputmode="email" placeholder="name@beispiel.de">'
+      : '<label for="em">Benutzername</label><input id="em" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="60" placeholder="z. B. Gefreiter_Kaffee">')
     + (LOGIN_MODE === 'forgot' ? '' : '<label for="pw">Passwort</label><div class="pwrow"><input id="pw" type="password" autocomplete="'+(reg ? 'new-password' : 'current-password')+'" minlength="8" placeholder="'+(reg ? 'mindestens 8 Zeichen' : '')+'"><button type="button" data-act="pwshow" aria-label="Passwort anzeigen">'+LP_ICON.auge+'</button></div>')
     + '<button class="btn wide gold" style="margin-top:16px" data-act="'+LOGIN_MODE+'">'+(reg ? 'Konto anlegen und zum Dienst melden' : LOGIN_MODE === 'forgot' ? 'Link zum Zurücksetzen senden' : 'Anmelden')+'</button>'
     + (reg ? '' : '<button class="linkbtn" style="margin-top:10px;padding:6px 0" data-act="lmode" data-id="'+(LOGIN_MODE === 'forgot' ? 'login' : 'forgot')+'">'+(LOGIN_MODE === 'forgot' ? 'Zurück zur Anmeldung' : 'Passwort vergessen?')+'</button>')
-    + '<p class="small muted" style="margin:12px 0 0">'+(reg ? 'Danach wählst du Teilstreitkraft, Spielnamen und Standort. ' : '')+'Deine E-Mail-Adresse ist nur für die Anmeldung da und für andere Spieler nicht sichtbar.</p>'
+    + '<p class="small muted" style="margin:12px 0 0">'+(reg ? '<b>Keine E-Mail nötig.</b> Nimm einen Fantasienamen, nicht deinen echten Namen, und gib im Spiel keine echten Angaben zu Einheit, Dienststelle oder Wohnort an. Danach wählst du Teilstreitkraft, Spielnamen und Standort.'
+      : LOGIN_MODE === 'forgot' ? 'Das geht nur bei älteren Konten mit E-Mail. Hast du dich mit Benutzernamen registriert, schreib der Spielleitung, dann wird dein Passwort zurückgesetzt.'
+      : 'Melde dich mit deinem Benutzernamen an. Ältere Konten können auch die E-Mail-Adresse verwenden.')+'</p>'
     + '</section>'
     + '<p class="lp-quote">„Pünktlichkeit ist fünf Minuten vor der Zeit. Alles andere ist Urlaub auf Bewährung.“ – Hauptfeldwebel Brockmann</p>'
     + '<p class="lp-foot">Ein Spiel mit Humor. Kein Angebot der Bundeswehr und nicht mit ihr verbunden. Alle Personen sind erfunden.<br><button class="linkbtn" style="font-size:12.5px;padding:8px 0" data-act="recht">Impressum und Datenschutz</button></p>'
@@ -5167,9 +5176,9 @@ function renderCreate(){
     + '<p>Willkommen in der Kaserne. Noch ist deine Schulterklappe leer. Das ändern wir.</p>'
     + (S ? '' : tskPicker())
     + '<label for="nm">Dein Name in der Truppe</label><input id="nm" maxlength="20" autocomplete="off" placeholder="z. B. Krause" value="'+esc(S ? S.name : '')+'">'
-    + '<p class="small muted" style="margin-top:8px">Dieser Name ist in den Ranglisten für alle sichtbar. Bitte keinen echten Namen.</p>'
+    + '<p class="small muted" style="margin-top:8px">Dieser Name ist in den Ranglisten für alle sichtbar. Bitte keinen echten Namen und nichts, was auf deine echte Einheit schließen lässt.</p>'
     + '<div style="margin-top:6px">'+standortPicker(S && S.standort ? S.standort.bl : 'Baden-Württemberg', S && S.standort ? S.standort.ort : null)
-    + '<p class="small muted" style="margin-top:8px">Der Standort ist frei wählbar, für andere nicht sichtbar und lässt sich später ändern.</p></div>'
+    + '<p class="small muted" style="margin-top:8px">Der Standort ist frei wählbar, für andere nicht sichtbar und lässt sich später ändern. Du musst nicht deinen echten Standort nehmen.</p></div>'
     + '<button class="btn wide" style="margin-top:16px" data-act="create">Zum Dienst melden</button>'
     + '<button class="linkbtn" data-act="logout">Abmelden</button></div>';
 }
