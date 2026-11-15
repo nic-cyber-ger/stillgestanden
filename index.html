@@ -212,6 +212,13 @@ p{margin:0 0 10px}
 .warow{padding:10px 0;border-top:1px solid var(--line)}
 .warow:first-of-type{border-top:0}
 .wat{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.qzdots{display:flex;gap:6px;margin:8px 0 4px}.qzdots i{width:22px;height:5px;border-radius:3px;background:var(--line)}.qzdots i.cur{background:var(--signal)}.qzdots i.ok{background:#4E8B4A}.qzdots i.no{background:#B3261E}
+.qzins{display:flex;justify-content:center;margin:4px 0 10px}
+.qzgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qzgrid .choice{flex-direction:column;align-items:center;justify-content:center;min-height:92px}
+.qzimg{display:flex;justify-content:center}
+.choice.qzok{border-color:#4E8B4A !important;background:rgba(78,139,74,.2) !important;opacity:1}
+.choice.qzno{border-color:#B3261E !important;background:rgba(179,38,30,.2) !important;opacity:1}
 .wab{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:36px}
 .chip{font-size:14px;font-weight:600;padding:3px 9px;border-radius:3px;background:var(--surface2);color:var(--ok)}
 .chip.neg{color:var(--bad)}
@@ -1323,7 +1330,7 @@ function tutBox(){
 }
 
 /* ---------- Ausbildung mit Ausdauer verkürzen ---------- */
-const KURZ_RATE = 10;   // Ausdauer pro Stunde Ausbildungszeit
+const KURZ_RATE = 20;   // Ausdauer pro Stunde Ausbildungszeit
 function kurzRestH(){ return S.ausb && S.ausb.type === 'stat' ? Math.max(0, (S.ausb.end - now()) / (36e5/S.speed)) : 0; }
 function kurzStunden(opt){
   G.normStamina();
@@ -1440,7 +1447,7 @@ function notifyEvents(ev){
 /* ---------- Seitenaufbau: Hauptbereiche mit Unterreitern ---------- */
 const SUBS = {
   stube: [
-    {id:'uebersicht', label:'Übersicht', src:'stube', rest:true, match:['Grundausbildung','Dienstzeitende','Meldungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Beurteilung','Werte']},
+    {id:'uebersicht', label:'Übersicht', src:'stube', rest:true, match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Beurteilung','Werte']},
     {id:'stube', label:'Stube', src:'raum', rest:true, match:['Deine Stube','Ausrüstung']},
     {id:'vorsorge', label:'Vorsorge', src:'raum', match:['Anwartschaftsversicherung','Pflegepflichtversicherung']},
     {id:'kameraden', label:'Kameraden', src:'raum', match:['Kompanie','Sammelalbum']},
@@ -1497,7 +1504,7 @@ function runStrip(){
   if(S.ausb) it.push(['ausb', STAT_NAME[S.ausb.id] + ' auf Stufe ' + (S.stats[S.ausb.id] + 1)]);
   if(S.lg) it.push(['lg', L[S.lg.id].name + (S.lg.exam ? ', Prüfung wartet' : '')]);
   if(S.fa) it.push(['fa', S.fa.type === 'pfand' ? 'Leergut sammeln' : 'Schrauben']);
-  if(S.fs) it.push(['fs', 'Fahrschule: ' + FS_I[S.fs.id].name + (S.fs.exam ? ', Prüfung wartet' : '')]);
+  if(S.fs) it.push(['fs', 'Fahrschule: ' + FS_I[S.fs.id].name + (S.fs.stage === 'theorie' ? ', Theorie wartet' : S.fs.exam ? ', Praxis wartet' : '')]);
   if(!it.length) return '<div class="strip idle"><span>Gerade nichts zu tun. Das fällt auf.</span><button class="btn mini" data-act="tab" data-id="dienst">Dienst antreten</button></div>';
   return '<div class="strip" aria-label="Läuft gerade">' + it.map(([k, n]) => '<div><div class="sh"><span>' + esc(n) + '</span><span class="num" data-left="' + k + '"></span></div><div class="prog"><i data-prog="' + k + '"></i></div></div>').join('') + '</div>';
 }
@@ -3129,9 +3136,9 @@ function fsStart(id){
   return null;
 }
 function fsTick(events){
-  if(S.fs && !S.fs.exam && now() >= S.fs.end){
-    S.fs.exam = true; S.pending.push('fsx_' + S.fs.id);
-    events.push('Fahrprüfung ' + FS_I[S.fs.id].name + ' wartet');
+  if(S.fs && !S.fs.exam && !S.fs.stage && now() >= S.fs.end){
+    S.fs.stage = 'theorie';
+    events.push('Theorieprüfung ' + FS_I[S.fs.id].name + ' wartet');
     return true;
   }
   return false;
@@ -3145,7 +3152,7 @@ function renderFahrschule(){
     const frei = DIENSTE.filter(d => d.fs === x.id).map(d => d.name).join(', ');
     let inner = '<p class="flv">' + esc(x.desc) + '</p>' + (frei ? '<p class="eff">Schaltet frei: ' + esc(frei) + '</p>' : '');
     if(done) inner += '<div class="stamp good small-stamp" style="margin:8px auto 2px;font-size:17px">BESTANDEN</div>';
-    else if(run) inner += '<div class="small">' + (S.fs.exam ? 'Die Prüfung wartet in den Meldungen.' : 'Prüfung in <span class="num" data-left="fs"></span>') + '</div><div class="prog" style="margin:0"><i data-prog="fs"></i></div>';
+    else if(run) inner += '<div class="small">' + (S.fs.stage === 'theorie' ? '<button class="btn wide" data-act="fsquiz">Theorieprüfung ablegen</button>' : S.fs.exam ? 'Die praktische Prüfung wartet in den Meldungen.' : 'Theorieprüfung in <span class="num" data-left="fs"></span>') + '</div><div class="prog" style="margin:0"><i data-prog="fs"></i></div>';
     else inner += facts([['Dauer', fmtMin(fsMin(x)/S.speed)], ['Kosten', eur(c)]]) + (reqs.length ? reqMini(reqs) : '')
       + (S.fsRetry && S.fsRetry[x.id] ? '<div class="small muted">Wiederholung zum halben Preis</div>' : '')
       + '<button class="btn wide" data-act="fs" data-id="' + x.id + '" ' + ((!ok || S.fs || S.money < c) ? 'disabled' : '') + '>Anmelden<small>' + eur(c) + '</small></button>';
@@ -3241,6 +3248,189 @@ function renderWA(){
   return h;
 }
 function waReady(){ return !!(S && S.wa && S.wa.week === waWeek() && S.wa.list.some(w => w.done && !w.claimed)); }
+
+/* =========================================================
+   PRÜFUNGEN: Theorie für Führerscheine und Dienstgradtest
+   ========================================================= */
+const FS_FRAGEN = {
+ b:[
+  {q:'Wie schnell darf ein Pkw innerhalb geschlossener Ortschaften höchstens fahren, wenn nichts anderes angeordnet ist?', a:['30 km/h','50 km/h','60 km/h','70 km/h'], c:1},
+  {q:'Wie schnell darf ein Pkw außerhalb geschlossener Ortschaften (nicht Autobahn) höchstens fahren?', a:['80 km/h','90 km/h','100 km/h','120 km/h'], c:2},
+  {q:'Wie berechnet man nach der Faustformel den Reaktionsweg in Metern?', a:['(Geschwindigkeit : 10) × 3','(Geschwindigkeit : 10) × (Geschwindigkeit : 10)','Geschwindigkeit : 2','Geschwindigkeit × 3'], c:0},
+  {q:'Wie berechnet man nach der Faustformel den Bremsweg bei einer normalen Bremsung?', a:['(Geschwindigkeit : 10) × 3','(Geschwindigkeit : 10) × (Geschwindigkeit : 10)','Geschwindigkeit : 2','(Geschwindigkeit : 10) × 5'], c:1},
+  {q:'Welche Promillegrenze gilt für Fahranfänger in der Probezeit?', a:['0,0 Promille','0,3 Promille','0,5 Promille','0,8 Promille'], c:0},
+  {q:'Wie lange dauert die Probezeit nach dem ersten Führerscheinerwerb in der Regel?', a:['6 Monate','1 Jahr','2 Jahre','3 Jahre'], c:2},
+  {q:'Wie tief muss das Reifenprofil gesetzlich mindestens sein?', a:['1,0 mm','1,6 mm','2,5 mm','4,0 mm'], c:1},
+  {q:'Wer hat an einer Kreuzung ohne Verkehrszeichen und ohne Ampel Vorfahrt?', a:['Wer von links kommt','Wer von rechts kommt','Wer zuerst da ist','Das größere Fahrzeug'], c:1},
+  {q:'Wo bilden Sie auf einer dreistreifigen Autobahn die Rettungsgasse?', a:['Auf dem Seitenstreifen','Zwischen rechtem und mittlerem Fahrstreifen','Zwischen linkem und mittlerem Fahrstreifen','Links neben dem linken Fahrstreifen'], c:2},
+  {q:'Welcher Sicherheitsabstand gilt außerorts als Faustregel?', a:['Ein Viertel des Tachowerts in Metern','Halber Tachowert in Metern','Voller Tachowert in Metern','Immer 25 Meter'], c:1},
+  {q:'In welcher Entfernung stellen Sie das Warndreieck auf der Autobahn etwa auf?', a:['50 m','100 m','150 m','200 m'], c:3},
+  {q:'Was erlaubt das grüne Pfeilschild rechts neben einer roten Ampel?', a:['Rechts abbiegen ohne Anhalten','Rechts abbiegen nach Anhalten, ohne andere zu behindern','Geradeaus fahren','Nichts, es gilt nur für Radfahrer'], c:1},
+  {q:'Woran erkennt man vorschriftsmäßige Winterreifen?', a:['Am M+S-Zeichen allein','Am Alpine-Symbol (Berg mit Schneeflocke)','An der Farbe der Seitenwand','Am Herstellungsjahr'], c:1},
+ ],
+ c:[
+  {q:'Wie schnell darf ein Lkw über 7,5 t zulässiger Gesamtmasse auf der Autobahn höchstens fahren?', a:['60 km/h','80 km/h','90 km/h','100 km/h'], c:1},
+  {q:'Wie schnell darf ein Lkw über 7,5 t zulässiger Gesamtmasse außerorts auf der Landstraße höchstens fahren?', a:['50 km/h','60 km/h','80 km/h','100 km/h'], c:1},
+  {q:'Wie lang ist die tägliche Lenkzeit in der Regel höchstens?', a:['8 Stunden','9 Stunden','11 Stunden','12 Stunden'], c:1},
+  {q:'Nach wie viel Lenkzeit ist spätestens eine Fahrtunterbrechung von mindestens 45 Minuten nötig?', a:['3 Stunden','4 Stunden','4,5 Stunden','6 Stunden'], c:2},
+  {q:'Wie lang darf die wöchentliche Lenkzeit höchstens sein?', a:['45 Stunden','50 Stunden','56 Stunden','60 Stunden'], c:2},
+  {q:'Wie lang darf die Lenkzeit in zwei aufeinanderfolgenden Wochen höchstens sein?', a:['80 Stunden','90 Stunden','100 Stunden','112 Stunden'], c:1},
+  {q:'Wie lang ist die regelmäßige tägliche Ruhezeit mindestens?', a:['8 Stunden','9 Stunden','11 Stunden','12 Stunden'], c:2},
+  {q:'Womit werden Lenk- und Ruhezeiten aufgezeichnet?', a:['Mit dem Fahrtenbuch','Mit dem Fahrtenschreiber (Tachograf)','Mit dem Navigationsgerät','Mit dem Kilometerzähler'], c:1},
+  {q:'Wie hoch darf ein Fahrzeug in Deutschland einschließlich Ladung höchstens sein?', a:['3,50 m','4,00 m','4,20 m','4,50 m'], c:1},
+  {q:'Wie breit darf ein Lkw (kein Kühlfahrzeug) höchstens sein?', a:['2,40 m','2,50 m','2,55 m','2,80 m'], c:2},
+  {q:'Welchen Mindestabstand muss ein Lkw über 3,5 t auf der Autobahn bei mehr als 50 km/h zum Vorausfahrenden halten?', a:['25 m','50 m','75 m','100 m'], c:1},
+ ],
+ ce:[
+  {q:'Wie lang darf ein Lastzug (Lkw mit Anhänger) höchstens sein?', a:['16,50 m','18,00 m','18,75 m','25,25 m'], c:2},
+  {q:'Wie lang darf ein Sattelkraftfahrzeug höchstens sein?', a:['15,50 m','16,50 m','18,75 m','20,00 m'], c:1},
+  {q:'Welche zulässige Gesamtmasse gilt in der Regel für einen Lastzug mit fünf Achsen?', a:['32 t','36 t','40 t','44 t'], c:2},
+  {q:'Welche Farbe hat bei der Zweileitungs-Druckluftbremse die Vorratsleitung?', a:['Gelb','Rot','Blau','Schwarz'], c:1},
+  {q:'Welche Farbe hat bei der Zweileitungs-Druckluftbremse die Bremsleitung?', a:['Gelb','Rot','Grün','Weiß'], c:0},
+  {q:'Was tun Sie vor dem Abkuppeln eines Anhängers zuerst?', a:['Bremsleitungen trennen','Anhänger gegen Wegrollen sichern','Stützen hochkurbeln','Beleuchtung abstecken'], c:1},
+  {q:'Wie prüfen Sie nach dem Ankuppeln, ob die Kupplung richtig verriegelt ist?', a:['Durch Hupen','Durch Sichtprüfung der Verriegelung und eine Zugprobe','Durch Wiegen des Anhängers','Gar nicht, das macht die Kupplung allein'], c:1},
+ ],
+ stapler:[
+  {q:'Wie alt muss ein Staplerfahrer in der Regel mindestens sein?', a:['16 Jahre','17 Jahre','18 Jahre','21 Jahre'], c:2},
+  {q:'Was zeigt das Tragfähigkeitsdiagramm am Stapler?', a:['Den Reifendruck','Die zulässige Last abhängig vom Lastschwerpunktabstand','Die Höchstgeschwindigkeit','Den Wartungsplan'], c:1},
+  {q:'Wie fahren Sie mit aufgenommener Last?', a:['Last hoch, Hubgerüst nach vorn geneigt','Last möglichst tief, Hubgerüst nach hinten geneigt','Last in Augenhöhe','Last ganz oben, damit man darunter durchsieht'], c:1},
+  {q:'Wie befahren Sie mit Last eine Steigung oder ein Gefälle?', a:['Last immer talseitig','Last immer bergseitig','Quer zum Hang','Mit angehobener Last'], c:1},
+  {q:'Dürfen Personen auf der Gabel mitfahren?', a:['Ja, wenn sie sich festhalten','Ja, bis 5 m Hubhöhe','Nein','Nur mit Helm'], c:2},
+  {q:'Was tun Sie, wenn die Last die Sicht nach vorn verdeckt?', a:['Schneller fahren','Rückwärts fahren oder einen Einweiser einsetzen','Hupen und weiterfahren','Die Last höher anheben'], c:1},
+  {q:'Was gehört zum sicheren Abstellen des Staplers?', a:['Gabel oben lassen','Gabel absenken, Feststellbremse ziehen, Schlüssel abziehen','Motor laufen lassen','Auf einem Gefälle parken'], c:1},
+ ],
+ kette:[
+  {q:'Wie wird ein Kettenfahrzeug gelenkt?', a:['Über die Vorderräder','Durch unterschiedliche Geschwindigkeit der beiden Ketten','Über ein Heckruder','Gar nicht, es fährt nur geradeaus'], c:1},
+  {q:'Was gibt die militärische Lastenklasse (MLC) auf einem Brückenschild an?', a:['Die Höchstgeschwindigkeit','Die Belastbarkeit der Brücke für Militärfahrzeuge','Die Brückenhöhe','Das Baujahr'], c:1},
+  {q:'Was ist beim Rückwärtsfahren mit eingeschränkter Sicht erforderlich?', a:['Nichts Besonderes','Ein Einweiser','Hupen genügt','Schneller fahren'], c:1},
+ ],
+ schlepp:[
+  {q:'Wer hat auf dem Vorfeld grundsätzlich Vorrang?', a:['Schlepper','Tankwagen','Rollende Luftfahrzeuge','Fußgänger'], c:2},
+  {q:'Wofür steht FOD auf einem Flugplatz?', a:['Fremdkörper, die Triebwerke und Reifen schädigen können','Flugdienst','Feuerwehr-Objektdienst','Funkdisziplin'], c:0},
+  {q:'Warum sitzt beim Schleppen meist jemand im Cockpit?', a:['Zum Funken mit dem Tower','Um das Luftfahrzeug im Notfall zu bremsen','Zum Navigieren','Damit niemand einsteigt'], c:1},
+ ],
+ boot:[
+  {q:'Welche Farbe hat das Seitenlicht an Steuerbord?', a:['Rot','Grün','Weiß','Gelb'], c:1},
+  {q:'Zwei Maschinenfahrzeuge kreuzen sich mit Kollisionsgefahr. Wer muss ausweichen?', a:['Das schnellere','Das, welches das andere an seiner Steuerbordseite hat','Das, welches das andere an seiner Backbordseite hat','Beide stoppen'], c:1},
+  {q:'Zwei Maschinenfahrzeuge fahren mit Kollisionsgefahr direkt aufeinander zu. Was tun beide?', a:['Beide weichen nach Backbord aus','Beide weichen nach Steuerbord aus','Das kleinere stoppt','Beide fahren weiter'], c:1},
+  {q:'Auf welcher Seite liegen von See kommend die roten Fahrwassertonnen?', a:['Steuerbord','Backbord','In der Mitte','Je nach Wetter'], c:1},
+  {q:'Welches Sprechfunk-Notsignal wird bei unmittelbarer Gefahr gesendet?', a:['Pan-Pan','Sécurité','Mayday','Roger'], c:2},
+ ],
+};
+function fsFragen(id){
+  const shuf = a => a.slice().sort(() => Math.random() - .5);
+  const own = shuf(FS_FRAGEN[id] || []), extra = id === 'ce' ? FS_FRAGEN.c : id === 'kette' ? FS_FRAGEN.c : FS_FRAGEN.b;
+  const n = id === 'b' ? 5 : Math.min(3, own.length);
+  let qs = own.slice(0, n);
+  if(qs.length < 5) qs = qs.concat(shuf(extra.filter(x => !qs.includes(x))).slice(0, 5 - qs.length));
+  return qs.map(x => { const ord = shuf(x.a.map((t, i) => i)); return {q:x.q, opts:ord.map(i => ({t:x.a[i]})), c:ord.indexOf(x.c), right:x.a[x.c]}; });
+}
+
+/* ---------- Dienstgradtest ---------- */
+function dgName(id){ return tskText(R[id].name); }
+function dgFragen(pool){
+  const shuf = a => a.slice().sort(() => Math.random() - .5);
+  const ids = shuf(pool).slice(0, 5);
+  return ids.map((id, k) => {
+    const g = R[id].g, same = RANKS.filter(x => x.id !== id && x.g === g && !x.spec).map(x => x.id), other = RANKS.filter(x => x.id !== id && x.g !== g && !x.spec).map(x => x.id);
+    const wrong = shuf(same).slice(0, 3), near = other.slice().sort((p, q) => Math.abs(R[p].t - R[id].t) - Math.abs(R[q].t - R[id].t));
+    while(wrong.length < 3) wrong.push(near.find(x => !wrong.includes(x)));
+    const opts = shuf([id, ...wrong]), c = opts.indexOf(id);
+    if(k % 2 === 0) return {q:'Welcher Dienstgrad ist das?', html:'<div class="qzins">' + insignia(id, 64) + '</div>', opts:opts.map(x => ({t:dgName(x)})), c, right:dgName(id)};
+    return {q:'Welches Abzeichen trägt ein ' + dgName(id) + '?', opts:opts.map(x => ({h:insignia(x, 40), t:dgName(x)})), grid:true, c, right:dgName(id)};
+  });
+}
+function dgPool(){
+  // In der Grundausbildung Mannschaften und Unteroffiziere, später alle Dienstgrade
+  return RANKS.filter(x => !x.spec && (S.gaDone || x.g === 'M' || x.g === 'U' || x.g === 'F')).map(x => x.id);
+}
+function dgDue(){ return S.gaDone && S.dgNext && now() >= S.dgNext; }
+function dgTick(events){
+  if(!S.gaDone) return false;
+  if(!S.dgNext){ S.dgNext = now() + 864e5 / S.speed; return true; }
+  if(now() >= S.dgNext && !S.dgAnnounced){ S.dgAnnounced = true; events.push('Brockmann fragt Dienstgrade ab'); return true; }
+  return false;
+}
+
+/* ---------- Quiz-Fenster ---------- */
+let QZ = null;
+function quizStart(o){ QZ = Object.assign({i:0, right:0, answered:null}, o); quizRender(); }
+function quizRender(){
+  const host = document.getElementById('modalHost'); if(!QZ) return;
+  const n = QZ.qs.length;
+  if(QZ.i >= n){
+    const ok = QZ.right >= QZ.pass;
+    host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-label="Ergebnis"><div class="sheet ev" style="text-align:center">'
+      + '<div class="stamp' + (ok ? ' good' : '') + '">' + (ok ? 'BESTANDEN' : 'NICHT BESTANDEN') + '</div>'
+      + '<p class="evtext"><b>' + QZ.right + ' von ' + n + ' richtig.</b> ' + esc(ok ? QZ.okText : QZ.failText) + '</p>'
+      + '<button class="btn wide" data-act="qzend" style="margin-top:12px">Weiter</button></div></div>';
+    document.querySelector('[data-act="qzend"]').focus();
+    return;
+  }
+  const q = QZ.qs[QZ.i], a = QZ.answered;
+  let h = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="qzt"><div class="sheet ev">'
+    + '<div class="small muted">' + esc(QZ.title) + ' · Frage ' + (QZ.i + 1) + ' von ' + n + '</div>'
+    + '<div class="qzdots">' + QZ.qs.map((x, k) => '<i class="' + (k < QZ.i ? (x.ok ? 'ok' : 'no') : k === QZ.i ? 'cur' : '') + '"></i>').join('') + '</div>'
+    + '<p class="evtext" id="qzt"><b>' + esc(q.q) + '</b></p>' + (q.html || '')
+    + '<div class="choices' + (q.grid ? ' qzgrid' : '') + '">'
+    + q.opts.map((o, k) => {
+        const cls = a === null ? '' : k === q.c ? ' qzok' : k === a ? ' qzno' : '';
+        return '<button class="btn ghost choice' + cls + '" data-act="qz" data-id="' + k + '" ' + (a !== null ? 'disabled' : '') + ' aria-label="' + esc(o.t) + '">'
+          + (o.h ? '<span class="qzimg">' + o.h + '</span>' + (a !== null ? '<span class="small">' + esc(o.t) + '</span>' : '') : '<span>' + esc(o.t) + '</span>') + '</button>';
+      }).join('') + '</div>';
+  if(a !== null) h += '<p class="small" style="margin:10px 0 0"><b>' + (a === q.c ? 'Richtig.' : 'Falsch.') + '</b>' + (a === q.c ? '' : ' Richtig ist: ' + esc(q.right) + '.') + '</p>'
+    + '<button class="btn wide" data-act="qznext" style="margin-top:10px">' + (QZ.i + 1 < n ? 'Nächste Frage' : 'Auswertung') + '</button>';
+  host.innerHTML = h + '</div></div>';
+  const f = document.querySelector(a !== null ? '[data-act="qznext"]' : '[data-act="qz"]'); if(f) f.focus();
+}
+function quizAnswer(k){
+  if(!QZ || QZ.answered !== null) return;
+  const q = QZ.qs[QZ.i]; QZ.answered = k; q.ok = k === q.c; if(q.ok) QZ.right++;
+  quizRender();
+}
+function quizNext(){ if(!QZ) return; QZ.i++; QZ.answered = null; quizRender(); }
+function quizEnd(){
+  const o = QZ; QZ = null; document.getElementById('modalHost').innerHTML = '';
+  if(o && o.done) o.done(o.right >= o.pass, o.right);
+}
+
+function fsTheorie(){
+  if(!S.fs || S.fs.stage !== 'theorie') return;
+  const x = FS_I[S.fs.id], keep = S.fs; S.fsRetry = S.fsRetry || {};
+  const hadRetry = !!S.fsRetry[x.id];
+  // Wer die Seite während der Prüfung neu lädt, hat sie nicht bestanden
+  S.fsRetry[x.id] = 1; S.fs = null; save();
+  quizStart({title:'Theorieprüfung ' + x.name, qs:fsFragen(x.id), pass:4,
+    okText:'Theorie bestanden. Jetzt wartet die praktische Prüfung in den Meldungen.',
+    failText:'Mindestens 4 richtige Antworten sind nötig. Die Wiederholung kostet die Hälfte.',
+    done:(ok) => {
+      if(ok){ S.fs = Object.assign(keep, {stage:'praxis', exam:true}); if(!hadRetry) delete S.fsRetry[x.id]; S.pending.push('fsx_' + x.id); G.addPoints(2); }
+      save(); render();
+    }});
+}
+function dgStart(){
+  const ga = !S.gaDone;
+  if(!ga){ S.dgNext = now() + 3*864e5 / S.speed; S.dgAnnounced = false; save(); }
+  quizStart({title:'Dienstgradtest', qs:dgFragen(dgPool()), pass:4,
+    okText: ga ? 'Brockmann nickt. „Wenigstens wissen Sie, vor wem Sie stillstehen müssen.“' : 'Brockmann ist zufrieden. Es gibt Punkte und etwas Geld für die Kaffeekasse.',
+    failText: ga ? 'Brockmann seufzt. „Noch mal. Und diesmal mit Hingucken.“ Du kannst es gleich wieder versuchen.' : 'Brockmann notiert sich das. In ein paar Tagen fragt er wieder.',
+    done:(ok, n) => {
+      if(ga){ if(ok){ S.dgOk = true; G.addPoints(3); } }
+      else {
+        if(ok){ const m = Math.round(G.rank().sold * 1.5); S.money += m; G.addPoints(4 + (n === 5 ? 2 : 0)); S.rel.spiess = Math.min(100, (S.rel.spiess||0) + 2); toast('+' + eur(m) + ' und Beurteilungspunkte'); }
+        else { S.rel.spiess = Math.max(-100, (S.rel.spiess||0) - 1); }
+      }
+      save(); render();
+    }});
+}
+function pruefCard(){
+  let h = '';
+  if(S.fs && S.fs.stage === 'theorie')
+    h += '<div class="row"><div class="info"><div class="title">Theorieprüfung ' + esc(FS_I[S.fs.id].name) + '</div><div class="meta">5 Fragen, mindestens 4 richtig</div></div><button class="btn" data-act="fsquiz">Ablegen</button></div>';
+  if(dgDue())
+    h += '<div class="row"><div class="info"><div class="title">Dienstgradtest bei Brockmann</div><div class="meta">5 Fragen, Belohnung bei mindestens 4 richtigen</div></div><button class="btn" data-act="dgtest">Antreten</button></div>';
+  return h ? '<h2>Prüfungen</h2><div class="panel">' + h + '</div>' : '';
+}
 
 const EV = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
 const LG_EV = {ual:['lg_ual1','lg_ual2','lg_ual3'], fwl:['lg_fwl1','lg_fwl2','lg_fwl3'], ofl:['lg_ofl1','lg_ofl2','lg_ofl3'], stu:['lg_stu1','lg_stu2','lg_stu3']};
@@ -3394,6 +3584,7 @@ const G = {
     {label:'Ausbildungsmarsch 2× ('+Math.min(2,S.dc.ga_marsch||0)+'/2)', ok:(S.dc.ga_marsch||0) >= 2},
     {label:'Fitness Stufe 1', ok:S.stats.fitness >= 1},
     {label:'Schießen Stufe 1', ok:S.stats.schiessen >= 1},
+    {label:'Dienstgradtest bestanden (5 Fragen)', ok:!!S.dgOk},
   ]; },
   dzReqs(k){
     const r = G.rank(), out = [];
@@ -3404,8 +3595,12 @@ const G = {
     return out;
   },
   maxStamina(){ return 100 + pflegeBonus() + 5*S.stats.fitness + 10*S.stube.kaffee + (vb()==='san' ? 20 : 0) + (hasGear('rucksack') ? 15 : 0) + (albumSet('s') ? 10 : 0) + 2*kStufe('truppenkueche') + 3*kpStufe('kantine'); },
-  regenMs(){ return 120000 / lageF('regen') / S.speed / (rel('dennis')>=30 ? 1.15 : 1) / (1 + .05*S.stube.bett) / (hasGear('wagen') ? 1.2 : 1) / (1 + .02*kStufe('sanbereich')); }, // 1 Ausdauer alle 2 Minuten
+  regenMs(){ return 180000 / lageF('regen') / S.speed / (rel('dennis')>=30 ? 1.15 : 1) / (1 + .05*S.stube.bett) / (hasGear('wagen') ? 1.2 : 1) / (1 + .02*kStufe('sanbereich')); }, // 1 Ausdauer alle 3 Minuten, im Dienst keine Erholung
   normStamina(){
+    if(S.dienst && S.dienst.start){ // Während des Dienstes erholt man sich nicht
+      if(S.staminaTs >= S.dienst.start && now() <= S.dienst.end){ S.staminaTs = now(); return; }
+      if(now() > S.dienst.end && S.staminaTs >= S.dienst.start && S.staminaTs < S.dienst.end) S.staminaTs = S.dienst.end;
+    }
     const max = G.maxStamina(), rg = G.regenMs();
     if(S.stamina >= max){ S.stamina = Math.min(S.stamina, max); S.staminaTs = now(); return; }
     const gained = Math.floor((now() - S.staminaTs)/rg);
@@ -3462,7 +3657,7 @@ const G = {
     if(G.dienstLock(d)) return 'Dieser Dienst ist noch gesperrt.';
     G.normStamina();
     if(S.stamina < G.dienstSt(d)) return 'Zu wenig Ausdauer.';
-    S.stamina -= G.dienstSt(d); if(S.staminaTs > now()) S.staminaTs = now();
+    S.stamina -= G.dienstSt(d); S.staminaTs = now();
     S.dienst = {id, start:now(), end:now()+G.dienstMin(d)*60000/S.speed, pay:G.dienstPay(d), bp:Math.round(d.bp*wxF(d,'bp'))};
     return null;
   },
@@ -3583,6 +3778,7 @@ const G = {
       { const ev = maybeEvent('ausb', .3); if(ev) events.push('Neue Meldung von ' + NPCS[ev.who].short); }
     }
     if(fsTick(events)) changed = true;
+    if(dgTick(events)) changed = true;
     if(ordenCheck(events)) changed = true;
     if(changed) save();
     if(events.length) notifyEvents(events);
@@ -3714,12 +3910,13 @@ function renderStube(){
         + '<div class="info"><div class="title">Meldung von '+esc(n.short)+'</div><div class="meta">'+esc(n.role)+'</div></div></div>'
         + '<button class="btn" data-act="event" data-id="'+id+'">Ansehen</button></div>'; }).join('') + '</div>';
   }
+  h += pruefCard();
   h += renderWA();
   h += storyCard();
   if(!S.gaDone){
     const req = G.gaReqs(), ok = req.every(x=>x.ok);
     h += '<h2>Grundausbildung</h2><div class="panel pad"><p class="small">Bevor es richtig losgeht: zwei Wochen Grundausbildung. Am Ende steht das feierliche Gelöbnis.</p>'
-      + reqList(req) + '<button class="btn wide" data-act="geloebnis" '+(ok?'':'disabled')+'>Gelöbnis ablegen</button></div>';
+      + reqList(req) + (S.dgOk ? '' : '<button class="btn ghost wide" data-act="dgtest" style="margin-bottom:8px">Dienstgradtest ablegen</button>') + '<button class="btn wide" data-act="geloebnis" '+(ok?'':'disabled')+'>Gelöbnis ablegen</button></div>';
   }
   if(G.dzOver()){
     h += '<h2>Dienstzeitende</h2><div class="panel pad"><p><b>Deine Dienstzeit ('+esc(DZ[S.verpfl].name)+') ist zu Ende.</b> Bis du dich entscheidest, ruht der Dienst. In der Laufbahn kannst du dich weiterverpflichten oder ausscheiden.</p>'
@@ -3770,7 +3967,7 @@ function renderStube(){
 
 function renderDienst(){
   let h = '<h2>Dienstplan</h2>';
-  h += '<p class="small muted">Dienste kosten Ausdauer und bringen Geld und Beurteilungspunkte. Ausdauer lädt sich alle '+fmtMin(2/S.speed)+' um einen Punkt auf.</p>';
+  h += '<p class="small muted">Dienste kosten Ausdauer und bringen Geld und Beurteilungspunkte. Ausdauer lädt sich alle '+fmtMin(3/S.speed)+' um einen Punkt auf, aber nicht während eines Dienstes.</p>';
   h += '<div class="cards">' + DIENSTE.map(d => {
     const lock = G.dienstLock(d);
     if(!!d.einsatz !== !!S.einsatz) return '';
@@ -3952,11 +4149,16 @@ const ACT = {
     S.money -= g.cost; S.gear[id] = now(); if(g.rel) applyFx({rel:g.rel});
     save(); toast(g.name + ' gekauft'); render();
   },
-  close(){ document.getElementById('modalHost').innerHTML=''; curEvent = null; },
+  close(){ if(QZ) return; document.getElementById('modalHost').innerHTML=''; curEvent = null; },
   event(id){ showEvent(id); },
   storybook(){ STORY_OPEN = !STORY_OPEN; render(); },
   fs(id){ const e = fsStart(id); if(e) toast(e); else { save(); toast('Fahrschule ' + FS_I[id].name + ' gestartet'); } render(); },
   wa(i){ waClaim(+i); },
+  fsquiz(){ fsTheorie(); },
+  dgtest(){ dgStart(); },
+  qz(k){ quizAnswer(+k); },
+  qznext(){ quizNext(); },
+  qzend(){ quizEnd(); },
   choose(i){ chooseEvent(Number(i)); },
   geloebnis(){
     if(S.gaDone || !G.gaReqs().every(x=>x.ok)) return;
