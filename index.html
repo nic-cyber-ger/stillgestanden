@@ -337,6 +337,19 @@ body.landing{padding-bottom:0}
 .admrow{display:flex;gap:8px;margin-top:6px}.admrow select,.admrow input{flex:1;min-width:0;min-height:44px;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit}
 .adm textarea{width:100%;box-sizing:border-box;margin-top:6px;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit}
 .ansage{border-left:4px solid var(--signal);margin-bottom:12px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.chat{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.chatlist{height:max(220px,calc(100vh - 480px));height:max(220px,calc(100dvh - 480px));overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;overscroll-behavior:contain}
+.cm{max-width:86%;align-self:flex-start;background:var(--surface2);border:1px solid var(--line);border-radius:10px 10px 10px 3px;padding:7px 10px}
+.cm.mine{align-self:flex-end;background:rgba(227,178,60,.16);border-color:rgba(227,178,60,.45);border-radius:10px 10px 3px 10px}
+.cmh{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;font-size:12.5px}.cmh span{color:var(--muted)}.cmh time{color:var(--muted);margin-left:auto;font-size:11.5px}
+.cmt{white-space:pre-wrap;word-break:break-word;font-size:15px;margin-top:2px}
+.cma{display:flex;gap:12px;margin-top:4px}.cma .linkbtn{font-size:12px;padding:2px 0;color:var(--stamp)}
+.chatform{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line);background:var(--surface2)}
+.chatform textarea{flex:1;min-height:44px;max-height:110px;resize:none;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:16px}
+.chatform .btn{min-width:48px;min-height:44px;padding:0 12px;align-self:flex-end}
+.chatfoot{display:flex;justify-content:space-between;gap:10px;padding:0 10px 8px;background:var(--surface2);font-size:11.5px}
+
 .recht h3{margin:16px 0 6px;font-size:16px}.recht p{margin:0 0 10px;font-size:14px;line-height:1.5}
 .pwrow{position:relative}
 .pwrow input{padding-right:52px}
@@ -1590,6 +1603,7 @@ const SUBS = {
   ],
   truppe: [
     {id:'kompanie', label:'Kompanie', src:'truppe', rest:true, match:['Kompanie','Mitglieder','Einladen']},
+    {id:'chat', get label(){ const n = typeof chatUnread === 'function' ? chatUnread() : 0; return 'Chat' + (n ? ' (' + n + ')' : ''); }, src:'chat', match:['Funkkreis']},
     {id:'kasse', label:'Kasse', src:'truppe', match:['Kompaniekasse','Kassenbuch']},
     {id:'ausbau', label:'Ausbau', src:'truppe', match:['Kompanie-Ausbau','Kompanielager']},
     {id:'kaserne', label:'Kaserne', src:'truppe', match:['Standortkarte','Kaserne']},
@@ -1606,7 +1620,7 @@ function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LAST
 function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === a[0]), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
   const f = {stube:renderStube, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
-    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null}[src];
+    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null}[src];
   return f ? f() : '';
 }
 function splitSecs(html){
@@ -4095,7 +4109,8 @@ function renderNav(){
   nav.style.gridTemplateColumns = 'repeat('+TABS.length+',1fr)';
   nav.innerHTML = TABS.map(([id,label]) =>
     '<button data-act="main" data-id="'+id+'" '+(tab===id?'aria-current="page"':'')+'>'+(id==='stube' ? ICONS.raum : ICONS[id])+label
-    + (id==='stube' && (S.pending.length || S.pakete || waReady()) ? '<span class="dot" aria-label="neue Meldung"></span>' : '')+'</button>').join('');
+    + (id==='stube' && (S.pending.length || S.pakete || waReady()) ? '<span class="dot" aria-label="neue Meldung"></span>' : '')
+    + (id==='truppe' && typeof chatUnread === 'function' && chatUnread() ? '<span class="dot" aria-label="neue Nachrichten im Chat"></span>' : '')+'</button>').join('');
 }
 
 function renderRes(){
@@ -4321,7 +4336,7 @@ function render(){
     main.innerHTML = renderPage();
   }
   if(S && tutOn() && main.insertAdjacentHTML) main.insertAdjacentHTML('afterbegin', tutBox());
-  renderNav(); renderRes(); live(); subnavHint(); if(typeof slAttach === 'function' && S) slAttach();
+  renderNav(); renderRes(); live(); subnavHint(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach();
   if(typeof afterRender === "function") afterRender();
 }
 
@@ -4959,6 +4974,7 @@ async function boot(){
   if(RECOVERY && USER) setTimeout(() => pwModal(true), 400);
   if(USER) setTimeout(loadLotto, 1500);
   if(USER) setTimeout(loadAdmin, 1200);
+  if(USER) setTimeout(loadChat, 1800);
   sb.auth.onAuthStateChange((ev, session) => {
     if(ev === 'PASSWORD_RECOVERY'){ USER = session ? session.user : USER; setTimeout(() => pwModal(true), 400); return; }
     if(ev === 'SIGNED_OUT'){ USER = null; S = null; ONLINE.profile = null; ONLINE.admin = false; render(); }
@@ -4987,7 +5003,7 @@ async function authSubmit(mode){
   USER = res.data.session.user;
   showSplash('Melde mich zum Dienst …'); BOOTED = false; render();
   try{ await afterLogin(); }catch(e){ toast('Laden fehlgeschlagen.'); }
-  BOOTED = true; tab = 'stube'; render(); hideSplash(); setTimeout(loadLotto, 1500); setTimeout(loadAdmin, 1200);
+  BOOTED = true; tab = 'stube'; render(); hideSplash(); setTimeout(loadLotto, 1500); setTimeout(loadAdmin, 1200); setTimeout(loadChat, 1800);
 }
 
 /* =========================================================
@@ -5012,7 +5028,7 @@ function rechtHtml(){
     + '<p>„Stillgestanden!“ ist ein privates, nicht kommerzielles Hobbyprojekt und ein satirisches Spiel. Es ist kein Angebot der Bundeswehr und steht in keiner Verbindung zu ihr. Alle Figuren sind erfunden.</p>'
     + '<h3>Datenschutzerklärung</h3>'
     + '<p><b>Verantwortlich</b> für die Datenverarbeitung ist der oben genannte Betreiber.</p>'
-    + '<p><b>Welche Daten wir speichern.</b> Für dein Konto: Benutzername und Passwort (nur verschlüsselt als Hash). Eine E-Mail-Adresse ist nicht nötig; nur Konten, die früher mit E-Mail angelegt wurden, haben eine hinterlegt. Für das Spiel: Spielname, Spielstand, Kompanie, gewählter Standort (Ort und Bundesland) sowie Spielstatistiken für Ranglisten. Andere Spieler sehen nur deinen Spielnamen, Dienstgrad, Punkte und deine Kompanie, nie deine E-Mail-Adresse.</p>'
+    + '<p><b>Welche Daten wir speichern.</b> Für dein Konto: Benutzername und Passwort (nur verschlüsselt als Hash). Eine E-Mail-Adresse ist nicht nötig; nur Konten, die früher mit E-Mail angelegt wurden, haben eine hinterlegt. Für das Spiel: Spielname, Spielstand, Kompanie, gewählter Standort (Ort und Bundesland) sowie Spielstatistiken für Ranglisten. Andere Spieler sehen nur deinen Spielnamen, Dienstgrad, Punkte und deine Kompanie, nie deine E-Mail-Adresse. Nachrichten im Chat „Funkkreis“ sind für alle angemeldeten Spieler sichtbar und werden nach 30 Tagen automatisch gelöscht.</p>'
     + '<p><b>Zweck und Rechtsgrundlage.</b> Die Daten werden nur verarbeitet, um dir das Spiel bereitzustellen (Art. 6 Abs. 1 lit. b DSGVO). Es gibt keine Werbung, kein Tracking und keine Weitergabe zu Werbezwecken.</p>'
     + '<p><b>Dienstleister.</b> Die Seite liegt bei GitHub Pages (GitHub Inc., USA). Beim Aufruf verarbeitet GitHub technisch notwendige Daten wie deine IP-Adresse. Konto und Spielstand liegen bei Supabase (Supabase Inc.), mit dem ein Auftragsverarbeitungsvertrag besteht. Für die Standortkarte werden Kartenbilder von OpenStreetMap geladen; dabei wird deine IP-Adresse an die OpenStreetMap Foundation übertragen. Schriften und Programmbibliotheken werden von dieser Seite selbst geladen, nicht von Google oder anderen Anbietern.</p>'
     + '<p><b>Im Browser</b> speichert das Spiel eine Kopie deines Spielstands und deine Anmeldung (Local Storage). Cookies zu Werbe- oder Analysezwecken gibt es nicht.</p>'
@@ -5242,6 +5258,109 @@ const ADM = {
 };
 
 for(const k in ADM) ACT[k] = (...a) => ONLINE.admin ? ADM[k](...a) : undefined;
+/* =========================================================
+   FUNKKREIS – globaler Chat (Server: stillgestanden_chat.sql)
+   Neue Nachrichten kommen in Echtzeit, zur Sicherheit wird zusätzlich
+   alle 20 Sekunden nachgeladen. Das Eingabefeld bleibt beim Neuzeichnen erhalten.
+   ========================================================= */
+ONLINE.chat = []; ONLINE.chatOk = false; ONLINE.chatErr = null;
+let CHATWRAP = null, CHAT_SUB = null, chatBusy = false;
+function chatSeen(){ try{ return Number(localStorage.getItem('sg_chat_seen') || 0); }catch(e){ return 0; } }
+function chatMarkSeen(){ const t = ONLINE.chat.length ? new Date(ONLINE.chat[ONLINE.chat.length-1].created_at).getTime() : 0; try{ localStorage.setItem('sg_chat_seen', String(Math.max(t, chatSeen()))); }catch(e){} }
+function chatUnread(){ const s = chatSeen(); return ONLINE.chat.filter(m => new Date(m.created_at).getTime() > s && (!USER || m.user_id !== USER.id)).length; }
+function chatOnPage(){ return tab === 'truppe' && (SUB.truppe || LASTSUB.truppe) === 'chat'; }
+async function loadChat(){
+  if(!sb || !USER || chatBusy) return;
+  chatBusy = true;
+  const { data, error } = await sb.from('chat_nachrichten').select('id,user_id,name,rang,tsk,text,created_at').order('created_at', {ascending:false}).limit(60);
+  chatBusy = false;
+  if(error){ ONLINE.chatErr = error.message; return; }
+  const alt = ONLINE.chat.length ? ONLINE.chat[ONLINE.chat.length-1].id : null;
+  ONLINE.chat = (data || []).reverse(); ONLINE.chatOk = true; ONLINE.chatErr = null;
+  const neu = ONLINE.chat.length ? ONLINE.chat[ONLINE.chat.length-1].id : null;
+  if(neu !== alt){ chatList(); if(!chatOnPage()) renderNav(); }
+  chatSubscribe();
+}
+function chatSubscribe(){
+  if(CHAT_SUB || !sb || !sb.channel) return;
+  try{
+    CHAT_SUB = sb.channel('funkkreis')
+      .on('postgres_changes', {event:'INSERT', schema:'public', table:'chat_nachrichten'}, p => {
+        const m = p.new; if(!m || ONLINE.chat.some(x => x.id === m.id)) return;
+        ONLINE.chat.push(m); ONLINE.chat = ONLINE.chat.slice(-80); chatList(); if(!chatOnPage()) renderNav();
+      })
+      .on('postgres_changes', {event:'DELETE', schema:'public', table:'chat_nachrichten'}, p => {
+        const id = p.old && p.old.id; ONLINE.chat = ONLINE.chat.filter(x => x.id !== id); chatList();
+      })
+      .subscribe();
+  }catch(e){ CHAT_SUB = null; }
+}
+setInterval(() => { if(USER && S && ONLINE.profile) loadChat(); }, 20000);
+function chatZeit(ts){
+  const d = new Date(ts), h = new Date();
+  const hm = d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+  return d.toDateString() === h.toDateString() ? hm : d.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'}) + ' ' + hm;
+}
+function chatList(){
+  const box = CHATWRAP && CHATWRAP.querySelector('#chatList'); if(!box) return;
+  const unten = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+  if(!ONLINE.chatOk) box.innerHTML = '<p class="small muted" style="padding:12px">' + (ONLINE.chatErr ? 'Funkkreis nicht erreichbar: ' + esc(ONLINE.chatErr) : 'Funkverbindung wird aufgebaut …') + '</p>';
+  else if(!ONLINE.chat.length) box.innerHTML = '<p class="small muted" style="padding:12px">Noch Funkstille. Mach den Anfang!</p>';
+  else box.innerHTML = ONLINE.chat.map(m => {
+    const mine = USER && m.user_id === USER.id, rn = R[m.rang] ? rankNameFor(m.tsk || 'heer', m.rang) : '';
+    return '<div class="cm' + (mine ? ' mine' : '') + '"><div class="cmh"><b>' + esc(m.name) + '</b>' + (rn ? '<span>' + esc(rn) + '</span>' : '') + '<time>' + chatZeit(m.created_at) + '</time></div>'
+      + '<div class="cmt">' + esc(m.text) + '</div>'
+      + (ONLINE.admin && !mine ? '<div class="cma"><button class="linkbtn" data-act="chat_del" data-id="' + m.id + '">Löschen</button><button class="linkbtn" data-act="chat_mute" data-id="' + m.id + '">24 Std. sperren</button></div>' : (ONLINE.admin ? '<div class="cma"><button class="linkbtn" data-act="chat_del" data-id="' + m.id + '">Löschen</button></div>' : ''))
+      + '</div>';
+  }).join('');
+  if(unten || !box.dataset.init){ box.scrollTop = box.scrollHeight; box.dataset.init = '1'; }
+  if(chatOnPage()) chatMarkSeen();
+}
+function chatBuild(){
+  const w = document.createElement('div'); w.className = 'chat';
+  w.innerHTML = '<div class="chatlist" id="chatList" aria-live="polite"></div>'
+    + '<form class="chatform" id="chatForm"><label for="chatIn" class="sr">Nachricht</label><textarea id="chatIn" rows="1" maxlength="300" placeholder="Nachricht an alle …" enterkeyhint="send"></textarea>'
+    + '<button class="btn gold" type="submit" id="chatSend" aria-label="Senden"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 12l16-8-6 16-3-7z"/></svg></button></form>'
+    + '<div class="chatfoot small muted"><span id="chatCount">0/300</span><span>Keine echten Namen, Einheiten oder Standorte. Respektvoll bleiben.</span></div>';
+  const inp = w.querySelector('#chatIn'), cnt = w.querySelector('#chatCount');
+  inp.addEventListener('input', () => { cnt.textContent = inp.value.length + '/300'; inp.style.height = 'auto'; inp.style.height = Math.min(110, inp.scrollHeight) + 'px'; });
+  inp.addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); chatSend(); } });
+  w.querySelector('#chatForm').addEventListener('submit', e => { e.preventDefault(); chatSend(); });
+  CHATWRAP = w;
+}
+async function chatSend(){
+  const inp = CHATWRAP && CHATWRAP.querySelector('#chatIn'); if(!inp) return;
+  const t = inp.value.trim(); if(!t) return;
+  const btn = CHATWRAP.querySelector('#chatSend'); btn.disabled = true;
+  const { error } = await sb.rpc('chat_senden', {p_text:t, p_tsk:S.tsk || 'heer'});
+  btn.disabled = false;
+  if(error){ toast(error.message || 'Senden fehlgeschlagen.'); return; }
+  inp.value = ''; inp.style.height = 'auto'; CHATWRAP.querySelector('#chatCount').textContent = '0/300';
+  await loadChat(); const box = CHATWRAP.querySelector('#chatList'); if(box) box.scrollTop = box.scrollHeight;
+  inp.focus();
+}
+function chatAttach(){
+  const slot = document.getElementById('chatslot'); if(!slot) return;
+  if(!CHATWRAP) chatBuild();
+  if(CHATWRAP.parentNode !== slot) slot.appendChild(CHATWRAP);
+  chatList(); chatMarkSeen(); renderNav();
+  const tb = document.querySelector('.subnav [data-id="chat"]'); if(tb) tb.textContent = 'Chat';
+  if(!ONLINE.chatOk) loadChat();
+}
+function renderChat(){
+  return '<h2>Funkkreis</h2><p class="small muted" style="margin-top:-4px">Der Chat für alle Spieler. Nachrichten bleiben 30 Tage sichtbar.</p><div id="chatslot"></div>';
+}
+const CHAT_ACT = {
+  async chat_del(id){ if(!ONLINE.admin) return; const { error } = await sb.rpc('admin_chat_loeschen', {p_id:Number(id)}); if(error){ toast('Fehler: ' + error.message); return; } ONLINE.chat = ONLINE.chat.filter(x => x.id !== Number(id)); chatList(); },
+  chat_mute(id, ok){
+    if(!ONLINE.admin) return;
+    if(!ok) return ask('Diesen Spieler 24 Stunden im Funkkreis sperren? Seine Nachrichten der letzten 24 Stunden werden gelöscht.', () => ACT.chat_mute(id, true), 'Sperren');
+    document.getElementById('modalHost').innerHTML = '';
+    sb.rpc('admin_chat_sperren', {p_id:Number(id), p_stunden:24}).then(({ error }) => { if(error){ toast('Fehler: ' + error.message); return; } toast('Gesperrt für 24 Stunden.'); loadChat(); });
+  },
+};
+
+for(const k in CHAT_ACT) ACT[k] = CHAT_ACT[k];
 let LOGIN_MODE = 'login';
 const LP_ICON = {
   karriere:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/></svg>',
