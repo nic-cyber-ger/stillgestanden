@@ -262,6 +262,15 @@ p{margin:0 0 10px}
 .subnav button:hover{background:rgba(255,255,255,.08)}
 .subnav button[aria-pressed="true"]{background:var(--signal);border-color:var(--signal);color:#1E2416;font-weight:700}
 .strip{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:6px;display:grid;gap:8px}
+.rekrut{border-left:4px solid var(--ok);margin-bottom:10px}
+.appell{border-left:4px solid #E8C33A;margin-bottom:10px}
+.apdots{display:flex;gap:4px}.apdots i{width:10px;height:10px;border-radius:50%;background:var(--surface2);border:1px solid var(--line)}.apdots i.on{background:#E8C33A;border-color:#B8952A}
+.apdots.big{justify-content:center;gap:6px;margin-top:12px}.apdots.big i{width:28px;height:28px;display:grid;place-items:center;font-style:normal;font-size:13px;font-weight:700;color:var(--muted)}.apdots.big i.on{color:#141B0E}
+ul.req .rw{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;padding-left:8px}ul.req li.ok .rw{color:var(--ok)}
+.clsheet{text-align:left;max-height:86vh;overflow:auto}.clsheet .stamp{display:block;width:max-content;margin:0 auto}
+.cl{border-left:3px solid var(--line);padding:2px 0 2px 12px;margin:0 0 14px}.cl.neu{border-left-color:#E8C33A}
+.clh{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.cl ul{margin:6px 0 0;padding-left:18px}.cl li{margin:3px 0;font-size:15px;line-height:1.35}
+.linkbtn.clbtn{display:block}
 .strip.idle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
 .strip .sh{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600}
 .strip .prog{margin-top:4px;height:6px}
@@ -507,7 +516,7 @@ const RANKS = [
 const R = Object.fromEntries(RANKS.map(r=>[r.id,r]));
 
 // Zeitkurve: 1 echter Tag = 1 Dienstwoche. Ziel: General nach rund einem Jahr täglichem Spielen.
-const PACE = {gefr:24, ogefr:24, hgefr:48, sgefr:96, osgefr:168, korp:336, skorp:720,
+const PACE = {gefr:1, ogefr:12, hgefr:36, sgefr:96, osgefr:168, korp:336, skorp:720,
   uffz:168, stuffz:168, fw:336, ofw:336, hfw:480, sfw:720, osfw:1080,
   fj:240, fhr:240, ofhr:240, lt:480, olt:336, hptm:336, maj:360, oberstlt:360, oberst:360, bg:360, gm:336, gl:240, gen:240};
 for(const [k,v] of Object.entries(PACE)) R[k].minH = v;
@@ -679,7 +688,7 @@ DIENSTE.push(
   {id:'e_wache',  name:'Lagerwache',        min:60,  st:15, pay:390, bp:7,  einsatz:true, desc:'Der Zaun ist hier höher. Spannender ist er trotzdem nicht.'},
   {id:'e_konvoi', name:'Versorgungskonvoi', min:180, st:35, pay:1350, bp:18, einsatz:true, desc:'Wasser, Diesel, Post. Wichtig in dieser Reihenfolge, außer für die Post.'},
   {id:'e_betreu', name:'Betreuungsdienst',  min:45,  st:5,  pay:180, bp:4,  einsatz:true, desc:'Kicker reparieren, Grillabend planen, den WLAN-Router neu starten.'},
-  {id:'ga_marsch', name:'Ausbildungsmarsch', min:30, st:20, pay:40, bp:3, t:0, ga:true, desc:'Zwölf Kilometer mit Gepäck. Die Blasen sind inklusive.'},
+  {id:'ga_marsch', name:'Ausbildungsmarsch', min:20, st:20, pay:40, bp:3, t:0, ga:true, desc:'Zwölf Kilometer mit Gepäck. Die Blasen sind inklusive.'},
   {id:'v_inf',  name:'Spähtrupp',            min:75, st:25, pay:200, bp:9, t:1, verw:'inf',  desc:'Leise durchs Gelände, Gegner finden, nicht auffallen.'},
   {id:'v_kfz',  name:'Kolonnenfahrt',        min:90, st:20, pay:230, bp:8, t:1, verw:'kfz',  desc:'Zwölf Fahrzeuge, eine Route, und das Navi will in den Wald.'},
   {id:'v_inst', name:'Fahrzeuginstandsetzung', min:90, st:25, pay:240, bp:9, t:1, verw:'inst', desc:'Ein Lkw mit einem Geräusch, das niemand beschreiben kann.'},
@@ -1442,7 +1451,7 @@ const TUT = [
   {tab:'stube', t:'Willkommen, Rekrut!', x:'Ich bin Hauptfeldwebel Brockmann, Ihr Spieß. Oben rechts sehen Sie Ihr Geld und Ihre Ausdauer. Hier in der Übersicht stehen Ihr Ausweis, die Grundausbildung, Meldungen und Ihre Beurteilung. Die Beurteilung entscheidet über Beförderungen. Merken Sie sich das.'},
   {tab:'dienst', t:'Erster Dienst', x:'Dienste bringen Geld und Beurteilungspunkte und kosten Ausdauer. Treten Sie zum Formaldienst an. Jetzt.', hint:'Tippe beim Formaldienst auf „Antreten“.', done:() => !!S.dienst || S.dienstCount > 0},
   {tab:'ausb', t:'Ausbildung nebenher', x:'Während der Dienst läuft, bilden Sie sich weiter. Fitness und Schießen brauchen Sie für die Grundausbildung. Unter jeder Ausbildung hängen Leistungsabzeichen, die Sie sich verdienen können.', hint:'Starte eine Ausbildung, am besten Fitness oder Schießen.', done:() => !!S.ausb || Object.values(S.stats).some(v => v > 0)},
-  {tab:'stube', t:'Grundausbildung', x:'In der Übersicht steht Ihre Checkliste für die Grundausbildung: zwei Tage, ein paar Dienste, die ersten Ausbildungsstufen. Danach legen Sie das Gelöbnis ab und können zum Gefreiten befördert werden.'},
+  {tab:'stube', t:'Grundausbildung', x:'In der Übersicht steht Ihre Checkliste für die Grundausbildung: etwa eine Stunde, sechs Schritte, und jeder bringt sofort eine Belohnung. Danach legen Sie das Gelöbnis ab und können zum Gefreiten befördert werden.'},
   {tab:'stube', t:'Feldpost', x:'Zu Hause denkt man an Sie. Da liegt ein Paket. Öffnen Sie es, der Inhalt wandert in Ihr Sammelalbum.', hint:'Tippe in der Übersicht auf „Paket öffnen“.', done:() => !S.pakete},
   {tab:'raum', t:'Ihre Stube', x:'Hier bauen Sie Ihre Stube aus, schließen die Anwartschafts- und später die Pflegepflichtversicherung ab und kaufen Ausrüstung. Unten stehen Ihre Kameraden. Gutes Ansehen bei denen bringt Vorteile, schlechtes bringt Zahnpasta in die Stiefel.'},
   {tab:'laufbahn', t:'Laufbahn', x:'Ganz oben alle Dienstgrade, darunter, was Sie für die nächste Beförderung brauchen. Hier wählen Sie später Ihre Verwendung, verpflichten sich und melden sich für Lehrgänge und Auslandseinsätze.'},
@@ -1655,6 +1664,7 @@ function runStrip(){
   if(S.lg) it.push(['lg', L[S.lg.id].name + (S.lg.exam ? ', Prüfung wartet' : '')]);
   if(S.fa) it.push(['fa', S.fa.type === 'pfand' ? 'Leergut sammeln' : 'Schrauben']);
   if(S.fs) it.push(['fs', 'Fahrschule: ' + FS_I[S.fs.id].name + (S.fs.stage === 'theorie' ? ', Theorie wartet' : S.fs.exam ? ', Praxis wartet' : '')]);
+  if(!it.length){ const l = stripLeer(); if(l) return l; }
   if(!it.length) return '<div class="strip idle"><span>Gerade nichts zu tun. Das fällt auf.</span><button class="btn mini" data-act="tab" data-id="dienst">Dienst antreten</button></div>';
   return '<div class="strip" aria-label="Läuft gerade">' + it.map(([k, n]) => '<div><div class="sh"><span>' + esc(n) + '</span><span class="num" data-left="' + k + '"></span></div><div class="prog"><i data-prog="' + k + '"></i></div></div>').join('') + '</div>';
 }
@@ -3596,6 +3606,179 @@ function pruefCard(){
   return h ? '<h2>Prüfungen</h2><div class="panel">' + h + '</div>' : '';
 }
 
+/* =========================================================
+   EINSTIEG: Grundausbildung als Checkliste, Rekrutenbonus, Morgenappell
+   ========================================================= */
+// Grundausbildung: etwa eine Stunde, jeder Schritt bringt sofort etwas
+const GA_STEPS = [
+  {id:'formal1', label:'Erster Formaldienst',        ok:() => (S.dc.formal||0) >= 1,    rew:{money:1.5}},
+  {id:'fit1',    label:'Fitness-Ausbildung Stufe 1', ok:() => S.stats.fitness >= 1,     rew:{money:1}},
+  {id:'marsch',  label:'Ausbildungsmarsch',          ok:() => (S.dc.ga_marsch||0) >= 1, rew:{paket:1}},
+  {id:'schiess1',label:'Schießausbildung Stufe 1',   ok:() => S.stats.schiessen >= 1,   rew:{money:1}},
+  {id:'formal2', label:'Zweiter Formaldienst',       ok:() => (S.dc.formal||0) >= 2,    rew:{bp:3}},
+  {id:'dg',      label:'Dienstgradtest bestanden',   ok:() => !!S.dgOk,                 rew:{bp:5}},
+];
+function rewText(r){
+  const sold = G.rank().sold, out = [];
+  if(r.money) out.push(eur(Math.round(r.money * sold)));
+  if(r.paket) out.push(r.paket === 1 ? 'Feldpost-Paket' : r.paket + ' Feldpost-Pakete');
+  if(r.bp) out.push(r.bp + ' Punkte');
+  if(r.st) out.push('Ausdauer voll');
+  return out.join(', ');
+}
+function rewGive(r){
+  const sold = G.rank().sold;
+  if(r.money) S.money += Math.round(r.money * sold);
+  if(r.paket) S.pakete = Math.min(9, (S.pakete||0) + r.paket);
+  if(r.bp) G.addPoints(r.bp);
+  if(r.st){ S.stamina = G.maxStamina(); S.staminaTs = now(); }
+}
+function gaCheck(events){
+  if(S.gaDone) return false;
+  S.gaRew = S.gaRew || {};
+  let neu = false;
+  for(const s of GA_STEPS){
+    if(S.gaRew[s.id] || !s.ok()) continue;
+    S.gaRew[s.id] = now(); rewGive(s.rew); neu = true;
+    events.push('Grundausbildung: ' + s.label + ' erledigt. Belohnung: ' + rewText(s.rew));
+  }
+  return neu;
+}
+
+// Rekrutenbonus in den ersten drei Tagen
+function rekrut(){ return !!(S && S.start && G.weeks() < 3); }
+function rekrutCard(){
+  if(!rekrut()) return '';
+  const rest = S.start + 3*864e5/S.speed - now();
+  return '<div class="panel pad rekrut"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><b>Rekrutenbonus aktiv</b><span class="small muted">noch ' + esc(fmtRest(rest).replace(/\.$/, '')) + '</span></div>'
+    + '<p class="small" style="margin:4px 0 0">In deinen ersten drei Tagen lädt die Ausdauer doppelt so schnell, und Dienste kosten 30 % weniger Ausdauer.</p></div>';
+}
+
+// Morgenappell: einmal am Tag antreten, Belohnung wächst mit der Serie
+const APPELL = [
+  {t:'Kaffee und belegte Brötchen', r:{money:2}},
+  {t:'Feldpost von zu Hause', r:{paket:1}},
+  {t:'Ausdauer voll und Sold-Vorschuss', r:{st:true, money:2}},
+  {t:'Lob vom Spieß', r:{bp:5, money:1}},
+  {t:'Feldpost und Taschengeld', r:{paket:1, money:1}},
+  {t:'Sonderzuschlag', r:{money:5}},
+  {t:'Wochenabschluss: zwei Pakete und ein dickes Lob', r:{paket:2, bp:10}},
+];
+const APPELL_SPRUCH = [
+  'Guten Morgen. Ich sag’s nur einmal: Schön, dass Sie da sind.',
+  'Pünktlich. Ich bin fast beeindruckt.',
+  'Augen geradeaus. Haare geschnitten? Gut. Weitermachen.',
+  'Wer jeden Tag antritt, kommt weit. Wer nicht, kommt zu mir ins Büro.',
+  'Die Kompanie steht. Sie auch. Das reicht für heute als Lob.',
+];
+function gestern(){ const d = new Date(); d.setDate(d.getDate() - 1); return dateStr(d); }
+function appellNext(){
+  const a = S.appell || {last:null, streak:0};
+  if(a.last === dateStr()) return null;                       // heute schon angetreten
+  return a.last === gestern() ? a.streak + 1 : 1;             // Serie oder Neuanfang
+}
+function appellPreview(){                                     // was morgen kommt
+  const a = S.appell || {streak:0};
+  const n = a.last === dateStr() ? a.streak + 1 : (appellNext() || 1);
+  return APPELL[(n - 1) % 7];
+}
+function appellCard(){
+  const n = appellNext(), a = S.appell || {streak:0};
+  const dots = k => '<div class="apdots">' + [1,2,3,4,5,6,7].map(i => '<i class="' + (i <= k ? 'on' : '') + '"></i>').join('') + '</div>';
+  if(n) return '<div class="panel pad appell"><div class="evhead">' + npcBadge('spiess', 36) + '<div><b>Morgenappell</b><div class="small muted">Tag ' + n + ' deiner Serie: ' + esc(APPELL[(n-1)%7].t) + '</div></div></div>'
+    + '<button class="btn gold wide" data-act="appell" style="margin-top:10px">Antreten</button></div>';
+  const m = appellPreview();
+  return '<div class="panel pad appell"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Morgenappell</b>' + dots(((a.streak - 1) % 7) + 1) + '</div>'
+    + '<p class="small" style="margin:6px 0 0">Heute angetreten, Serie: ' + a.streak + (a.streak === 1 ? ' Tag' : ' Tage') + '. <b>Morgen:</b> ' + esc(m.t) + ' (' + esc(rewText(m.r)) + ').</p></div>';
+}
+function appellAntreten(){
+  const n = appellNext(); if(!n) return;
+  const it = APPELL[(n - 1) % 7];
+  S.appell = {last:dateStr(), streak:n};
+  rewGive(it.r); save(); render();
+  const m = appellPreview();
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="apt"><div class="sheet ev">'
+    + '<div class="evhead">' + npcBadge('spiess') + '<div><div class="evname" id="apt">Morgenappell</div><div class="small muted">Tag ' + n + ' in Folge</div></div></div>'
+    + '<p class="evtext">„' + esc(pick(APPELL_SPRUCH)) + '“</p>'
+    + '<div class="apdots big">' + [1,2,3,4,5,6,7].map(i => '<i class="' + (i <= ((n - 1) % 7) + 1 ? 'on' : '') + '">' + i + '</i>').join('') + '</div>'
+    + '<p style="margin:10px 0 4px"><b>' + esc(it.t) + '</b></p><div class="chips">' + rewText(it.r).split(', ').map(x => '<span class="chip">' + esc(x) + '</span>').join('') + '</div>'
+    + '<p class="small muted" style="margin:12px 0 0">Morgen wieder antreten: ' + esc(m.t) + '. Wer einen Tag auslässt, fängt wieder bei Tag 1 an.</p>'
+    + '<button class="btn wide" data-act="close" style="margin-top:14px">Wegtreten</button></div></div>';
+}
+let appellShown = '';
+function appellAuto(){
+  if(!S || tutOn() || !appellNext() || appellShown === dateStr()) return;
+  const host = document.getElementById('modalHost'); if(!host || host.innerHTML.trim()) return;
+  appellShown = dateStr();
+  setTimeout(() => { const h = document.getElementById('modalHost'); if(h && !h.innerHTML.trim() && appellNext()) appellAntreten(); }, 600);
+}
+function stripLeer(){
+  // Ausdauer reicht für keinen freien Dienst mehr: auf Feierabend und morgen verweisen
+  const frei = DIENSTE.filter(d => !G.dienstLock(d) && !(d.hideFor && d.hideFor.includes(G.rank().g)));
+  if(!frei.length || frei.some(d => S.stamina >= G.dienstSt(d))) return null;
+  const min = Math.min(...frei.map(d => G.dienstSt(d))), bis = (min - S.stamina) * G.regenMs();
+  return '<div class="strip idle"><span>Ausdauer leer, nächster Dienst in ' + esc(fmtRest(bis).replace(/\.$/, '')) + '. Bis dahin: Feierabend!</span><button class="btn mini" data-act="tab" data-id="feier">Feierabend</button></div>';
+}
+
+/* =========================================================
+   CHANGELOG: nach jedem Update einmal anzeigen, jederzeit in den Einstellungen
+   Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
+   ========================================================= */
+const CHANGELOG = [
+  {v:7, d:'18.11.2026', t:'Neuer Einstieg', p:[
+    'Grundausbildung in etwa einer Stunde, jeder Schritt wird sofort belohnt',
+    'Rekrutenbonus: in den ersten drei Tagen doppelt so schnell Ausdauer und günstigere Dienste',
+    'Gefreiter schon nach einer Stunde, die nächsten Beförderungen gehen schneller',
+    'Morgenappell: täglich antreten, Belohnung wächst über sieben Tage',
+    'Dieses Fenster: hier steht ab jetzt nach jedem Update das Wichtigste'] },
+  {v:6, d:'November 2026', t:'Kameraden finden', p:[
+    {o:1, x:'Personensuche mit Steckbrief: Dienstgrad, Orden, Führerscheine, Lehrgänge'},
+    {o:1, x:'Namen in Rangliste, Kompanie und Chat antippen öffnet den Steckbrief'},
+    {o:1, x:'Funkkreis: globaler Chat für alle Spieler'},
+    'Sammelalbum: jedes Teil bringt jetzt einen kleinen Bonus, auch die gewöhnlichen'] },
+  {v:5, d:'November 2026', t:'Dienstgrade und Bedienung', p:[
+    'Dienstgradabzeichen von Heer und Marine originalgetreu überarbeitet',
+    'Korporal und Stabskorporal ergänzt',
+    'Die Unterreiter oben sind jetzt deutlicher zu sehen',
+    {o:1, x:'Anmeldung nur noch mit Benutzername und Passwort, ohne E-Mail'}] },
+  {v:4, d:'November 2026', t:'Fahrschule, Wetter, Feierabend', p:[
+    'Fahrschule mit Theorieprüfung und Führerscheinen',
+    'Wetter und Jahreszeiten beeinflussen die Dienste',
+    'Wochenaufträge vom Spieß',
+    'Fahrdienste zahlen mehr, aber Routine lohnt sich nicht: Abwechslung bringt mehr',
+    {o:1, x:'Soldatenlotto (6 aus 25) und Spielothek mit Bonusrunden'}] },
+];
+const CL_NOW = CHANGELOG[0].v;
+function clSeen(){ try{ return Number(localStorage.getItem('sg_cl_seen') || 0); }catch(e){ return CL_NOW; } }
+function clMark(){ try{ localStorage.setItem('sg_cl_seen', String(CL_NOW)); }catch(e){} }
+function clItems(c){
+  const online = typeof renderChat === 'function';
+  return c.p.filter(x => typeof x === 'string' || online).map(x => typeof x === 'string' ? x : x.x);
+}
+function clEntry(c, neu){
+  return '<div class="cl' + (neu ? ' neu' : '') + '"><div class="clh"><b>' + esc(c.t) + '</b><span class="small muted">' + esc(c.d) + '</span></div>'
+    + '<ul>' + clItems(c).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>';
+}
+function clShow(alle){
+  const seen = clSeen();
+  const list = alle ? CHANGELOG : seen ? CHANGELOG.filter(c => c.v > seen) : CHANGELOG.slice(0, 1);   // ohne Eintrag nur das neueste Update
+  clMark();
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="clt"><div class="sheet clsheet">'
+    + '<div class="stamp good" style="font-size:15px">' + (alle ? 'ÄNDERUNGEN' : 'NEU') + '</div>'
+    + '<h2 id="clt" style="margin:8px 0 2px;text-align:center">' + (alle ? 'Was sich geändert hat' : 'Neu im Dienst') + '</h2>'
+    + '<p class="small muted" style="text-align:center;margin:0 0 12px">' + (alle ? 'Alle Updates im Überblick.' : 'Das hat sich seit deinem letzten Besuch geändert.') + '</p>'
+    + '<div class="cllist">' + (list.length ? list : CHANGELOG.slice(0, 1)).map(c => clEntry(c, !alle || c.v > seen)).join('') + '</div>'
+    + (alle ? '' : '<button class="linkbtn" data-act="changelog" data-id="alle" style="margin-top:10px">Alle Änderungen ansehen</button>')
+    + '<button class="btn wide" data-act="close" style="margin-top:12px">Verstanden</button></div></div>';
+}
+function clAuto(){
+  if(!S) return;
+  if(tutOn()){ clMark(); return; }               // ganz neue Spieler kennen nichts Altes
+  if(clSeen() >= CL_NOW) return;
+  const host = document.getElementById('modalHost'); if(!host || host.innerHTML.trim()) return;
+  clShow(false);
+}
+
 const EV = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
 const LG_EV = {ual:['lg_ual1','lg_ual2','lg_ual3'], fwl:['lg_fwl1','lg_fwl2','lg_fwl3'], ofl:['lg_ofl1','lg_ofl2','lg_ofl3'], stu:['lg_stu1','lg_stu2','lg_stu3']};
 function lgCost(l){ let c = (S.lgRetry && S.lgRetry[l.id]) ? l.cost/2 : l.cost; if(hasGear('tablet')) c *= .8; return Math.round(c); }
@@ -3742,14 +3925,7 @@ const G = {
   weeks(){ return (now()-S.start)/864e5*S.speed; },
   dzLeft(){ const j = DZ[S.verpfl].jahre; return j ? j*52 - G.weeks() : Infinity; },
   dzOver(){ return G.dzLeft() <= 0; },
-  gaReqs(){ return [
-    {label:'Zwei Wochen Grundausbildung (zwei Tage)', ok: G.weeks() >= 2},
-    {label:'Formaldienst 3× ('+Math.min(3,S.dc.formal||0)+'/3)', ok:(S.dc.formal||0) >= 3},
-    {label:'Ausbildungsmarsch 2× ('+Math.min(2,S.dc.ga_marsch||0)+'/2)', ok:(S.dc.ga_marsch||0) >= 2},
-    {label:'Fitness Stufe 1', ok:S.stats.fitness >= 1},
-    {label:'Schießen Stufe 1', ok:S.stats.schiessen >= 1},
-    {label:'Dienstgradtest bestanden (5 Fragen)', ok:!!S.dgOk},
-  ]; },
+  gaReqs(){ return GA_STEPS.map(x => ({label:x.label, ok:!!x.ok(), rw:rewText(x.rew)})); },
   dzReqs(k){
     const r = G.rank(), out = [];
     if(k==='SaZ4') out.push({label:'Grundausbildung abgeschlossen', ok:!!S.gaDone});
@@ -3759,7 +3935,7 @@ const G = {
     return out;
   },
   maxStamina(){ return 100 + pflegeBonus() + 5*S.stats.fitness + 10*S.stube.kaffee + (vb()==='san' ? 20 : 0) + (hasGear('rucksack') ? 15 : 0) + (albumSet('s') ? 10 : 0) + albumSt() + 2*kStufe('truppenkueche') + 3*kpStufe('kantine'); },
-  regenMs(){ return 180000 / lageF('regen') / S.speed / (rel('dennis')>=30 ? 1.15 : 1) / (1 + .05*S.stube.bett) / (hasGear('wagen') ? 1.2 : 1) / (1 + .02*kStufe('sanbereich')); }, // 1 Ausdauer alle 3 Minuten, im Dienst keine Erholung
+  regenMs(){ return 180000 / lageF('regen') / S.speed / (rel('dennis')>=30 ? 1.15 : 1) / (1 + .05*S.stube.bett) / (hasGear('wagen') ? 1.2 : 1) / (1 + .02*kStufe('sanbereich')) / (rekrut() ? 2 : 1); }, // 1 Ausdauer alle 3 Minuten, im Dienst keine Erholung
   normStamina(){
     if(S.dienst && S.dienst.start){ // Während des Dienstes erholt man sich nicht
       if(S.staminaTs >= S.dienst.start && now() <= S.dienst.end){ S.staminaTs = now(); return; }
@@ -3776,7 +3952,7 @@ const G = {
   payMult(){ return (1 + .01*ordenCount()) * (G.rank().sold/40) * (1 + .03*S.stats.fachwissen) * (1 + .02*S.stats.vitaminb) * (vb()==='inst' ? 1.1 : 1) * (1 + .05*Math.min(5, S.res||0)) * (hasGear('stander') ? 1.1 : 1) * (albumSet('g') ? 1.05 : 1) * (albumSet('l') ? 1.1 : 1) * albumPay() * (1 + .01*kStufe('betreuung') + .02*kpStufe('mannschaftsheim')); },
   bpMult(){ return lageF('bp') * Math.max(.2, 1 + .01*medalCount() + .03*S.stats.vitaminb + .02*S.stats.fuehrung + rel('spiess')/500 + Math.max(0,rel('chef'))/1000 + .04*S.stube.spind + (vb()==='fm' ? .1 : 0) + (hasGear('kalender') ? .05 : 0) + (albumSet('e') ? .05 : 0) + albumBp() + .02*kpStufe('geschaeftszimmer')); },
   dienstPay(d){ return Math.round(rtF(d) * wxF(d,'pay') * lagePay(d) * d.pay * G.payMult() * ((vb()==='inf' && (d.id==='gelaende'||d.id==='uebung')) ? 1.15 : 1)); },
-  dienstSt(d){ return Math.round(wxF(d,'st') * lageF('st') * d.st * (vb()==='kfz' ? .8 : 1) * (hasGear('stiefel') ? .95 : 1) * (1 - .02*kpStufe('fahrzeughalle'))); },
+  dienstSt(d){ return Math.round(wxF(d,'st') * lageF('st') * d.st * (vb()==='kfz' ? .8 : 1) * (hasGear('stiefel') ? .95 : 1) * (1 - .02*kpStufe('fahrzeughalle')) * (rekrut() ? .7 : 1)); },
   dienstMin(d){ return d.min * (hasGear('uhr') ? .95 : 1) * lageF('dur') * wxF(d,'dur'); },
   addPoints(p){ S.log.push({ts:now(), p: p>0 ? Math.round(p*G.bpMult()*10)/10 : p}); },
   points(){
@@ -3946,6 +4122,7 @@ const G = {
     }
     if(fsTick(events)) changed = true;
     if(dgTick(events)) changed = true;
+    if(gaCheck(events)) changed = true;
     if(ordenCheck(events)) changed = true;
     if(changed) save();
     if(events.length) notifyEvents(events);
@@ -4181,13 +4358,14 @@ function renderStube(){
         + '<button class="btn" data-act="event" data-id="'+id+'">Ansehen</button></div>'; }).join('') + '</div>';
   }
   h += ansageCard() + pruefCard();
-  h += renderWA();
-  h += storyCard();
   if(!S.gaDone){
     const req = G.gaReqs(), ok = req.every(x=>x.ok);
-    h += '<h2>Grundausbildung</h2><div class="panel pad"><p class="small">Bevor es richtig losgeht: zwei Wochen Grundausbildung. Am Ende steht das feierliche Gelöbnis.</p>'
+    h += '<h2>Grundausbildung</h2><div class="panel pad"><p class="small">Bevor es richtig losgeht: Grundausbildung. Etwa eine Stunde, und jeder Schritt wird sofort belohnt. Am Ende steht das feierliche Gelöbnis mit '+eur(5*G.rank().sold)+' Prämie.</p>'
       + reqList(req) + (S.dgOk ? '' : '<button class="btn ghost wide" data-act="dgtest" style="margin-bottom:8px">Dienstgradtest ablegen</button>') + '<button class="btn wide" data-act="geloebnis" '+(ok?'':'disabled')+'>Gelöbnis ablegen</button></div>';
   }
+  h += appellCard() + rekrutCard();
+  h += renderWA();
+  h += storyCard();
   if(G.dzOver()){
     h += '<h2>Dienstzeitende</h2><div class="panel pad"><p><b>Deine Dienstzeit ('+esc(DZ[S.verpfl].name)+') ist zu Ende.</b> Bis du dich entscheidest, ruht der Dienst. In der Laufbahn kannst du dich weiterverpflichten oder ausscheiden.</p>'
       + '<button class="btn" data-act="tab" data-id="laufbahn">Zur Entscheidung</button></div>';
@@ -4224,7 +4402,7 @@ function renderStube(){
   h += '<h2>Werte</h2><div class="panel">' + STATS.map(s =>
     '<div class="row"><span>'+s.name+'</span><span class="num">Stufe '+S.stats[s.id]+'</span></div>').join('') + '</div>';
 
-  h += '<h2>Einstellungen</h2><div class="panel pad">'
+  h += '<h2>Einstellungen</h2><div class="panel pad"><button class="btn ghost wide" data-act="changelog" data-id="alle" style="margin-bottom:14px">Was ist neu? Alle Updates</button>'
     + '<p style="margin-bottom:6px"><b>Darstellung</b></p><div class="seg" role="group" aria-label="Darstellung">'
     + [['system','System'],['light','Hell'],['dark','Dunkel']].map(([v,l])=>'<button data-act="theme" data-id="'+v+'" aria-pressed="'+(S.theme===v)+'">'+l+'</button>').join('')
     + '</div><p style="margin:16px 0 6px"><b>Benachrichtigungen</b></p><p class="small muted">Meldet sich, wenn Dienste, Ausbildungen oder Lehrgänge fertig sind, solange das Spiel im Hintergrund geöffnet ist.</p><button class="btn ghost" data-act="notif">'+(S.notify && window.Notification && Notification.permission === 'granted' ? 'Benachrichtigungen ausschalten' : 'Benachrichtigungen einschalten')+'</button><p style="margin:16px 0 6px"><b>Einführung</b></p><button class="btn ghost" data-act="tut_restart">Einführung noch mal ansehen</button>'+(TESTMODE || ONLINE.admin ? '<p style="margin:16px 0 6px"><b>Testmodus</b></p><p class="small muted">Alle Zeiten laufen schneller. Nur zum Ausprobieren, nicht zum echten Spielen.</p>'
@@ -4296,7 +4474,7 @@ function renderAusb(){
 }
 
 function reqList(reqs){
-  return '<ul class="req">'+reqs.map(r=>'<li class="'+(r.ok?'ok':'no')+'"><b>'+(r.ok?'✓':'✗')+'</b><span>'+esc(tskText(r.label))+'</span></li>').join('')+'</ul>';
+  return '<ul class="req">'+reqs.map(r=>'<li class="'+(r.ok?'ok':'no')+'"><b>'+(r.ok?'✓':'✗')+'</b><span>'+esc(tskText(r.label))+'</span>'+(r.rw?'<span class="rw">'+esc(r.rw)+'</span>':'')+'</li>').join('')+'</ul>';
 }
 
 function renderLaufbahn(){
@@ -4354,7 +4532,7 @@ function render(){
     main.innerHTML = renderPage();
   }
   if(S && tutOn() && main.insertAdjacentHTML) main.insertAdjacentHTML('afterbegin', tutBox());
-  renderNav(); renderRes(); live(); subnavHint(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
+  renderNav(); renderRes(); live(); subnavHint(); clAuto(); appellAuto(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
   if(typeof afterRender === "function") afterRender();
 }
 
@@ -4394,6 +4572,8 @@ function ask(text, fn, yes){
    AKTIONEN
    ========================================================= */
 const ACT = {
+  changelog(){ clShow(true); },
+  appell(){ appellAntreten(); },
   tab(id){ goPage(id); render(); window.scrollTo(0,0); if(tab==='truppe') loadTruppe(); },
   main(id){ tab=id; render(); window.scrollTo(0,0); if(tab==='truppe') loadTruppe(); },
   sub(id){ SUB[tab]=id; render(); window.scrollTo(0,0); },
@@ -4433,11 +4613,11 @@ const ACT = {
   choose(i){ chooseEvent(Number(i)); },
   geloebnis(){
     if(S.gaDone || !G.gaReqs().every(x=>x.ok)) return;
-    S.gaDone = true; G.addPoints(10); applyFx({rel:{spiess:5}}); save(); render();
+    S.gaDone = true; G.addPoints(10); S.money += 5*G.rank().sold; applyFx({rel:{spiess:5}}); save(); render();
     document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="gt"><div class="sheet"><div class="stamp good">GELOBT</div>'
       + '<h2 id="gt" style="margin:10px 0 6px;text-align:center">Grundausbildung bestanden</h2>'
       + '<p class="muted">Feierliches Gelöbnis auf dem Antreteplatz. Die Familie ist da, das Musikkorps spielt, und Brockmann putzt sich auffällig lange die Brille.</p>'
-      + '<p class="small">Jetzt kannst du zum Gefreiten befördert werden und dich als Soldat auf Zeit verpflichten.</p>'
+      + '<p class="small"><b>Prämie: '+eur(5*G.rank().sold)+' und 10 Beurteilungspunkte.</b> Jetzt kannst du zum Gefreiten befördert werden und dich als Soldat auf Zeit verpflichten.</p>'
       + '<button class="btn wide" data-act="close">Wegtreten</button></div></div>';
   },
   verpflichten(k, ok){
