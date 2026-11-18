@@ -271,6 +271,10 @@ ul.req .rw{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;p
 .cl{border-left:3px solid var(--line);padding:2px 0 2px 12px;margin:0 0 14px}.cl.neu{border-left-color:#E8C33A}
 .clh{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.cl ul{margin:6px 0 0;padding-left:18px}.cl li{margin:3px 0;font-size:15px;line-height:1.35}
 .linkbtn.clbtn{display:block}
+.livenums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;text-align:center}.livenums div{background:var(--surface2);border-radius:6px;padding:8px 4px}.livenums b{display:block;font:700 26px 'Barlow Condensed',sans-serif}.livenums b.on{color:var(--ok)}.livenums span{font-size:12.5px;color:var(--muted)}
+.livelist{list-style:none;margin:10px 0 0;padding:0}.livelist li{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}.livelist li>i{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}.livelist li>i.on{background:#3FB950;box-shadow:0 0 6px #3FB950}
+.livechart{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;align-items:end;height:110px}.livechart .lc{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px;min-width:0}.livechart .lb{display:flex;align-items:flex-end;gap:1px;height:72px;width:100%;justify-content:center}.livechart i{display:block;width:42%;border-radius:2px 2px 0 0}.livechart i.a,.lg.a{background:var(--trim,#E3B23C)}.livechart i.n,.lg.n{background:#3FB950}.livechart em{font-style:normal;font-size:10px;color:var(--muted)}.livechart .num{font-size:10px}
+.lg{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 2px 0 8px;vertical-align:-1px}
 .strip.idle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
 .strip .sh{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600}
 .strip .prog{margin-top:4px;height:6px}
@@ -5202,7 +5206,7 @@ async function authSubmit(mode){
   USER = res.data.session.user;
   showSplash('Melde mich zum Dienst …'); BOOTED = false; render();
   try{ await afterLogin(); }catch(e){ toast('Laden fehlgeschlagen.'); }
-  BOOTED = true; tab = 'stube'; render(); hideSplash(); setTimeout(loadLotto, 1500); setTimeout(loadAdmin, 1200); setTimeout(loadChat, 1800);
+  BOOTED = true; tab = 'stube'; render(); hideSplash(); setTimeout(() => { pingTs = 0; pingNow(); }, 2500); setTimeout(loadLotto, 1500); setTimeout(loadAdmin, 1200); setTimeout(loadChat, 1800);
 }
 
 /* =========================================================
@@ -5396,10 +5400,41 @@ async function admStats(){
   if(error){ toast('Fehler: ' + error.message); return; }
   ONLINE.adm = data; render();
 }
+/* ---------- Online-Anzeige (Server: stillgestanden_online.sql) ---------- */
+let pingTs = 0;
+function pingNow(){
+  if(!sb || !USER || !S || document.hidden || Date.now() - pingTs < 50000) return;
+  pingTs = Date.now(); sb.rpc('ping').then(() => {}, () => {});
+}
+setInterval(pingNow, 15000);
+document.addEventListener('visibilitychange', () => { if(!document.hidden){ pingTs = 0; pingNow(); } });
+ONLINE.live = null; ONLINE.liveTs = 0;
+async function loadLive(){
+  if(!ONLINE.admin || !sb) return;
+  ONLINE.liveTs = Date.now();
+  const { data, error } = await sb.rpc('admin_online');
+  ONLINE.live = error ? {err: error.message} : data;
+  if(tab === 'stube' && LASTSUB.stube === 'admin') render();
+}
+setInterval(() => { if(ONLINE.admin && tab === 'stube' && LASTSUB.stube === 'admin' && !document.hidden) loadLive(); }, 30000);
+function liveSeit(ts){ const m = Math.round((Date.now() - new Date(ts).getTime()) / 60000); return m < 2 ? 'jetzt' : 'vor ' + m + ' Min.'; }
+function renderLive(){
+  const L = ONLINE.live;
+  if(!L){ if(Date.now() - ONLINE.liveTs > 5000) setTimeout(loadLive, 0); return '<div class="panel pad adm"><h3>Live</h3><p class="small muted">Lade …</p></div>'; }
+  if(L.err) return '<div class="panel pad adm"><h3>Live</h3><p class="small muted">Nicht erreichbar: ' + esc(L.err) + '. Ist stillgestanden_online.sql ausgeführt?</p></div>';
+  const v = L.verlauf || [], max = Math.max(1, ...v.map(x => Math.max(x.aktiv, x.neu)));
+  let h = '<div class="panel pad adm"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h3>Live</h3><button class="linkbtn" data-act="adm_live">Aktualisieren</button></div>'
+    + '<div class="livenums"><div><b class="on">' + L.online + '</b><span>online</span></div><div><b>' + L.heute + '</b><span>heute gespielt</span></div><div><b>' + L.spieler + '</b><span>registriert</span></div></div>';
+  h += L.liste.length ? '<ul class="livelist">' + L.liste.map(p => '<li><i class="' + ((Date.now() - new Date(p.seen).getTime()) < 120000 ? 'on' : '') + '"></i><button class="plink" data-act="profil" data-id="' + esc(p.name) + '">' + esc(p.name) + '</button><span class="small muted">' + esc(R[p.rang] ? rankNameFor(p.tsk || 'heer', p.rang) : '') + '</span><span class="small muted" style="margin-left:auto">' + liveSeit(p.seen) + '</span></li>').join('') + '</ul>'
+    : '<p class="small muted" style="margin:8px 0 0">Gerade niemand außer dir online.</p>';
+  if(v.length) h += '<p class="small" style="margin:14px 0 4px"><b>Letzte 14 Tage</b> <span class="lg a"></span> aktiv <span class="lg n"></span> neu</p><div class="livechart" role="img" aria-label="Aktive und neue Spieler pro Tag">'
+    + v.map(x => { const d = new Date(x.tag + 'T12:00:00'); return '<div class="lc" title="' + d.toLocaleDateString('de-DE') + ': ' + x.aktiv + ' aktiv, ' + x.neu + ' neu"><span class="num">' + (x.aktiv || '') + '</span><span class="lb"><i class="a" style="height:' + (x.aktiv / max * 70) + 'px"></i><i class="n" style="height:' + (x.neu / max * 70) + 'px"></i></span><em>' + d.getDate() + '.</em></div>'; }).join('') + '</div>';
+  return h + '<p class="small muted" style="margin:8px 0 0">Online = in den letzten 2 Minuten im Spiel. Aktualisiert sich alle 30 Sekunden.</p></div>';
+}
 function renderAdmin(){
   if(!ONLINE.admin) return '';
   const st = ONLINE.adm, btn = (act, label, id) => '<button class="btn ghost" data-act="' + act + '"' + (id !== undefined ? ' data-id="' + id + '"' : '') + '>' + label + '</button>';
-  let h = '<h2>Admin</h2><p class="small muted">Nur für dich sichtbar. Werkzeuge für deinen Spielstand wirken auch auf Ranglisten. Zum Testen am besten ein zweites Konto anlegen und ebenfalls als Admin eintragen.</p>';
+  let h = '<h2>Admin</h2><p class="small muted">Nur für dich sichtbar. Werkzeuge für deinen Spielstand wirken auch auf Ranglisten. Zum Testen am besten ein zweites Konto anlegen und ebenfalls als Admin eintragen.</p>' + renderLive();
   h += '<div class="panel pad adm"><h3>Zeit</h3><p class="small muted">Zeitraffer gilt nur für deinen Spielstand.</p><div class="seg" role="group" aria-label="Zeitraffer">'
     + [1, 10, 100, 1000].map(v => '<button data-act="speed" data-id="' + v + '" aria-pressed="' + (S.speed === v) + '">' + (v === 1 ? 'Normal' : v + '×') + '</button>').join('') + '</div>'
     + '<div class="admbtns">' + btn('adm_timer', 'Alle Timer sofort beenden') + btn('adm_stamina', 'Ausdauer auffüllen') + '</div></div>';
@@ -5417,6 +5452,7 @@ function renderAdmin(){
   return h;
 }
 const ADM = {
+  adm_live(){ loadLive(); },
   adm_timer(){
     const t = now() - 1;
     if(S.dienst) S.dienst.end = t; if(S.ausb) S.ausb.end = t; if(S.fs && !S.fs.stage) S.fs.end = t; if(S.fa) S.fa.end = t;
