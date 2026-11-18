@@ -350,6 +350,12 @@ body.landing{padding-bottom:0}
 .chatform .btn{min-width:48px;min-height:44px;padding:0 12px;align-self:flex-end}
 .chatfoot{display:flex;justify-content:space-between;gap:10px;padding:0 10px 8px;background:var(--surface2);font-size:11.5px}
 
+.plink{background:none;border:0;padding:0;margin:0;font:inherit;font-weight:700;color:inherit;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;text-align:left}
+.pssearch input{width:100%;box-sizing:border-box;min-height:46px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:16px}
+.pfhead{display:flex;gap:14px;align-items:center}.pfname{font-family:'Black Ops One',sans-serif;font-size:24px;line-height:1.1}
+.pfh{font-size:15px;margin:16px 0 6px}
+.pfbar{display:grid;grid-template-columns:96px 1fr 34px;gap:8px;align-items:center;font-size:13.5px;margin:4px 0}.pfbar i{height:7px;border-radius:4px;background:var(--line);overflow:hidden}.pfbar b{display:block;height:100%;background:var(--signal)}.pfbar .num{text-align:right}
+.pfchips{display:flex;flex-wrap:wrap;gap:6px}
 .recht h3{margin:16px 0 6px;font-size:16px}.recht p{margin:0 0 10px;font-size:14px;line-height:1.5}
 .pwrow{position:relative}
 .pwrow input{padding-right:52px}
@@ -1615,6 +1621,7 @@ const SUBS = {
   truppe: [
     {id:'kompanie', label:'Kompanie', src:'truppe', rest:true, match:['Kompanie','Mitglieder','Einladen']},
     {id:'chat', get label(){ const n = typeof chatUnread === 'function' ? chatUnread() : 0; return 'Chat' + (n ? ' (' + n + ')' : ''); }, src:'chat', match:['Funkkreis']},
+    {id:'suche', label:'Suche', src:'suche', match:['Personensuche']},
     {id:'kasse', label:'Kasse', src:'truppe', match:['Kompaniekasse','Kassenbuch']},
     {id:'ausbau', label:'Ausbau', src:'truppe', match:['Kompanie-Ausbau','Kompanielager']},
     {id:'kaserne', label:'Kaserne', src:'truppe', match:['Standortkarte','Kaserne']},
@@ -1631,7 +1638,7 @@ function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LAST
 function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === a[0]), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
   const f = {stube:renderStube, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
-    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null}[src];
+    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null}[src];
   return f ? f() : '';
 }
 function splitSecs(html){
@@ -4347,7 +4354,7 @@ function render(){
     main.innerHTML = renderPage();
   }
   if(S && tutOn() && main.insertAdjacentHTML) main.insertAdjacentHTML('afterbegin', tutBox());
-  renderNav(); renderRes(); live(); subnavHint(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach();
+  renderNav(); renderRes(); live(); subnavHint(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
   if(typeof afterRender === "function") afterRender();
 }
 
@@ -4892,6 +4899,7 @@ async function cloudPush(force){
     const a = await sb.from('saves').upsert({user_id:USER.id, data:S, updated_at:new Date().toISOString()});
     const b = await sb.from('profiles').update(profilePayload()).eq('id', USER.id);
     if(a.error || b.error) cloudDirty = true;
+    if(typeof steckbriefPush === 'function') steckbriefPush();
   }catch(e){ cloudDirty = true; }
   cloudBusy = false;
 }
@@ -5039,7 +5047,7 @@ function rechtHtml(){
     + '<p>„Stillgestanden!“ ist ein privates, nicht kommerzielles Hobbyprojekt und ein satirisches Spiel. Es ist kein Angebot der Bundeswehr und steht in keiner Verbindung zu ihr. Alle Figuren sind erfunden.</p>'
     + '<h3>Datenschutzerklärung</h3>'
     + '<p><b>Verantwortlich</b> für die Datenverarbeitung ist der oben genannte Betreiber.</p>'
-    + '<p><b>Welche Daten wir speichern.</b> Für dein Konto: Benutzername und Passwort (nur verschlüsselt als Hash). Eine E-Mail-Adresse ist nicht nötig; nur Konten, die früher mit E-Mail angelegt wurden, haben eine hinterlegt. Für das Spiel: Spielname, Spielstand, Kompanie, gewählter Standort (Ort und Bundesland) sowie Spielstatistiken für Ranglisten. Andere Spieler sehen nur deinen Spielnamen, Dienstgrad, Punkte und deine Kompanie, nie deine E-Mail-Adresse. Nachrichten im Chat „Funkkreis“ sind für alle angemeldeten Spieler sichtbar und werden nach 30 Tagen automatisch gelöscht.</p>'
+    + '<p><b>Welche Daten wir speichern.</b> Für dein Konto: Benutzername und Passwort (nur verschlüsselt als Hash). Eine E-Mail-Adresse ist nicht nötig; nur Konten, die früher mit E-Mail angelegt wurden, haben eine hinterlegt. Für das Spiel: Spielname, Spielstand, Kompanie, gewählter Standort (Ort und Bundesland) sowie Spielstatistiken für Ranglisten. Andere Spieler sehen nur deinen Spielnamen, Dienstgrad, Punkte und deine Kompanie, nie deine E-Mail-Adresse. Im Steckbrief der Personensuche sehen andere Spieler außerdem deine Dienstzeit im Spiel, Werte, Orden, Führerscheine, Lehrgänge und Spielstatistiken, aber nie deinen Standort. Nachrichten im Chat „Funkkreis“ sind für alle angemeldeten Spieler sichtbar und werden nach 30 Tagen automatisch gelöscht.</p>'
     + '<p><b>Zweck und Rechtsgrundlage.</b> Die Daten werden nur verarbeitet, um dir das Spiel bereitzustellen (Art. 6 Abs. 1 lit. b DSGVO). Es gibt keine Werbung, kein Tracking und keine Weitergabe zu Werbezwecken.</p>'
     + '<p><b>Dienstleister.</b> Die Seite liegt bei GitHub Pages (GitHub Inc., USA). Beim Aufruf verarbeitet GitHub technisch notwendige Daten wie deine IP-Adresse. Konto und Spielstand liegen bei Supabase (Supabase Inc.), mit dem ein Auftragsverarbeitungsvertrag besteht. Für die Standortkarte werden Kartenbilder von OpenStreetMap geladen; dabei wird deine IP-Adresse an die OpenStreetMap Foundation übertragen. Schriften und Programmbibliotheken werden von dieser Seite selbst geladen, nicht von Google oder anderen Anbietern.</p>'
     + '<p><b>Im Browser</b> speichert das Spiel eine Kopie deines Spielstands und deine Anmeldung (Local Storage). Cookies zu Werbe- oder Analysezwecken gibt es nicht.</p>'
@@ -5319,7 +5327,7 @@ function chatList(){
   else if(!ONLINE.chat.length) box.innerHTML = '<p class="small muted" style="padding:12px">Noch Funkstille. Mach den Anfang!</p>';
   else box.innerHTML = ONLINE.chat.map(m => {
     const mine = USER && m.user_id === USER.id, rn = R[m.rang] ? rankNameFor(m.tsk || 'heer', m.rang) : '';
-    return '<div class="cm' + (mine ? ' mine' : '') + '"><div class="cmh"><b>' + esc(m.name) + '</b>' + (rn ? '<span>' + esc(rn) + '</span>' : '') + '<time>' + chatZeit(m.created_at) + '</time></div>'
+    return '<div class="cm' + (mine ? ' mine' : '') + '"><div class="cmh"><button class="plink" data-act="profil" data-id="' + esc(m.name) + '">' + esc(m.name) + '</button>' + (rn ? '<span>' + esc(rn) + '</span>' : '') + '<time>' + chatZeit(m.created_at) + '</time></div>'
       + '<div class="cmt">' + esc(m.text) + '</div>'
       + (ONLINE.admin && !mine ? '<div class="cma"><button class="linkbtn" data-act="chat_del" data-id="' + m.id + '">Löschen</button><button class="linkbtn" data-act="chat_mute" data-id="' + m.id + '">24 Std. sperren</button></div>' : (ONLINE.admin ? '<div class="cma"><button class="linkbtn" data-act="chat_del" data-id="' + m.id + '">Löschen</button></div>' : ''))
       + '</div>';
@@ -5372,6 +5380,95 @@ const CHAT_ACT = {
 };
 
 for(const k in CHAT_ACT) ACT[k] = CHAT_ACT[k];
+/* =========================================================
+   PERSONENSUCHE UND STECKBRIEF (Server: stillgestanden_personen.sql)
+   ========================================================= */
+function steckbrief(){
+  const st = typeof slStats === 'function' ? slStats() : {};
+  return {
+    werte: Object.assign({}, S.stats),
+    orden: ORDEN.filter(o => S.orden && S.orden[o.id]).map(o => o.id),
+    fs: Object.keys(S.fsDone || {}),
+    lg: Object.fromEntries(Object.keys(S.lehrgaenge || {}).map(k => [k, (S.lgNote && S.lgNote[k]) || 0])),
+    dienste: S.dienstCount || 0,
+    abz: medalCount(),
+    sl: {n: st.n || 0, best: st.best || 0, bonus: st.bonus || 0, jp: st.jp || 0},
+  };
+}
+let steckbriefTs = 0;
+async function steckbriefPush(){
+  if(!sb || !USER || !S || !ONLINE.profile || Date.now() - steckbriefTs < 60000) return;
+  steckbriefTs = Date.now();
+  try{ await sb.from('profiles').update({steckbrief: steckbrief()}).eq('id', USER.id); }catch(e){}
+}
+ONLINE.ps = null; ONLINE.psQ = '';
+let PSWRAP = null, psTimer = null;
+async function psSearch(q){
+  ONLINE.psQ = q;
+  const { data, error } = await sb.rpc('spieler_suchen', {p_q: q});
+  if(q !== ONLINE.psQ) return;
+  ONLINE.ps = error ? {err: error.message} : (data || []);
+  psList();
+}
+function psList(){
+  const box = PSWRAP && PSWRAP.querySelector('#psList'); if(!box) return;
+  const r = ONLINE.ps;
+  if(!r){ box.innerHTML = '<p class="small muted">Lade …</p>'; return; }
+  if(r.err){ box.innerHTML = '<p class="small muted">Suche nicht erreichbar: ' + esc(r.err) + '</p>'; return; }
+  if(!r.length){ box.innerHTML = '<p class="small muted">Niemanden gefunden.</p>'; return; }
+  box.innerHTML = '<p class="small muted" style="margin:0 0 6px">' + (ONLINE.psQ ? r.length + ' Treffer' : 'Zuletzt aktiv') + '</p><ul class="rl">' + r.map(p =>
+    '<li><span style="flex:none">' + (R[p.rang] ? insigniaFor(p.tsk, p.rang, 26) : '') + '</span><span style="flex:1;min-width:0"><button class="plink" data-act="profil" data-id="' + esc(p.name) + '">' + esc(p.name) + '</button>'
+    + (p.kompanie ? ' <span class="tag">' + esc(p.kompanie) + '</span>' : '') + '<br><span class="small muted">' + esc(R[p.rang] ? rankNameFor(p.tsk, p.rang) : '') + '</span></span>'
+    + '<span class="num">' + Number(p.punkte || 0).toLocaleString('de-DE') + '</span></li>').join('') + '</ul>';
+}
+function insigniaFor(tsk, id, size){ const keep = S.tsk; S.tsk = tsk || 'heer'; const h = insignia(id, size); S.tsk = keep; return h; }
+function psBuild(){
+  const w = document.createElement('div');
+  w.innerHTML = '<div class="pssearch"><label for="psIn" class="sr">Spielername</label><input id="psIn" type="search" placeholder="Spielername suchen …" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="20"></div><div id="psList" style="margin-top:10px"></div>';
+  w.querySelector('#psIn').addEventListener('input', e => { clearTimeout(psTimer); const q = e.target.value.trim(); psTimer = setTimeout(() => psSearch(q), 300); });
+  PSWRAP = w;
+}
+function psAttach(){
+  const slot = document.getElementById('psslot'); if(!slot) return;
+  if(!PSWRAP) psBuild();
+  if(PSWRAP.parentNode !== slot) slot.appendChild(PSWRAP);
+  if(!ONLINE.ps) psSearch(''); else psList();
+}
+function renderSuche(){
+  return '<h2>Personensuche</h2><p class="small muted" style="margin-top:-4px">Finde Kameraden und schau dir ihren Steckbrief an. Standort und Anmeldedaten sind nie sichtbar.</p><div class="panel pad" id="psslot"></div>';
+}
+const AKTIV = {heute:'heute aktiv', woche:'diese Woche aktiv', laenger:'länger nicht gesehen'};
+async function profilZeigen(name){
+  const host = document.getElementById('modalHost');
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-label="Steckbrief"><div class="sheet ev"><p class="small muted">Lade Steckbrief von ' + esc(name) + ' …</p></div></div>';
+  const { data: p, error } = await sb.rpc('spieler_profil', {p_name: name});
+  if(error || !p){ host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true"><div class="sheet ev"><p>' + esc(error ? error.message : 'Nicht gefunden.') + '</p><button class="btn wide" data-act="close">Schließen</button></div></div>'; return; }
+  const sb2 = p.steckbrief || {}, tsk = p.tsk || 'heer', rn = R[p.rang] ? rankNameFor(tsk, p.rang) : p.rang;
+  const TSKN = {heer:'Heer', lw:'Luftwaffe', marine:'Marine'};
+  const vw = p.verwendung && VERW[p.verwendung] ? VERW[p.verwendung].name : null;
+  const orden = (sb2.orden || []).map(id => ORDEN.find(o => o.id === id)).filter(Boolean);
+  const fs = (sb2.fs || []).map(id => FS_I[id]).filter(Boolean);
+  const lg = Object.entries(sb2.lg || {}).filter(([id]) => L[id]);
+  const w = sb2.werte || {}, sl = sb2.sl || {};
+  const dz = n => n >= 52 ? Math.floor(n/52) + ' J. ' + (n % 52) + ' Wo.' : n + ' Wochen';
+  let h = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="pft"><div class="sheet ev profil" style="max-height:88vh;overflow:auto;text-align:left">'
+    + '<div class="pfhead">' + (R[p.rang] ? insigniaFor(tsk, p.rang, 54) : '') + '<div><div class="small muted">' + esc(TSKN[tsk] || '') + (vw ? ' · ' + esc(vw) : '') + '</div>'
+    + '<div id="pft" class="pfname">' + esc(p.name) + '</div><div style="font-weight:600">' + esc(rn) + '</div>'
+    + '<div class="small muted">' + esc(AKTIV[p.aktiv] || '') + (p.seit ? ' · dabei seit ' + new Date(p.seit).toLocaleDateString('de-DE', {month:'long', year:'numeric'}) : '') + '</div></div></div>';
+  if(p.kompanie) h += '<p class="small" style="margin:10px 0 0">Kompanie <b>' + esc(p.kompanie.name) + '</b> <span class="tag">' + esc(p.kompanie.kuerzel) + '</span>' + (p.kompanie.rolle && ROLLEN[p.kompanie.rolle] ? ', ' + esc(ROLLEN[p.kompanie.rolle]) : '') + '</p>';
+  h += '<div class="facts" style="margin-top:12px">' + [['Rangliste', 'Platz ' + p.platz], ['Punkte', Number(p.punkte || 0).toLocaleString('de-DE')], ['Dienstzeit', dz(p.dienstwochen || 0)], ['Dienste', (sb2.dienste || 0).toLocaleString('de-DE')],
+      ['Auslandseinsätze', p.einsaetze || 0], ['Leistungsabzeichen', sb2.abz || 0], ['Sammelalbum', (p.album || 0) + ' / ' + ITEMS.length]].map(([k, v]) => '<span>' + k + '</span><b>' + v + '</b>').join('') + '</div>';
+  if(Object.keys(w).length) h += '<h3 class="pfh">Werte</h3>' + STATS.map(s => '<div class="pfbar"><span>' + s.name + '</span><i><b style="width:' + Math.min(100, (w[s.id] || 0) / STAT_MAX * 100) + '%"></b></i><span class="num">' + (w[s.id] || 0) + '</span></div>').join('');
+  h += '<h3 class="pfh">Orden und Ehrenzeichen</h3>' + (orden.length ? '<div class="spange" style="flex-wrap:wrap">' + orden.map(o => ribbon(o, 36)).join('') + '</div><p class="small muted" style="margin:4px 0 0">' + orden.map(o => esc(o.name)).join(', ') + '</p>' : '<p class="small muted">Noch keine.</p>');
+  h += '<h3 class="pfh">Führerscheine</h3>' + (fs.length ? '<div class="pfchips">' + fs.map(x => '<span class="tag">' + esc(x.name) + '</span>').join('') + '</div>' : '<p class="small muted">Noch keine.</p>');
+  h += '<h3 class="pfh">Lehrgänge</h3>' + (lg.length ? '<div class="pfchips">' + lg.map(([id, n]) => '<span class="tag">' + esc(L[id].name) + (n ? ' · Note ' + n : '') + '</span>').join('') + '</div>' : '<p class="small muted">Noch keine.</p>');
+  if(sl.n) h += '<h3 class="pfh">Feierabend</h3><p class="small" style="margin:0">' + sl.n.toLocaleString('de-DE') + ' Spiele in der Spielothek, größter Gewinn ' + eur(sl.best || 0) + (sl.bonus ? ', ' + sl.bonus + ' Bonusrunden' : '') + (sl.jp ? ', ' + sl.jp + '× Kasernen-Jackpot' : '') + '.</p>';
+  h += '<button class="btn wide" data-act="close" style="margin-top:16px">Schließen</button></div></div>';
+  host.innerHTML = h;
+}
+const PS_ACT = { profil(name){ profilZeigen(name); } };
+
+for(const k in PS_ACT) ACT[k] = PS_ACT[k];
 let LOGIN_MODE = 'login';
 const LP_ICON = {
   karriere:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/></svg>',
@@ -5506,7 +5603,7 @@ function renderTruppe(){
             + Object.entries(ROLLEN).map(([v,l])=>'<option value="'+v+'"'+(m.rolle===v?' selected':'')+'>'+l+'</option>').join('')
             + '</select><button class="btn danger" style="min-height:36px;padding:4px 10px" data-act="kp_entlassen" data-id="'+esc(m.name)+'">Entlassen</button></div>';
         }
-        return '<li><span class="pos">'+(i+1)+'</span><span class="who'+(ich?' me':'')+'">'+esc(m.name)+' <span class="tag">'+ROLLEN[m.rolle||'soldat']+'</span>'
+        return '<li><span class="pos">'+(i+1)+'</span><span class="who'+(ich?' me':'')+'"><button class="plink" data-act="profil" data-id="'+esc(m.name)+'">'+esc(m.name)+'</button> <span class="tag">'+ROLLEN[m.rolle||'soldat']+'</span>'
           + '<br><span class="small muted">'+esc(rankNameFor(m.tsk, m.rang))+(m.tsk && m.tsk !== 'heer' ? ', '+TSK[m.tsk].name : '')+'</span>'+ctl+'</span><span class="num">'+Number(m.punkte).toLocaleString('de-DE')+'</span></li>';
       }).join('') + '</ul></div>';
 
@@ -5544,7 +5641,7 @@ function renderTruppe(){
   else if(ONLINE.rl && ONLINE.rl.length){
     h += '<div class="panel"><ul class="rl">' + ONLINE.rl.map((r,i) => {
       let who, val;
-      if(ONLINE.rlTab==='spieler'){ who = '<span class="'+(r.name===S.name?'me':'')+'">'+esc(r.name)+'</span>'+(r.kompanie?' <span class="tag">'+esc(r.kompanie)+'</span>':'')+'<br><span class="small muted">'+esc(rankNameFor(r.tsk, r.rang))+(r.tsk && r.tsk !== 'heer' ? ', '+TSK[r.tsk].name : '')+'</span>'; val = Number(r.punkte).toLocaleString('de-DE'); }
+      if(ONLINE.rlTab==='spieler'){ who = '<span class="'+(r.name===S.name?'me':'')+'"><button class="plink" data-act="profil" data-id="'+esc(r.name)+'">'+esc(r.name)+'</button></span>'+(r.kompanie?' <span class="tag">'+esc(r.kompanie)+'</span>':'')+'<br><span class="small muted">'+esc(rankNameFor(r.tsk, r.rang))+(r.tsk && r.tsk !== 'heer' ? ', '+TSK[r.tsk].name : '')+'</span>'; val = Number(r.punkte).toLocaleString('de-DE'); }
       else if(ONLINE.rlTab==='kompanien'){ who = esc(r.name)+' <span class="tag">'+esc(r.kuerzel)+'</span><br><span class="small muted">'+r.mitglieder+' Mitglieder</span>'; val = Number(r.punkte).toLocaleString('de-DE'); }
       else { const [bl, ort] = String(r.standort).split('/'); who = '<span class="'+(r.standort===key?'me':'')+'">'+esc(ort||r.standort)+'</span><br><span class="small muted">'+esc(bl||'')+'</span>'; val = 'Ausbau '+r.ausbau; }
       return '<li><span class="pos">'+(i+1)+'</span><span class="who">'+who+'</span><span class="num">'+val+'</span></li>';
