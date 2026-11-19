@@ -292,6 +292,15 @@ ul.req .rw{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;p
 .fbcount{font:700 12px Barlow,sans-serif;background:var(--stamp);color:#fff;border-radius:10px;padding:2px 8px;vertical-align:2px}
 .fbitem{border-top:1px solid var(--line);padding:10px 0 4px}.fbitem.done{opacity:.55}.fbitem.art-auto{box-shadow:inset 3px 0 0 var(--stamp);padding-left:10px}.fbitem.art-fehler{box-shadow:inset 3px 0 0 #E3B23C;padding-left:10px}.fbitem.art-idee{box-shadow:inset 3px 0 0 var(--ok);padding-left:10px}
 .fbh{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}.fbt{margin:4px 0;white-space:pre-wrap;word-break:break-word}.fbitem pre{white-space:pre-wrap;word-break:break-all;font-size:11px;max-height:160px;overflow:auto;background:var(--surface2);padding:6px;border-radius:4px}
+.fsgrp{font:700 17px Barlow,sans-serif;margin:18px 0 8px}.fsladder{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}.fsladder span{font-size:12.5px;font-weight:600;padding:3px 9px;border-radius:12px;background:var(--surface2);color:var(--muted);border:1px solid var(--line)}.fsladder span.ok{background:var(--ok);color:#10200F;border-color:var(--ok)}.fsladder span.frei{color:var(--ink);border-color:var(--signal)}
+.mgov{padding:8px;align-items:center}.mg{background:var(--surface);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;max-width:100%;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.mgtop{display:flex;align-items:center;gap:10px}.mgtop b{flex:1;font-size:15px}.mgtop .num{font-weight:700;color:var(--signal)}.mgx{background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer;padding:2px 6px}
+.mgstage{position:relative;border-radius:6px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}.mgstage canvas{display:block;touch-action:none}
+.mgmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}.mgmsg>*{pointer-events:auto}.mgmsg:empty{display:none}
+.mgcard{background:rgba(20,24,16,.94);color:#F2F5EA;border-radius:8px;padding:14px 16px;margin:10px;max-height:calc(100% - 20px);overflow:auto;font-size:14.5px}.mgcard ul{padding-left:18px;margin:8px 0}.mgcard li{margin:4px 0}
+.mgres .stamp{display:block;width:max-content;margin:0 auto 6px}.mgscore{font:400 44px 'Black Ops One',sans-serif;text-align:center;color:#E3B23C}.mgscore small{font:600 15px Barlow,sans-serif;color:#C9CDB8}
+.mgcount{font:400 90px 'Black Ops One',sans-serif;color:#E3B23C;text-shadow:0 4px 0 rgba(0,0,0,.4);background:none}
+.mgctl{display:flex;gap:8px;touch-action:manipulation;user-select:none;-webkit-user-select:none}.mgctl:empty{display:none}.mgctl .btn{min-height:58px;font-size:18px;touch-action:manipulation}
 .strip.idle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
 .strip .sh{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600}
 .strip .prog{margin-top:4px;height:6px}
@@ -1091,7 +1100,7 @@ const ARTS = {
     + '<path d="M84 48l16-16a7 7 0 1 1 4 4L88 52z" fill="var(--metal)" stroke="#1C2217" stroke-width="1.2"/>',
 };
 function art(kind){
-  return '<svg viewBox="0 0 120 64" aria-hidden="true"><rect width="120" height="64" fill="var(--wall)"/><rect y="52" width="120" height="12" fill="'+(kind==='ship' ? '#5E87A3' : 'var(--floor)')+'"/>'+(ARTS[kind] || ARTS.star)+'</svg>';
+  return '<svg viewBox="0 0 120 64" aria-hidden="true"><rect width="120" height="64" fill="var(--wall)"/><rect y="52" width="120" height="12" fill="'+((kind==='ship' || kind==='speedboat') ? '#5E87A3' : 'var(--floor)')+'"/>'+(ARTS[kind] || ARTS.star)+'</svg>';
 }
 const DIENST_ART = {innen:'desk', formal:'formal', wache:'tower', gelaende:'field', uebung:'tent', spez:'star', uvd:'keys', stab:'slides',
   ausbilder:'recruits', spiess_v:'clip', hoersaal:'books', zug:'map', kompanie:'hq', lagezentrum:'screens', truppenbesuch:'car', ga_marsch:'march',
@@ -1636,6 +1645,7 @@ const SUBS = {
     {id:'ausbildung', label:'Ausbildung', src:'ausb', rest:true, match:['Ausbildung']},
     {id:'lehrgaenge', label:'Lehrgänge', src:'ausb', match:['Lehrgänge']},
     {id:'fahrschule', label:'Fahrschule', src:'ausb', match:['Fahrschule']},
+    {id:'uebung', label:'Übungsplatz', src:'mini', match:['Übungsplatz']},
   ],
   feier: [
     {id:'leergut', label:'Leergut', src:'feier', rest:true, match:['Leergut']},
@@ -1666,13 +1676,13 @@ const SUBS = {
 // Abschnitte, die der Laufend-Streifen oben ersetzt
 const SUB_DROP = ['Im Dienst', 'Feierabend'];
 const SUB = {}, LASTSUB = {};
-const ALIAS = {stube:['stube','uebersicht'], raum:['stube','stube'], laufbahn:['akte','laufbahn'], akte:['akte','personalien'], dv:['akte','dv'], orden:['akte','orden'], einst:['akte','einst'], vorsorge:['stube','vorsorge'], fahrschule:['ausb','fahrschule'], lehrgaenge:['ausb','lehrgaenge'], dienst:['dienst','plan'], ausb:['ausb','ausbildung'], feier:['feier',null], truppe:['truppe',null]};
+const ALIAS = {stube:['stube','uebersicht'], raum:['stube','stube'], laufbahn:['akte','laufbahn'], akte:['akte','personalien'], dv:['akte','dv'], orden:['akte','orden'], einst:['akte','einst'], vorsorge:['stube','vorsorge'], fahrschule:['ausb','fahrschule'], uebungsplatz:['ausb','uebung'], lehrgaenge:['ausb','lehrgaenge'], dienst:['dienst','plan'], ausb:['ausb','ausbildung'], feier:['feier',null], truppe:['truppe',null]};
 function pageOf(id){ return ALIAS[id] || [id, null]; }
 function goPage(id){ const a = pageOf(id); tab = a[0]; if(a[1]) SUB[tab] = a[1]; }
 function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LASTSUB[tab] === a[1]); }
 function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === a[0]), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
-  const f = {stube:renderStube, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
+  const f = {stube:renderStube, mini:renderMini, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
     truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null}[src];
   return f ? f() : '';
 }
@@ -1896,6 +1906,45 @@ const FAHRSCHULE = [
    desc:'Ein Eurofighter am Haken. Langsam fahren ist hier keine Schwäche.'},
   {id:'boot', name:'Bootsführerschein', sub:'Hafen und Küste', min:120, cost:1600, t:2, need:'b', tsk:'marine', art:'ship',
    desc:'Anlegen ohne Kratzer. Der Hafenkapitän schaut zu, die Möwen auch.'},
+  // ---- Laufbahn Heer ----
+  {id:'boxer', name:'Radpanzer Boxer', sub:'8×8', min:150, cost:1500, t:2, need:'c', tsk:'heer', art:'boxer',
+   desc:'Acht Räder, 35 Tonnen, Rückspiegel so groß wie ein Fenster. Fährt sich fast wie ein Bus. Fast.',
+   exam:'Prüfung Radpanzer Boxer. Kolonnenfahrt durch die Heide, danach rückwärts in die Fahrzeughalle. Der Prüfer zählt die Zentimeter.'},
+  {id:'puma', name:'Schützenpanzer Puma', sub:'Kette', min:240, cost:3500, t:4, need:'kette', tsk:'heer', art:'tank',
+   desc:'Hinten sitzt ein Schützentrupp und vertraut dir. Vorne sitzt der Kommandant und vertraut dir weniger.',
+   exam:'Prüfung Schützenpanzer Puma. Gefechtsfahrt im Gelände, Furt, Steigung, und hinten ruft jemand nach einer Tüte.'},
+  {id:'leo', name:'Kampfpanzer Leopard 2', sub:'Kette', min:300, cost:5000, t:6, need:'puma', tsk:'heer', art:'tank',
+   desc:'Die Königsklasse auf Ketten. Vier Mann Besatzung, 120 Millimeter Argument.',
+   exam:'Prüfung Leopard 2. Der Kommandant gibt knappe Befehle, der Übungsplatz ist nass, und auf der Panzerstraße steht ein Reh.'},
+  {id:'nh90', name:'Hubschrauber NH90', sub:'Heeresflieger', min:360, cost:8000, off:true, need:'b', tsk:'heer', art:'heli',
+   desc:'Fliegen statt fahren. Pitch, Stick und Pedale gleichzeitig, und der Fluglehrer sagt „ganz entspannt“.',
+   exam:'Prüfungsflug NH90. Schwebeflug über dem Platz, dann Außenlandung auf einer Waldlichtung. Der Fluglehrer hat die Hände sichtbar im Schoß.'},
+  // ---- Laufbahn Luftwaffe ----
+  {id:'tankw', name:'Flugfeldtankwagen', sub:'Vorfeld', min:90, cost:900, t:1, need:'c', tsk:'lw', art:'truck',
+   desc:'30.000 Liter Kerosin und ein Eurofighter, der Durst hat. Rauchen verboten, Hektik auch.',
+   exam:'Prüfung Flugfeldtankwagen. Anfahrt an die Maschine, Erdung, Betankung nach Checkliste. Der Wart schaut auf jede Bewegung.'},
+  {id:'chinook', name:'Hubschrauber CH-47 Chinook', sub:'Lufttransport', min:300, cost:6000, t:6, need:'schlepp', tsk:'lw', art:'heli',
+   desc:'Zwei Rotoren, ein Bauch voller Fracht. Wer hier fliegt, hat Feldwebel-Nerven.',
+   exam:'Prüfungsflug Chinook. Außenlast am Haken, Seitenwind, und unten winkt ein Einweiser, der selbst nervös ist.'},
+  {id:'a400m', name:'Transportflugzeug A400M', sub:'Lufttransport', min:420, cost:9000, off:true, need:'b', tsk:'lw', art:'plane',
+   desc:'Vier Propellerturbinen, Laderampe hinten, Kurzstart auf Schotter. Der Lastesel der Luftwaffe.',
+   exam:'Prüfungsflug A400M. Instrumentenanflug bei tiefen Wolken. Der Prüfer schaut nicht raus, nur auf deine Hände.'},
+  {id:'ef', name:'Kampfjet Eurofighter', sub:'Alarmrotte', min:600, cost:15000, off:true, note:1, need:'a400m', tsk:'lw', art:'jet',
+   desc:'Die Spitze. Nur für Offiziere mit Bestnote. Bei 9 g wiegt dein Helm so viel wie Kalle.',
+   exam:'Prüfungsflug Eurofighter. Alarmstart, Abfangübung, Landung bei Nacht. Im Funk ist es sehr still.'},
+  // ---- Laufbahn Marine ----
+  {id:'sbs', name:'Sportbootführerschein See', sub:'Einstieg', min:45, cost:400, t:0, tsk:'marine', art:'speedboat',
+   desc:'Der erste Schein auf dem Wasser. Backbord ist links, das merkst du dir ab heute für immer.',
+   exam:'Praktische Prüfung Sportboot. Mensch-über-Bord-Manöver mit einer Boje. Die Boje hat einen Namen: Herbert.'},
+  {id:'speed', name:'Speedboot Seebataillon', sub:'Küste', min:180, cost:2800, t:3, need:'boot', tsk:'marine', art:'speedboat',
+   desc:'Festrumpfschlauchboot mit zwei Motoren. Schnell, nass und laut. Genau so, wie es sein soll.',
+   exam:'Prüfung Speedboot. Hohe Fahrt durch die Förde, dann längsseits an einen Tanker. Die Gischt kommt von allen Seiten.'},
+  {id:'wo', name:'Wachoffizier Fregatte', sub:'Brücke', min:360, cost:7000, off:true, need:'boot', tsk:'marine', art:'ship',
+   desc:'Du führst das Schiff, während der Kommandant schläft. Er schläft sehr leicht.',
+   exam:'Befähigungsprüfung Wachoffizier. Nachtwache im Verkehrstrennungsgebiet, drei Kontakte auf dem Radar und ein Fischer, der nicht funkt.'},
+  {id:'p8', name:'Seefernaufklärer P-8A Poseidon', sub:'Marineflieger', min:480, cost:11000, off:true, need:'sbs', tsk:'marine', art:'plane',
+   desc:'Stundenlang über der Ostsee. Unter dir Wasser, irgendwo darin ein U-Boot, das nicht gefunden werden will.',
+   exam:'Prüfungsflug P-8A. Langer Aufklärungsflug, Sonarbojen setzen, und der Kaffee an Bord ist besser als auf der Fregatte.'},
 ];
 const FS_I = Object.fromEntries(FAHRSCHULE.map(x=>[x.id,x]));
 DIENSTE.push(
@@ -1926,6 +1975,47 @@ Object.assign(ARTS, {
   pool:'<rect x="14" y="36" width="92" height="16" fill="#5E87A3"/><path d="M14 40q8-4 16 0t16 0 16 0 16 0 16 0 12 0" stroke="#BCD1DC" stroke-width="2" fill="none"/><rect x="80" y="10" width="4" height="26" fill="#F2F2EA"/><rect x="72" y="10" width="20" height="4" fill="#F2F2EA"/><circle cx="34" cy="16" r="8" fill="var(--signal)"/>',
 });
 
+/* ---------- Schein-Laufbahnen je Teilstreitkraft ---------- */
+DIENSTE.push(
+  {id:'boxer_d', name:'Patrouille mit dem Boxer', min:90, st:20, pay:450, q:3, bp:11, t:0, fs:'boxer', tsk:'heer', hideFor:['G'],
+   desc:'Erkundungsfahrt durch die Heide. Acht Räder, null Schlaglöcher, die der Boxer ernst nimmt.'},
+  {id:'puma_d', name:'Gefechtsfahrt mit dem Puma', min:150, st:30, pay:900, q:2, bp:20, t:0, fs:'puma', tsk:'heer', hideFor:['G'],
+   desc:'Den Schützentrupp ins Gefecht bringen. Abgesessen wird da, wo es laut ist.'},
+  {id:'leo_d', name:'Gefechtsschießen Leopard 2', min:180, st:35, pay:1150, q:2, bp:26, t:0, fs:'leo', tsk:'heer', hideFor:['G'],
+   desc:'Scharfschießen auf dem Übungsplatz. Der Boden bebt, die Kantine auch.'},
+  {id:'nh90_d', name:'Lufttransport NH90', min:180, st:25, pay:1300, q:2, bp:30, t:0, fs:'nh90', tsk:'heer',
+   desc:'Eine Gruppe Infanterie zur Außenlandung bringen. Tief, schnell und pünktlich.'},
+  {id:'tankw_d', name:'Luftfahrzeuge betanken', min:45, st:12, pay:220, q:4, bp:7, t:0, fs:'tankw', tsk:'lw', hideFor:['G'],
+   desc:'Von Shelter zu Shelter. Jeder Jet will voll, keiner bedankt sich.'},
+  {id:'chinook_d', name:'Lufttransport Chinook', min:150, st:25, pay:1100, q:2, bp:24, t:0, fs:'chinook', tsk:'lw', hideFor:['G'],
+   desc:'Ein Geländewagen als Außenlast. Unten winkt der Einweiser, oben schwitzt du.'},
+  {id:'a400m_d', name:'Transportflug A400M', min:240, st:30, pay:1600, q:1, bp:34, t:0, fs:'a400m', tsk:'lw',
+   desc:'Material und Truppe quer durch Europa. Rampe auf, Rampe zu, Heimflug.'},
+  {id:'ef_d', name:'Alarmrotte Eurofighter', min:240, st:35, pay:2200, q:1, bp:45, t:0, fs:'ef', tsk:'lw',
+   desc:'Bereitschaft in der Alarmrotte. Fünfzehn Minuten vom Alarm bis zum Start. Meistens ist es ein Funkausfall.'},
+  {id:'sbs_d', name:'Barkassendienst', min:30, st:10, pay:120, q:4, bp:4, t:0, fs:'sbs', tsk:'marine', hideFor:['G'],
+   desc:'Mit der Barkasse Leute vom Schiff an Land bringen. Und zurück, wenn sie den Landgang überlebt haben.'},
+  {id:'speed_d', name:'Küstenpatrouille', min:90, st:25, pay:650, q:2, bp:16, t:0, fs:'speed', tsk:'marine', hideFor:['G'],
+   desc:'Mit dem Speedboot die Küste entlang. Salzwasser im Gesicht, Seebataillon im Rücken.'},
+  {id:'wo_d', name:'Brückenwache als Wachoffizier', min:240, st:25, pay:1400, q:1, bp:30, t:0, fs:'wo', tsk:'marine',
+   desc:'Vier Stunden Verantwortung für das ganze Schiff. Der Kommandant ruft zweimal an. Einfach so.'},
+  {id:'p8_d', name:'Seeraumüberwachung P-8A', min:240, st:30, pay:1600, q:1, bp:34, t:0, fs:'p8', tsk:'marine',
+   desc:'Langstreckenflug über Nord- und Ostsee. Irgendwo da unten ist etwas. Vielleicht ein Wal.'}
+);
+Object.assign(DIENST_ART, {boxer_d:'boxer', puma_d:'tank', leo_d:'tank', nh90_d:'heli', tankw_d:'truck', chinook_d:'heli', a400m_d:'plane', ef_d:'jet', sbs_d:'speedboat', speed_d:'speedboat', wo_d:'ship', p8_d:'plane'});
+Object.assign(ARTS, {
+  heli:'<ellipse cx="54" cy="34" rx="22" ry="11" fill="var(--olive)"/><path d="M74 31h30l4-8h4l-2 12H74z" fill="var(--olive)"/><path d="M44 30a10 9 0 0 1 12-8h6v8z" fill="#BCD1DC"/><path d="M14 18h80" stroke="#1C2217" stroke-width="3"/><rect x="52" y="18" width="4" height="6" fill="#1C2217"/><path d="M106 18v12M100 24h12" stroke="#1C2217" stroke-width="2"/><path d="M42 48h28M46 44v4M66 44v4" stroke="#1C2217" stroke-width="2.5"/>',
+  jet:'<path d="M10 36l20-4h50l26 4-26 4H30z" fill="var(--olive)"/><path d="M48 36l26-22h8l-14 22zM48 36l26 14h6l-12-14z" fill="var(--olive)"/><path d="M84 32l10-14h5l-5 14z" fill="var(--olive)"/><path d="M28 32a8 4 0 0 1 14-2v2z" fill="#BCD1DC"/><path d="M104 36h10" stroke="#E3B23C" stroke-width="3"/>',
+  boxer:'<path d="M18 22h64l14 10v12H18z" fill="var(--olive)"/><rect x="26" y="26" width="10" height="5" fill="#BCD1DC"/><rect x="52" y="16" width="16" height="6" fill="var(--olive)"/><path d="M66 18h16" stroke="var(--olive)" stroke-width="3"/>'
+    + [28, 44, 66, 82].map(x => '<circle cx="' + x + '" cy="46" r="6.5" fill="#1C2217"/><circle cx="' + x + '" cy="46" r="2.5" fill="var(--metal)"/>').join(''),
+  speedboat:'<path d="M16 38h70l14-8v4l-10 12H24z" fill="#3D4A33"/><path d="M16 38h70" stroke="#1C2217" stroke-width="5" stroke-linecap="round"/><rect x="52" y="26" width="16" height="10" fill="var(--metal)"/><path d="M60 26v-8" stroke="#1C2217" stroke-width="2"/><path d="M4 48c6-3 12 3 18 0s12-3 18 0" stroke="#fff" stroke-width="2" fill="none" opacity=".7"/>',
+});
+// Tätigkeitsabzeichen für die Schein-Laufbahnen
+ORDEN.splice(ORDEN.findIndex(o => o.id === 'bandit'), 0,
+  {id:'tk_kfz', grp:'ta', tier:0, name:'Tätigkeitsabzeichen Militärkraftfahrer', req:'Führerscheine Klasse C und CE', cond:() => fsHas('c') && fsHas('ce')},
+  {id:'tk_lfz', grp:'ta', tier:2, name:'Tätigkeitsabzeichen Militärluftfahrzeugführer', req:'Ein Flugschein: NH90, Chinook, A400M, Eurofighter oder P-8A', cond:() => ['nh90','chinook','a400m','ef','p8'].some(fsHas)},
+  {id:'tk_top', grp:'fs', tier:2, name:'Spitze der Laufbahn (inoffiziell)', req:'Den höchsten Schein deiner Teilstreitkraft: Leopard 2, Eurofighter oder Wachoffizier', cond:() => fsHas('leo') || fsHas('ef') || fsHas('wo')}
+);
 const D = Object.fromEntries(DIENSTE.map(d=>[d.id,d]));
 D.uvd.hideFor = ['A','O','G']; D.spez.hideFor = ['U','F','A','O','G'];
 D.innen.hideFor = ['O','G']; D.wache.hideFor = ['O','G']; D.formal.hideFor = ['G'];
@@ -3089,7 +3179,7 @@ function fmtAgo(ts){
 /* =========================================================
    WETTER UND JAHRESZEITEN – gilt für alle Spieler gleich, ändert sich täglich
    ========================================================= */
-const OUT_IDS = ['formal','wache','gelaende','uebung','ga_marsch','v_inf','lw_vorfeld','lw_flugplatz','m_seewache','m_hafenwache','kette_d','schlepp_d','boot_d','schnee','freibad','e_patr','e_wache','e_konvoi'];
+const OUT_IDS = ['boxer_d','puma_d','leo_d','tankw_d','sbs_d','speed_d','formal','wache','gelaende','uebung','ga_marsch','v_inf','lw_vorfeld','lw_flugplatz','m_seewache','m_hafenwache','kette_d','schlepp_d','boot_d','schnee','freibad','e_patr','e_wache','e_konvoi'];
 const WETTER = {
   sonne:   {name:'Sonnig',      fx:{}, desc:'Bestes Dienstwetter. Keine Ausreden.'},
   wolken:  {name:'Bewölkt',     fx:{}, desc:'Grau, aber trocken. Typisch norddeutsch.'},
@@ -3299,7 +3389,7 @@ const FS_EXAMS = FAHRSCHULE.map(x => ({id:'fsx_'+x.id, who:'krueger', ctx:['fsx'
         ce:'Prüfung Klasse CE. Anhänger ankuppeln, rückwärts um die Ecke, und der Prüfer hat heute schlechte Laune.',
         kette:'Prüfung Kettenfahrzeug auf dem Übungsplatz. Schlamm bis zur Kette und eine Brücke, die schon bessere Tage gesehen hat.',
         schlepp:'Prüfung Flugzeugschlepper. Ein Eurofighter am Haken, der Staffelkapitän schaut von der Tür aus zu.',
-        boot:'Prüfung Bootsführerschein. Anlegen an der Pier bei auflandigem Wind. Die halbe Besatzung schaut zu.'}[x.id] || 'Fahrprüfung.',
+        boot:'Prüfung Bootsführerschein. Anlegen an der Pier bei auflandigem Wind. Die halbe Besatzung schaut zu.'}[x.id] || x.exam || 'Fahrprüfung.',
   ch:[
    {t:'Konzentriert und nach Vorschrift', roll:{stat:'fachwissen', base:45},
      ok:{t:'Fehlerfrei. Der Prüfer unterschreibt, ohne aufzusehen. Bei ihm ist das ein Kompliment.', fx:{fs:x.id, bp:3}},
@@ -3309,6 +3399,40 @@ const FS_EXAMS = FAHRSCHULE.map(x => ({id:'fsx_'+x.id, who:'krueger', ctx:['fsx'
      fail:{t:'Zu locker. Der Prüfer hat Kaffee auf der Hose und schreibt „nicht bestanden“.', fx:{fsFail:x.id}}},
   ]}));
 EVENTS.push(...FS_EXAMS);
+// Meldungen rund um die neuen Fahrzeuge
+EVENTS.push(
+ {id:'fz_leo_reh', who:'spiess', tsk:'heer', ctx:['leo_d','puma_d','boxer_d'], text:'Auf der Panzerstraße steht ein Reh und schaut dein Fahrzeug an. Es hat offenbar keine Angst vor 60 Tonnen.',
+  ch:[
+   {t:'Anhalten und warten', out:{t:'Das Reh geht nach drei Minuten. Der Kommandant nennt es „taktische Pause“.', fx:{bp:3, rel:{lena:2}}}},
+   {t:'Kurz hupen', roll:{stat:'vitaminb', base:50}, ok:{t:'Das Reh springt elegant davon. Die Besatzung applaudiert.', fx:{bp:4}}, fail:{t:'Das Reh bleibt stehen. Ein zweites kommt dazu.', fx:{bp:-1, rel:{kalle:2}}}},
+  ]},
+ {id:'fz_heli_wind', who:'chef', tsk:'heer', ctx:['nh90_d'], text:'Außenlandung auf der Waldlichtung. Kurz vor dem Aufsetzen dreht der Wind und drückt den Hubschrauber zur Seite.',
+  ch:[
+   {t:'Durchstarten und neu anfliegen', out:{t:'Sauber durchgestartet, zweiter Anflug perfekt. Die Infanterie hat nichts gemerkt.', fx:{bp:6}}},
+   {t:'Gegensteuern und landen', roll:{stat:'fachwissen', base:50}, ok:{t:'Butterweich aufgesetzt. Der Kommandant nickt. Das ist sein Lob.', fx:{bp:8, rel:{chef:3}}}, fail:{t:'Etwas hart aufgesetzt. Die Infanterie hat es sehr wohl gemerkt.', fx:{bp:-2}}},
+  ]},
+ {id:'fz_ef_alarm', who:'chef', tsk:'lw', ctx:['ef_d'], text:'Alarm! Ein ziviles Flugzeug antwortet nicht auf Funk. Die Alarmrotte startet.',
+  ch:[
+   {t:'Nach Verfahren heranfliegen und Sichtkontakt aufnehmen', out:{t:'Der Pilot der Maschine winkt verlegen. Funkgerät auf der falschen Frequenz. Alles gut.', fx:{bp:10, rel:{chef:3}}}},
+   {t:'Mit Leuchtsignalen auf dich aufmerksam machen', roll:{stat:'fachwissen', base:55}, ok:{t:'Er sieht dich sofort und meldet sich. Lehrbuchmäßig.', fx:{bp:12}}, fail:{t:'Er sieht dich erst beim dritten Mal. Der Bericht wird lang.', fx:{bp:2}}},
+  ]},
+ {id:'fz_tank_regen', who:'kalle', tsk:'lw', ctx:['tankw_d','chinook_d','a400m_d'], text:'Gewitter zieht auf. Auf dem Vorfeld wird es hektisch, und drei Maschinen wollen gleichzeitig betankt werden.',
+  ch:[
+   {t:'Nach Vorschrift: bei Gewitter wird nicht betankt', out:{t:'Richtig. Der Staffelkapitän bedankt sich später persönlich.', fx:{bp:6, rel:{spiess:2}}}},
+   {t:'Schnell noch eine Maschine fertig machen', roll:{stat:'fitness', base:40}, ok:{t:'Gerade noch geschafft, bevor der Regen kommt. Glück gehabt.', fx:{bp:2, money:60}}, fail:{t:'Der Blitz schlägt in der Nähe ein, und du bekommst einen Anpfiff.', fx:{bp:-4}}},
+  ]},
+ {id:'fz_wo_fischer', who:'chef', tsk:'marine', ctx:['wo_d'], text:'Nachtwache. Ein Fischkutter kreuzt deinen Kurs und reagiert nicht auf Funk.',
+  ch:[
+   {t:'Fahrt verringern, ein langer Ton, und den Kommandanten wecken', out:{t:'Der Kutter dreht ab. Der Kommandant brummt etwas, aber es klingt zufrieden.', fx:{bp:7, rel:{chef:2}}}},
+   {t:'Selbst ausweichen, nach Steuerbord', roll:{stat:'fachwissen', base:50}, ok:{t:'Sauber nach Regeln ausgewichen. Im Logbuch steht ein ruhiger Satz.', fx:{bp:8}}, fail:{t:'Etwas knapp. Der Kutter hupt, und der Kommandant ist plötzlich wach.', fx:{bp:-2}}},
+  ]},
+ {id:'fz_speed_gischt', who:'lena', tsk:'marine', ctx:['speed_d','sbs_d'], text:'Hohe Welle in der Förde. Das Seebataillon will schnell rüber, die Gischt kommt von vorn.',
+  ch:[
+   {t:'Fahrt anpassen, schräg in die Welle', out:{t:'Alle kommen trocken an. Fast alle. Lena nicht, aber sie lacht.', fx:{bp:4, rel:{lena:3}}}},
+   {t:'Vollgas, das Boot kann das', roll:{stat:'fitness', base:45}, ok:{t:'Spektakulär. Das Video geht durchs ganze Bataillon.', fx:{bp:5, rel:{kalle:3}}}, fail:{t:'Ein Rucksack geht über Bord. Er gehörte dem Zugführer.', fx:{bp:-3}}},
+  ]}
+);
+
 /* Fahrzeug-Kontingent pro Tag und Routine-Abzug */
 function dqUsed(id){ return S.dq && S.dq.day === dateStr() ? (S.dq.n[id] || 0) : 0; }
 function dqAdd(id){ if(!S.dq || S.dq.day !== dateStr()) S.dq = {day:dateStr(), n:{}}; S.dq.n[id] = (S.dq.n[id] || 0) + 1; }
@@ -3322,6 +3446,8 @@ function fsReqs(x){
   const out = [];
   if(x.need) out.push({label:'Führerschein ' + FS_I[x.need].name, ok:fsHas(x.need)});
   if(x.t) out.push({label:'Dienstgrad ab ' + RANKS.find(r=>r.t===x.t).name, ok:G.rank().t >= x.t});
+  if(x.off) out.push({label:'Offizier oder Offizieranwärter', ok:['A','O','G'].includes(G.rank().g)});
+  if(x.note) out.push({label:'Beurteilung „' + NOTES[x.note] + '“', ok:G.note() <= x.note});
   return out;
 }
 function fsStart(id){
@@ -3346,8 +3472,8 @@ function fsTick(events){
 function renderFahrschule(){
   S.fsDone = S.fsDone || {};
   let h = '<h2>Fahrschule</h2><p class="small muted">Führerscheine laufen parallel zu Ausbildung, Lehrgang und Dienst. Jeder Schein schaltet neue Fahrdienste frei.'
-    + (vb()==='kfz' ? ' Als Kraftfahrer bist du 30 % schneller und zahlst 20 % weniger.' : '') + '</p><div class="cards">';
-  h += FAHRSCHULE.filter(x => !x.tsk || x.tsk === S.tsk).map(x => {
+    + (vb()==='kfz' ? ' Als Kraftfahrer bist du 30 % schneller und zahlst 20 % weniger.' : '') + '</p>';
+  const card = x => {
     const done = fsHas(x.id), run = S.fs && S.fs.id === x.id, reqs = fsReqs(x), ok = reqs.every(r=>r.ok), c = fsCost(x);
     const frei = DIENSTE.filter(d => d.fs === x.id).map(d => d.name).join(', ');
     let inner = '<p class="flv">' + esc(x.desc) + '</p>' + (frei ? '<p class="eff">Schaltet frei: ' + esc(frei) + '</p>' : '');
@@ -3357,7 +3483,13 @@ function renderFahrschule(){
       + (S.fsRetry && S.fsRetry[x.id] ? '<div class="small muted">Wiederholung zum halben Preis</div>' : '')
       + '<button class="btn wide" data-act="fs" data-id="' + x.id + '" ' + ((!ok || S.fs || S.money < c) ? 'disabled' : '') + '>Anmelden<small>' + eur(c) + '</small></button>';
     return acard(x.name + ' · ' + x.sub, x.art, inner, run);
-  }).join('') + '</div>';
+  };
+  const basis = FAHRSCHULE.filter(x => !x.tsk), lauf = FAHRSCHULE.filter(x => x.tsk === S.tsk).sort((a, b) => a.cost - b.cost);
+  const TN = {heer:'Heer', lw:'Luftwaffe', marine:'Marine'}[S.tsk || 'heer'];
+  h += '<h3 class="fsgrp">Grundscheine für alle</h3><div class="cards">' + basis.map(card).join('') + '</div>';
+  h += '<h3 class="fsgrp">Laufbahn ' + TN + '</h3><p class="small muted" style="margin:0 0 8px">Eigene Fahrzeuge und Luftfahrzeuge deiner Teilstreitkraft. Jede Stufe schaltet einen besser bezahlten Dienst frei, die höchsten Scheine gibt es nur für Offiziere.</p>'
+    + '<div class="fsladder">' + lauf.map(x => '<span class="' + (fsHas(x.id) ? 'ok' : fsReqs(x).every(r => r.ok) ? 'frei' : '') + '">' + (fsHas(x.id) ? '✓ ' : x.off ? '★ ' : '') + esc(x.name) + '</span>').join('') + '</div>'
+    + '<div class="cards">' + lauf.map(card).join('') + '</div>';
   return h;
 }
 
@@ -3372,6 +3504,7 @@ const WA_INTRO = [
   'Wer das bis Sonntag schafft, hat bei mir einen Stein im Brett. Einen kleinen.',
 ];
 const WA_TYPES = [
+  {id:'mini', ev:'mini', n:[2,3,5], txt:n=>n+' Wertungsläufe auf dem Übungsplatz'},
   {id:'dienste', ev:'dienst', n:[4,7,10], txt:n=>n+' Dienste beenden'},
   {id:'draussen', ev:'draussen', n:[3,5,7], txt:n=>n+' Dienste draußen bei Wind und Wetter'},
   {id:'dienst_x', ev:'dienst_x', n:[2,3,4], txt:(n,w)=>n+'× ' + (D[w.d] ? D[w.d].name : 'Dienst')},
@@ -3517,10 +3650,97 @@ const FS_FRAGEN = {
   {q:'Welches Sprechfunk-Notsignal wird bei unmittelbarer Gefahr gesendet?', a:['Pan-Pan','Sécurité','Mayday','Roger'], c:2},
  ],
 };
+// Theoriefragen
+const FQ_HELI = [
+  {q:'Wofür ist beim Hubschrauber mit einem Hauptrotor der Heckrotor da?', a:['Für mehr Geschwindigkeit','Um das Drehmoment des Hauptrotors auszugleichen','Zum Bremsen nach der Landung','Zur Kühlung des Triebwerks'], c:1},
+  {q:'Was bedeutet Autorotation?', a:['Der Autopilot steuert allein','Der Rotor dreht sich ohne Triebwerksleistung durch den Luftstrom, so ist eine Notlandung möglich','Der Rotor dreht rückwärts','Der Hubschrauber dreht sich um die Hochachse'], c:1},
+  {q:'Womit verstellt der Pilot die Rotorblätter gemeinsam, um zu steigen oder zu sinken?', a:['Mit dem Steuerknüppel (zyklisch)','Mit dem Pitch-Hebel (kollektiv)','Mit den Pedalen','Mit dem Gashebel allein'], c:1},
+  {q:'Was bewirken beim Hubschrauber die Pedale?', a:['Die Drehung um die Hochachse über den Heckrotor','Das Bremsen am Boden','Das Ausfahren des Fahrwerks','Das Steigen'], c:0},
+  {q:'Wofür steht VFR?', a:['Sichtflugregeln','Instrumentenflugregeln','Verbandsflugregeln','Vorfeldregeln'], c:0},
+];
+const FQ_FLUG = [
+  {q:'Welche Frequenz ist die internationale Notfrequenz der Luftfahrt?', a:['118,0 MHz','121,5 MHz','124,6 MHz','156,8 MHz'], c:1},
+  {q:'Welchen Transpondercode schaltet man bei einem Luftnotfall?', a:['7000','7500','7600','7700'], c:3},
+  {q:'Welcher Transpondercode bedeutet Funkausfall?', a:['7600','7700','2000','1200'], c:0},
+  {q:'Wofür steht IFR?', a:['Sichtflugregeln','Instrumentenflugregeln','Internationale Fliegerrichtlinie','Interner Funkruf'], c:1},
+  {q:'Wer erteilt auf einem kontrollierten Flugplatz die Startfreigabe?', a:['Der Staffelkapitän','Der Tower (Flugverkehrskontrolle)','Der Wart','Der Kopilot'], c:1},
+  {q:'Was ruft man im Sprechfunk bei unmittelbarer Gefahr für Leib und Leben?', a:['Pan-Pan','Mayday','Roger','Wilco'], c:1},
+];
+const FQ_SEE = [
+  {q:'Wie heißt in Fahrtrichtung gesehen die linke Seite eines Schiffes?', a:['Steuerbord','Backbord','Achtern','Luv'], c:1},
+  {q:'Welche Farbe hat das Hecklicht eines Fahrzeugs in Fahrt?', a:['Rot','Grün','Weiß','Gelb'], c:2},
+  {q:'Was bedeutet ein langer Ton als Schallsignal?', a:['Ich ändere meinen Kurs nach Steuerbord','Achtung','Meine Maschine geht rückwärts','Ich will überholen'], c:1},
+  {q:'Was bedeutet ein kurzer Ton?', a:['Ich ändere meinen Kurs nach Steuerbord','Ich ändere meinen Kurs nach Backbord','Meine Maschine geht rückwärts','Achtung'], c:0},
+  {q:'Was bedeuten drei kurze Töne?', a:['Ich ändere meinen Kurs nach Backbord','Meine Maschine geht rückwärts','Ich bin manövrierunfähig','Achtung'], c:1},
+  {q:'Was ist bei „Mensch über Bord“ als Erstes zu tun?', a:['Den Kurs halten und Hilfe holen','Laut „Mensch über Bord“ rufen, Rettungsmittel werfen und die Person nicht aus den Augen lassen','Sofort hinterherspringen','Die Maschine abstellen und warten'], c:1},
+  {q:'Ein Maschinenfahrzeug überholt ein anderes. Wer muss ausweichen?', a:['Das überholte Fahrzeug','Das überholende Fahrzeug','Beide','Das größere Fahrzeug'], c:1},
+  {q:'Welcher UKW-Kanal ist im Seefunk für Not-, Dringlichkeits- und Anrufverkehr vorgesehen?', a:['Kanal 6','Kanal 16','Kanal 70','Kanal 72'], c:1},
+];
+Object.assign(FS_FRAGEN, {
+  boxer:[
+    {q:'Welche Antriebsart hat der Radpanzer Boxer?', a:['Ketten','Acht angetriebene Räder (8×8)','Halbketten','Vier Räder'], c:1},
+    {q:'Was ist das Besondere am Bauprinzip des Boxer?', a:['Er kann schwimmen','Das Missionsmodul lässt sich auf dem Fahrmodul tauschen','Er hat keinen Fahrer','Er fährt elektrisch'], c:1},
+    {q:'Was führen Sie vor jeder Fahrt mit einem Dienstfahrzeug durch?', a:['Eine Abfahrtkontrolle','Eine Probefahrt mit Vollgas','Nichts, das macht die Werkstatt','Eine Reifenwäsche'], c:0},
+    {q:'Wer gibt bei einer Marschkolonne Tempo und Abstände vor?', a:['Jeder Fahrer selbst','Der Marschbefehl und der Kolonnenführer','Das letzte Fahrzeug','Die Polizei'], c:1},
+    {q:'Was ist beim Rückwärtsfahren mit eingeschränkter Sicht erforderlich?', a:['Nichts Besonderes','Ein Einweiser','Hupen genügt','Schneller fahren'], c:1},
+  ],
+  puma:[
+    {q:'Was für ein Fahrzeug ist der Puma?', a:['Ein Kampfpanzer','Ein Schützenpanzer','Ein Bergepanzer','Ein Radpanzer'], c:1},
+    {q:'Wen transportiert der Puma neben seiner Besatzung?', a:['Verwundete','Einen Schützentrupp Panzergrenadiere','Munition für die Artillerie','Niemanden'], c:1},
+    {q:'Wie lenkt ein Kettenfahrzeug?', a:['Mit lenkbaren Vorderrädern','Über unterschiedliche Geschwindigkeiten der beiden Ketten','Mit einem Heckruder','Gar nicht, es fährt nur geradeaus'], c:1},
+    {q:'Wer gibt im Panzer dem Fahrer die Fahrbefehle?', a:['Der Richtschütze','Der Kommandant','Der Ladeschütze','Der Funker der Kompanie'], c:1},
+    {q:'Woran erkennen Sie, ob eine Brücke Ihr Kettenfahrzeug trägt?', a:['An der Farbe der Brücke','An der Militärischen Lastenklasse (MLC) auf dem Schild','Am Alter der Brücke','Gar nicht, einfach drüberfahren'], c:1},
+  ],
+  leo:[
+    {q:'Wie viele Soldaten bilden die Besatzung eines Leopard 2?', a:['Zwei','Drei','Vier','Sechs'], c:2},
+    {q:'Welche Positionen hat die Besatzung eines Leopard 2?', a:['Kommandant, Richtschütze, Ladeschütze, Fahrer','Pilot, Kopilot, Funker, Fahrer','Kommandant, zwei Fahrer, Sanitäter','Fahrer, Beifahrer, zwei Schützen'], c:0},
+    {q:'Welches Kaliber hat die Hauptwaffe des Leopard 2?', a:['90 mm','105 mm','120 mm','155 mm'], c:2},
+    {q:'Wer bedient im Leopard 2 die Hauptwaffe?', a:['Der Fahrer','Der Richtschütze','Der Ladeschütze','Der Kommandant allein'], c:1},
+    {q:'Wofür steht MLC an Brücken und Fahrzeugen?', a:['Military Load Class, die militärische Lastenklasse','Main Light Cannon','Mobile Logistic Center','Maximum Lane Capacity'], c:0},
+  ],
+  nh90: FQ_HELI.concat([
+    {q:'Wofür setzen die Heeresflieger den NH90 hauptsächlich ein?', a:['Als Kampfjet','Für Transport von Personal und Material','Als Tankflugzeug','Zur Seenotrettung auf hoher See'], c:1},
+  ]),
+  tankw:[
+    {q:'Was machen Sie vor dem Betanken eines Luftfahrzeugs zuerst?', a:['Den Tankwagen erden und mit dem Luftfahrzeug verbinden, um statische Aufladung abzuleiten','Den Motor laufen lassen','Den Tank öffnen und abwarten','Den Piloten fragen, ob er Durst hat'], c:0},
+    {q:'Wer hat auf dem Vorfeld grundsätzlich Vorrang?', a:['Tankwagen','Schlepper','Rollende Luftfahrzeuge','Fußgänger'], c:2},
+    {q:'Wofür steht FOD auf einem Flugplatz?', a:['Fremdkörper, die Triebwerke und Reifen schädigen können','Flugdienst','Feuerwehr-Objektdienst','Funkdisziplin'], c:0},
+    {q:'Was ist beim Umgang mit Kerosin am Luftfahrzeug verboten?', a:['Handschuhe tragen','Rauchen und offenes Feuer','Gehörschutz tragen','Eine Checkliste benutzen'], c:1},
+    {q:'Was ist beim Rückwärtsfahren mit eingeschränkter Sicht erforderlich?', a:['Nichts Besonderes','Ein Einweiser','Hupen genügt','Schneller fahren'], c:1},
+  ],
+  chinook: FQ_HELI.concat([
+    {q:'Was ist das Besondere an der CH-47 Chinook?', a:['Sie hat Tragflächen','Sie hat zwei Hauptrotoren hintereinander','Sie kann tauchen','Sie fliegt ohne Pilot'], c:1},
+    {q:'Warum braucht die Chinook keinen Heckrotor?', a:['Weil sie langsam fliegt','Weil sich die beiden gegenläufigen Rotoren im Drehmoment ausgleichen','Weil sie einen Propeller hat','Weil der Pilot gegensteuert'], c:1},
+  ]),
+  a400m: FQ_FLUG.concat([
+    {q:'Wie viele Triebwerke hat der A400M?', a:['Zwei','Drei','Vier','Sechs'], c:2},
+    {q:'Welche Triebwerksart hat der A400M?', a:['Strahltriebwerke','Propellerturbinen (Turboprop)','Kolbenmotoren','Raketentriebwerke'], c:1},
+  ]),
+  ef: FQ_FLUG.concat([
+    {q:'Wie viele Triebwerke hat der Eurofighter?', a:['Eins','Zwei','Drei','Vier'], c:1},
+    {q:'Was bedeutet Mach 1?', a:['1.000 km/h','Schallgeschwindigkeit','Die Hälfte der Schallgeschwindigkeit','Die Startgeschwindigkeit'], c:1},
+    {q:'Was ist die Alarmrotte (QRA)?', a:['Eine Kunstflugstaffel','Jets in ständiger Bereitschaft, die bei Luftraumverletzungen schnell starten','Die Flugzeugwerkstatt','Ein Ausbildungsflug'], c:1},
+    {q:'Wozu trägt der Pilot einen Anti-g-Anzug?', a:['Gegen Kälte','Damit bei hoher Belastung das Blut nicht in die Beine sackt und er nicht bewusstlos wird','Als Schwimmweste','Zum Schutz vor Feuer'], c:1},
+  ]),
+  sbs: FQ_SEE.slice(0, 6).concat(FS_FRAGEN.boot.slice(0, 2)),
+  speed: FQ_SEE.concat([
+    {q:'Was ist ein Knoten?', a:['Ein Kilometer pro Stunde','Eine Seemeile pro Stunde','Eine Meile pro Minute','Ein Meter pro Sekunde'], c:1},
+  ]),
+  wo: FQ_SEE.slice(3).concat([
+    {q:'Wie lang ist eine Seemeile?', a:['1.000 m','1.609 m','1.852 m','2.000 m'], c:2},
+    {q:'Welches Licht führt ein Maschinenfahrzeug in Fahrt zusätzlich zu Seitenlichtern und Hecklicht?', a:['Ein rotes Rundumlicht','Ein weißes Topplicht','Ein blaues Blinklicht','Kein weiteres Licht'], c:1},
+    {q:'Wer führt das Schiff während der Wache in Vertretung des Kommandanten?', a:['Der Smut','Der Wachoffizier','Der Bootsmann','Der Lotse immer'], c:1},
+  ]),
+  p8: FQ_FLUG.slice(0, 4).concat([
+    {q:'Wofür setzt die Marine die P-8A Poseidon ein?', a:['Als Transportflugzeug für Truppen','Zur Seefernaufklärung und U-Boot-Jagd','Als Tankflugzeug','Zur Brandbekämpfung'], c:1},
+    {q:'Womit kann ein Seefernaufklärer aus der Luft U-Boote orten?', a:['Mit Sonarbojen','Mit einem Fernglas','Mit Wetterballons','Mit Leuchtraketen'], c:0},
+    {q:'Welcher UKW-Kanal ist im Seefunk für Not-, Dringlichkeits- und Anrufverkehr vorgesehen?', a:['Kanal 6','Kanal 16','Kanal 70','Kanal 72'], c:1},
+  ]),
+});
 function fsFragen(id){
   const shuf = a => a.slice().sort(() => Math.random() - .5);
   const own = shuf(FS_FRAGEN[id] || []), extra = id === 'ce' ? FS_FRAGEN.c : id === 'kette' ? FS_FRAGEN.c : FS_FRAGEN.b;
-  const n = id === 'b' ? 5 : Math.min(3, own.length);
+  const n = (id === 'b' || own.length >= 5) ? 5 : Math.min(3, own.length);
   let qs = own.slice(0, n);
   if(qs.length < 5) qs = qs.concat(shuf(extra.filter(x => !qs.includes(x))).slice(0, 5 - qs.length));
   return qs.map(x => { const ord = shuf(x.a.map((t, i) => i)); return {q:x.q, opts:ord.map(i => ({t:x.a[i]})), c:ord.indexOf(x.c), right:x.a[x.c]}; });
@@ -3751,6 +3971,20 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:11, d:'19.11.2026', t:'Der Übungsplatz ist eröffnet', p:[
+    'Neu unter Ausbildung: Übungsplatz mit drei Minispielen zum Selberspielen',
+    'Schießstand: Ziele treffen, Zivilisten verschonen, rechtzeitig nachladen',
+    'Basis-Fitness-Test: Sprint, Klimmhang und 1000-Meter-Lauf',
+    'Spindkontrolle: sechs Fehler in 30 Sekunden finden, bevor der Spieß kommt',
+    'Jeden Tag ein Wertungslauf pro Station mit Belohnung für Bronze, Silber und Gold, danach freies Training',
+    {o:1, x:'Wochenbestenliste für jede Station, startet jeden Montag neu'}] },
+  {v:10, d:'19.11.2026', t:'Eigene Laufbahn für Heer, Luftwaffe und Marine', p:[
+    'Neue Scheine in der Fahrschule, je Teilstreitkraft fünf Stufen bis ganz nach oben',
+    'Heer: Boxer, Kettenfahrzeug, Puma, Leopard 2 und für Offiziere der Hubschrauber NH90',
+    'Luftwaffe: Tankwagen, Flugzeugschlepper, Chinook und für Offiziere A400M und Eurofighter (nur mit Bestnote)',
+    'Marine: Sportboot, Bootsführerschein, Speedboot und für Offiziere Wachoffizier und P-8A Poseidon',
+    'Jeder Schein mit eigener Theorieprüfung, eigenem Dienst und neuen Meldungen',
+    'Neue Auszeichnungen: Tätigkeitsabzeichen Militärkraftfahrer und Militärluftfahrzeugführer'] },
   {v:9, d:'19.11.2026', t:'Feedback direkt aus dem Spiel', p:[
     {o:1, x:'Neu in der Akte: Feedback. Ideen, Lob und Fehler gehen direkt an die Spielleitung'},
     'Hauptfeldwebel, Stabsfeldwebel, Oberstabsfeldwebel und Oberfähnrich tragen jetzt den richtigen Kopfwinkel'] },
@@ -3852,7 +4086,7 @@ function renderAkte(){
     + '</div>';
   h += '<h2>Statistik</h2><div class="panel pad"><div class="akstats">' + [
       ['Dienste', S.dienstCount || 0], ['Auslandseinsätze', S.einsaetze.length], ['Lehrgänge', lg.length + ' / ' + LEHRGAENGE.length],
-      ['Führerscheine', fs.length + ' / ' + FAHRSCHULE.length], ['Leistungsabzeichen', medalCount()], ['Orden', orden.length + ' / ' + ORDEN.length],
+      ['Scheine', fs.length + ' / ' + FAHRSCHULE.filter(x => !x.tsk || x.tsk === S.tsk).length], ['Leistungsabzeichen', medalCount()], ['Orden', orden.length + ' / ' + ORDEN.length],
       ['Sammelalbum', album + ' / ' + ITEMS.length], ['Vermögen', eur(S.money)],
     ].concat(typeof punkte === 'function' ? [['Ranglistenpunkte', punkte().toLocaleString('de-DE')]] : [])
      .map(([k, v]) => '<div><b>' + v + '</b><span>' + k + '</span></div>').join('') + '</div></div>';
@@ -3881,6 +4115,377 @@ function todoList(){
   return '<h2>Zu erledigen</h2><div class="panel todo">' + t.map(([ic, txt, btn, act, id, cls]) =>
     '<div class="row' + (cls === 'warn' ? ' warn' : '') + '"><span class="tdi" aria-hidden="true">' + ic + '</span><span class="tdt">' + txt + '</span><button class="btn mini' + (cls === 'gold' ? ' gold' : '') + '" data-act="' + act + '"' + (id ? ' data-id="' + id + '"' : '') + '>' + btn + '</button></div>').join('') + '</div>';
 }
+
+/* =========================================================
+   ÜBUNGSPLATZ: Minispiele Schießstand, Basis-Fitness-Test, Spindkontrolle
+   Pro Spiel und Tag zählt der erste Lauf als Wertungslauf mit Belohnung,
+   danach ist freies Training. Abbrechen zählt als Wertungslauf.
+   ========================================================= */
+const MG_GAMES = {
+  schiess:{name:'Schießstand', art:'range', tiers:[140, 220, 300], max:520, unit:'Ringe',
+    desc:'30 Sekunden, Magazin mit 8 Schuss. Ziele treffen, bevor sie verschwinden. Zivilisten nicht treffen!',
+    rules:['Mitte trifft 10 Ringe, außen 6. Daneben kostet 2.', 'Entkommene Ziele kosten 3, ein getroffener Zivilist kostet 15.', 'Nachladen dauert über eine Sekunde. Die Ziele werden kleiner und schneller.']},
+  bft:{name:'Basis-Fitness-Test', art:'run', tiers:[150, 205, 250], max:300, unit:'Punkte',
+    desc:'Drei Stationen wie beim echten BFT: Sprint, Klimmhang und 1000-Meter-Lauf.',
+    rules:['Sprint: abwechselnd links und rechts tippen, am Bahnende rechtzeitig wenden. Zweimal dieselbe Seite bringt dich ins Stolpern.', 'Klimmhang: Halten drücken und loslassen, um im grünen Bereich zu bleiben. Der Bereich wird enger, die Kraft lässt nach.', '1000 m: Tippen, wenn der Zeiger im grünen Feld ist. Daneben stolperst du.']},
+  spind:{name:'Spindkontrolle', art:'locker', tiers:[100, 150, 185], max:215, unit:'Punkte',
+    desc:'Der Spieß kommt in 30 Sekunden. Finde die 6 Fehler im Spind.',
+    rules:['Fehler antippen: schiefe Kleidung, schmutzige Stiefel, falsch gefaltete Wäsche, Dinge, die nicht in den Spind gehören.', 'Falsch getippt kostet 3 Sekunden.', 'Wer alle 6 findet, bekommt Bonuspunkte für die restliche Zeit.']},
+};
+const MG_TIER = ['Keine Stufe', 'Bronze', 'Silber', 'Gold'];
+const MG_REW = [null, {money:1, bp:3}, {money:2, bp:6}, {money:3.5, bp:10}];
+function mgState(){
+  const d = dateStr();
+  if(!S.mini) S.mini = {day:d, rew:{}, res:{}, best:{}, gold:{}};
+  if(S.mini.day !== d){ S.mini.day = d; S.mini.rew = {}; S.mini.res = {}; }
+  return S.mini;
+}
+function mgTier(g, sc){ const t = MG_GAMES[g].tiers; return sc >= t[2] ? 3 : sc >= t[1] ? 2 : sc >= t[0] ? 1 : 0; }
+
+let MG = null;
+function mgOpen(g, ranked){
+  const st = mgState();
+  if(ranked && st.rew[g]) ranked = false;
+  const G0 = MG_GAMES[g];
+  const W = Math.min(window.innerWidth - 24, 440), H = Math.max(300, Math.min(window.innerHeight - 250, 520));
+  MG = {g, ranked, phase:'intro', W, H, s:{}, raf:0};
+  document.getElementById('modalHost').innerHTML = '<div class="overlay mgov" role="dialog" aria-modal="true" aria-labelledby="mgt"><div class="mg">'
+    + '<div class="mgtop"><b id="mgt">' + esc(G0.name) + (ranked ? ' · Wertungslauf' : ' · Training') + '</b><span id="mgInfo" class="num"></span><button class="mgx" data-act="mg_close" aria-label="Schließen">✕</button></div>'
+    + '<div class="mgstage" style="width:' + W + 'px;height:' + H + 'px"><canvas id="mgC" width="' + W * 2 + '" height="' + H * 2 + '" style="width:' + W + 'px;height:' + H + 'px"></canvas><div class="mgmsg" id="mgMsg"></div></div>'
+    + '<div class="mgctl" id="mgCtl"></div></div></div>';
+  mgIntro();
+}
+function mgIntro(){
+  const G0 = MG_GAMES[MG.g], st = mgState();
+  document.getElementById('mgMsg').innerHTML = '<div class="mgcard"><p>' + esc(G0.desc) + '</p><ul>' + G0.rules.map(r => '<li>' + esc(r) + '</li>').join('') + '</ul>'
+    + '<p class="small">Stufen: Bronze ab ' + G0.tiers[0] + ', Silber ab ' + G0.tiers[1] + ', Gold ab ' + G0.tiers[2] + ' ' + G0.unit + '.' + (st.best[MG.g] ? ' Dein Bestwert: ' + st.best[MG.g] + '.' : '') + '</p>'
+    + (MG.ranked ? '<p class="small"><b>Wertungslauf:</b> Nur dieser Lauf zählt heute für die Belohnung. Abbrechen zählt mit.</p>' : '<p class="small">Training: keine Belohnung, aber der Bestwert zählt für die Wochenbestenliste.</p>')
+    + '<button class="btn gold wide" data-act="mg_go">Los geht’s</button></div>';
+  document.getElementById('mgCtl').innerHTML = '';
+}
+function mgGo(){
+  if(!MG || MG.phase !== 'intro') return;
+  if(MG.ranked){ const st = mgState(); st.rew[MG.g] = true; st.res[MG.g] = 0; save(); }
+  MG.phase = 'count'; const msg = document.getElementById('mgMsg');
+  let n = 3; msg.innerHTML = '<div class="mgcount">3</div>';
+  const iv = setInterval(() => { n--; if(!MG){ clearInterval(iv); return; } if(n > 0) msg.innerHTML = '<div class="mgcount">' + n + '</div>'; else { clearInterval(iv); msg.innerHTML = ''; mgStart(); } }, 700);
+}
+function mgStart(){
+  const c = document.getElementById('mgC'); if(!c || !MG) return;
+  MG.ctx = c.getContext('2d'); MG.ctx.setTransform(2, 0, 0, 2, 0, 0);
+  MG.phase = 'run'; MG.t0 = performance.now(); MG.last = MG.t0;
+  MG_IMPL[MG.g].init(MG.s, MG);
+  c.onpointerdown = e => { e.preventDefault(); if(MG && MG.phase === 'run'){ const r = c.getBoundingClientRect(); MG_IMPL[MG.g].down(MG.s, e.clientX - r.left, e.clientY - r.top, MG); } };
+  c.onpointerup = c.onpointercancel = c.onpointerleave = () => { if(MG && MG.phase === 'run' && MG_IMPL[MG.g].up) MG_IMPL[MG.g].up(MG.s, MG); };
+  const loop = now2 => {
+    if(!MG || MG.phase !== 'run' || !document.getElementById('mgC')) return;
+    const dt = Math.min(.05, (now2 - MG.last) / 1000); MG.last = now2;
+    const el = now2 - MG.t0;
+    const done = MG_IMPL[MG.g].frame(MG.s, el, dt, MG);
+    MG_IMPL[MG.g].draw(MG.s, MG.ctx, MG, el);
+    if(done) return mgEnd();
+    MG.raf = requestAnimationFrame(loop);
+  };
+  MG.raf = requestAnimationFrame(loop);
+}
+// Steuerknöpfe unter dem Spielfeld (reagieren sofort beim Antippen)
+function mgButtons(list){
+  const box = document.getElementById('mgCtl'); if(!box) return;
+  box.innerHTML = list.map(b => '<button class="btn ' + (b.cls || '') + '" data-mg="' + b.id + '" style="flex:' + (b.flex || 1) + '">' + b.label + '</button>').join('');
+  box.querySelectorAll('[data-mg]').forEach(el => {
+    el.onpointerdown = e => { e.preventDefault(); if(MG && MG.phase === 'run') MG_IMPL[MG.g].btn(MG.s, el.dataset.mg, true, MG); };
+    el.onpointerup = el.onpointercancel = el.onpointerleave = e => { if(MG && MG.phase === 'run' && MG_IMPL[MG.g].btnUp) MG_IMPL[MG.g].btnUp(MG.s, el.dataset.mg, MG); };
+    el.onclick = e => e.preventDefault();
+  });
+}
+function mgInfo(t){ const i = document.getElementById('mgInfo'); if(i) i.textContent = t; }
+function mgEnd(abort){
+  if(!MG) return;
+  cancelAnimationFrame(MG.raf);
+  const g = MG.g, G0 = MG_GAMES[g], st = mgState();
+  const sc = abort ? 0 : Math.max(0, Math.min(G0.max, Math.round(MG_IMPL[g].score(MG.s))));
+  const tier = mgTier(g, sc), neuBest = sc > (st.best[g] || 0);
+  if(neuBest) st.best[g] = sc;
+  let rew = '';
+  if(MG.ranked){
+    st.res[g] = sc;
+    if(tier){ const r = MG_REW[tier], m = Math.round(r.money * G.rank().sold); S.money += m; G.addPoints(r.bp); rew = eur(m) + ', ' + r.bp + ' Punkte'; if(tier === 3) st.gold[g] = (st.gold[g] || 0) + 1; }
+    if(typeof waAdd === 'function') try{ waAdd('mini', 1); }catch(e){}
+  }
+  save(); if(typeof mgMelden === 'function' && !abort && sc > 0) mgMelden(g, sc);
+  MG.phase = 'end';
+  const det = abort ? '' : (MG_IMPL[g].detail ? MG_IMPL[g].detail(MG.s) : '');
+  const msg = document.getElementById('mgMsg');
+  if(msg) msg.innerHTML = '<div class="mgcard mgres"><div class="stamp ' + (tier ? 'good' : '') + '">' + (abort ? 'ABGEBROCHEN' : MG_TIER[tier].toUpperCase()) + '</div>'
+    + '<div class="mgscore">' + sc + ' <small>' + G0.unit + '</small></div>' + (det ? '<p class="small" style="text-align:center">' + det + '</p>' : '')
+    + (neuBest && sc ? '<p style="text-align:center"><b>Neuer Bestwert!</b></p>' : '<p class="small muted" style="text-align:center">Bestwert: ' + (st.best[g] || 0) + '</p>')
+    + (MG.ranked ? (rew ? '<p style="text-align:center">Belohnung: <b>' + rew + '</b></p>' : '<p class="small" style="text-align:center">Keine Stufe erreicht. Morgen gibt es einen neuen Wertungslauf.</p>') : '')
+    + '<div style="display:flex;gap:8px;margin-top:10px"><button class="btn ghost" data-act="mg_close" style="flex:1">Wegtreten</button><button class="btn gold" data-act="mg_again" style="flex:1">Training</button></div></div>';
+  const box = document.getElementById('mgCtl'); if(box) box.innerHTML = '';
+  if(typeof render === 'function') setTimeout(() => { renderNav(); renderRes(); }, 0);
+}
+
+/* ---------- Schießstand ---------- */
+const MG_IMPL = {};
+MG_IMPL.schiess = {
+  init(s, M){ Object.assign(s, {dur:30000, tg:[], next:500, mag:8, rel:0, sc:0, fx:[], hits:0, shots:0, zivil:0, weg:0, el:0}); mgButtons([{id:'reload', label:'Nachladen', cls:'ghost'}]); },
+  frame(s, el, dt, M){
+    s.el = el; const p = Math.min(1, el / s.dur);
+    if(el >= s.next){
+      const kind = Math.random() < .16 ? 'zivil' : 'ziel', r = (33 - 13 * p) * (.85 + Math.random() * .3);
+      let x, y, k = 0;
+      do { x = r + 6 + Math.random() * (M.W - 2 * r - 12); y = r + 6 + Math.random() * (M.H - 2 * r - 12); k++; } while(k < 10 && s.tg.some(t => Math.hypot(t.x - x, t.y - y) < t.r + r + 6));
+      s.tg.push({x, y, r, kind, born:el, life:1150 - 500 * p});
+      s.next += 740 - 250 * p + (Math.random() * 220 - 110);
+    }
+    for(const t of s.tg.slice()) if(el - t.born > t.life){ s.tg.splice(s.tg.indexOf(t), 1); if(t.kind === 'ziel'){ s.sc -= 3; s.weg++; s.fx.push({x:t.x, y:t.y, t:'−3', c:'#E57373', at:el}); } }
+    if(s.rel && el >= s.rel){ s.rel = 0; s.mag = 8; }
+    s.fx = s.fx.filter(f => el - f.at < 700);
+    mgInfo(Math.max(0, Math.ceil((s.dur - el) / 1000)) + ' s · ' + Math.max(0, s.sc) + ' Ringe');
+    return el >= s.dur;
+  },
+  down(s, x, y, M){
+    const el = s.el;
+    if(s.rel) return;
+    if(s.mag <= 0){ s.fx.push({x, y, t:'Klick! Nachladen', c:'#E3B23C', at:el}); return; }
+    s.mag--; s.shots++;
+    let hit = null, best = 9;
+    for(const t of s.tg){ const cr = t.r * (1 - .35 * (el - t.born) / t.life), d = Math.hypot(t.x - x, t.y - y) / cr; if(d <= 1 && d < best){ best = d; hit = t; } }
+    if(!hit){ s.sc -= 2; s.fx.push({x, y, t:'−2', c:'#E57373', at:el}); return; }
+    s.tg.splice(s.tg.indexOf(hit), 1);
+    if(hit.kind === 'zivil'){ s.sc -= 15; s.zivil++; s.fx.push({x, y, t:'ZIVILIST −15', c:'#FF5252', at:el}); return; }
+    const pts = best < .2 ? 10 : best < .4 ? 9 : best < .6 ? 8 : best < .8 ? 7 : 6;
+    s.sc += pts; s.hits++; s.fx.push({x, y, t:'+' + pts, c:pts >= 9 ? '#FFD54F' : '#C5E1A5', at:el});
+  },
+  btn(s, id){ if(id === 'reload' && !s.rel && s.mag < 8) s.rel = s.el + 1150; },
+  draw(s, c, M, el){
+    c.fillStyle = '#2B3322'; c.fillRect(0, 0, M.W, M.H);
+    c.strokeStyle = 'rgba(255,255,255,.06)'; for(let x = 0; x < M.W; x += 40){ c.beginPath(); c.moveTo(x, 0); c.lineTo(x, M.H); c.stroke(); }
+    for(const t of s.tg){
+      const a = (el - t.born) / t.life, cr = t.r * (1 - .35 * a);
+      c.globalAlpha = a > .8 ? 1 - (a - .8) * 4 : 1;
+      if(t.kind === 'ziel'){
+        for(let i = 5; i >= 1; i--){ c.beginPath(); c.arc(t.x, t.y, cr * i / 5, 0, 7); c.fillStyle = i % 2 ? '#F2F0E6' : '#1E1E1E'; c.fill(); }
+        c.beginPath(); c.arc(t.x, t.y, cr * .2, 0, 7); c.fillStyle = '#C62828'; c.fill();
+      } else {
+        c.beginPath(); c.arc(t.x, t.y, cr, 0, 7); c.fillStyle = '#8EC5E8'; c.fill();
+        c.fillStyle = '#1F4E79'; c.beginPath(); c.arc(t.x, t.y - cr * .28, cr * .25, 0, 7); c.fill();
+        c.beginPath(); c.ellipse(t.x, t.y + cr * .38, cr * .42, cr * .32, 0, Math.PI, 0); c.fill();
+      }
+      c.globalAlpha = 1;
+    }
+    c.font = '700 15px Barlow, sans-serif'; c.textAlign = 'center';
+    for(const f of s.fx){ c.globalAlpha = 1 - (el - f.at) / 700; c.fillStyle = f.c; c.fillText(f.t, f.x, f.y - 14 - (el - f.at) / 25); }
+    c.globalAlpha = 1;
+    // Magazin
+    for(let i = 0; i < 8; i++){ c.fillStyle = i < s.mag ? '#E3B23C' : 'rgba(255,255,255,.15)'; c.fillRect(10 + i * 11, M.H - 22, 7, 14); }
+    if(s.rel){ c.fillStyle = '#E3B23C'; c.textAlign = 'left'; c.fillText('Lädt nach …', 104, M.H - 10); }
+    else if(!s.mag){ c.fillStyle = '#FF8A65'; c.textAlign = 'left'; c.fillText('Magazin leer!', 104, M.H - 10); }
+  },
+  score(s){ return s.sc; },
+  detail(s){ return s.hits + ' Treffer bei ' + s.shots + ' Schuss' + (s.weg ? ', ' + s.weg + ' Ziele entkommen' : '') + (s.zivil ? ', ' + s.zivil + '× Zivilist getroffen' : ''); },
+};
+
+/* ---------- Basis-Fitness-Test ---------- */
+MG_IMPL.bft = {
+  init(s, M){ Object.assign(s, {st:0, el:0, pts:[0, 0, 0], res:['', '', ''], pause:0}); this.stage(s, 0, 0); },
+  stage(s, n, el){
+    s.st = n; s.t0 = el; s.pause = el + 1300;
+    if(n === 0){ Object.assign(s, {lane:0, step:0, side:'', frz:0, turn:0, pen:0}); mgButtons([{id:'L', label:'Links'}, {id:'W', label:'Wende', cls:'ghost'}, {id:'R', label:'Rechts'}]); }
+    if(n === 1){ Object.assign(s, {p:.6, v:0, hold:false, kraft:2.5, gust:0, gv:0}); mgButtons([{id:'H', label:'Halten', flex:1}]); }
+    if(n === 2){ Object.assign(s, {ph:0, hit:0, frz:0, m:0}); mgButtons([{id:'S', label:'Schritt', flex:1}]); }
+  },
+  frame(s, el, dt, M){
+    s.el = el;
+    if(el < s.pause){ mgInfo('Station ' + (s.st + 1) + ' / 3'); return false; }
+    const t = (el - s.pause) / 1000;
+    if(s.st === 0){
+      mgInfo('Sprint ' + t.toFixed(1) + ' s · Bahn ' + Math.min(11, s.lane + 1) + ' / 11');
+      if(s.turn && el - s.turn > 900){ s.pen += 1; s.turn = 0; s.lane++; s.step = 0; s.side = ''; s.late = el; }
+      if(t + s.pen > 40 && s.lane < 11){ s.pts[0] = 0; s.res[0] = 'zu langsam'; this.stage(s, 1, el); return false; }
+      if(s.lane >= 11){ const tt = t + s.pen; s.pts[0] = Math.max(0, Math.min(100, Math.round(100 - (tt - 16) * 5))); s.res[0] = tt.toFixed(1) + ' s'; this.stage(s, 1, el); }
+    } else if(s.st === 1){
+      const lim = .15 - Math.min(.1, t * .0022), gAmp = .5 + Math.min(1.3, t * .03);
+      s.gv += (Math.random() - .5) * gAmp * 9 * dt; s.gv *= .96;
+      s.v += ((s.hold ? 1.5 : -1.25) + s.gv) * dt; s.v *= .985; s.p += s.v * dt;
+      if(s.p < 0){ s.p = 0; s.v = 0; } if(s.p > 1){ s.p = 1; s.v = 0; }
+      s.lim = lim; if(Math.abs(s.p - .6) > lim) s.kraft -= dt;
+      mgInfo('Klimmhang ' + t.toFixed(1) + ' s');
+      if(s.kraft <= 0 || t >= 60){ s.pts[1] = Math.max(0, Math.min(100, Math.round(t * 2))); s.res[1] = t.toFixed(1) + ' s'; this.stage(s, 2, el); }
+    } else {
+      const sp = 2.4 + .1 * s.hit; s.ph += dt * sp; s.m = (Math.sin(s.ph) + 1) / 2; s.w = Math.max(.14, .26 - .006 * s.hit);
+      mgInfo('1000 m · ' + (s.hit * 50) + ' m · ' + t.toFixed(1) + ' s');
+      if(s.hit >= 20){ s.pts[2] = Math.max(0, Math.min(100, Math.round(100 - (t - 18) * 4))); s.res[2] = t.toFixed(1) + ' s'; return true; }
+      if(t > 45){ s.pts[2] = 0; s.res[2] = 'abgebrochen'; return true; }
+    }
+    return false;
+  },
+  btn(s, id){
+    const el = s.el; if(el < s.pause) return;
+    if(s.st === 0){
+      if(el < s.frz) return;
+      if(id === 'W'){ if(s.turn){ if(el - s.turn > 450) s.pen += .4; s.turn = 0; s.lane++; s.step = 0; s.side = ''; } else s.frz = el + 350; return; }
+      if(s.turn) return;
+      if(id === s.side){ s.frz = el + 380; s.stol = el; return; }
+      s.side = id; s.step++; if(s.step >= 10) s.turn = el;
+    } else if(s.st === 1){ if(id === 'H') s.hold = true; }
+    else if(id === 'S'){ if(el < s.frz) return; if(Math.abs(s.m - .5) <= s.w / 2) s.hit++; else { s.frz = el + 700; s.stol = el; } }
+  },
+  btnUp(s, id){ if(s.st === 1 && id === 'H') s.hold = false; },
+  down(s, x, y){ if(s.st === 1) s.hold = true; },
+  up(s){ if(s.st === 1) s.hold = false; },
+  draw(s, c, M, el){
+    c.fillStyle = '#2B3322'; c.fillRect(0, 0, M.W, M.H);
+    c.textAlign = 'center'; c.fillStyle = '#F2F5EA';
+    if(el < s.pause){
+      c.font = "400 26px 'Black Ops One', sans-serif"; c.fillText(['Sprint 11 × 10 m', 'Klimmhang', '1000-m-Lauf'][s.st], M.W / 2, M.H / 2 - 8);
+      c.font = '600 15px Barlow, sans-serif'; c.fillText(['Links und rechts abwechselnd, am Ende wenden', 'Im grünen Bereich bleiben', 'Im grünen Feld tippen'][s.st], M.W / 2, M.H / 2 + 22);
+      return;
+    }
+    if(s.st === 0){
+      const top = 40, bot = M.H - 40, lanes = 11;
+      c.fillStyle = '#8B5A3C'; c.fillRect(30, top, M.W - 60, bot - top);
+      c.strokeStyle = 'rgba(255,255,255,.5)'; c.setLineDash([6, 6]); for(let i = 1; i < lanes; i++){ const y = top + (bot - top) * i / lanes; c.beginPath(); c.moveTo(30, y); c.lineTo(M.W - 30, y); c.stroke(); } c.setLineDash([]);
+      const ln = Math.min(10, s.lane), y = top + (bot - top) * (ln + .5) / lanes, prog = s.step / 10, dir = ln % 2 ? -1 : 1;
+      const x = dir > 0 ? 40 + prog * (M.W - 80) : M.W - 40 - prog * (M.W - 80);
+      c.fillStyle = s.stol && el - s.stol < 380 ? '#FF7043' : '#E3B23C'; c.beginPath(); c.arc(x, y, 9, 0, 7); c.fill();
+      if(s.turn){ c.fillStyle = '#FFD54F'; c.font = '700 22px Barlow, sans-serif'; c.fillText('WENDE!', M.W / 2, 28); }
+      else if(s.stol && el - s.stol < 380){ c.fillStyle = '#FF7043'; c.font = '700 18px Barlow, sans-serif'; c.fillText('Gestolpert!', M.W / 2, 28); }
+    } else if(s.st === 1){
+      const bx = M.W / 2 - 30, by = 30, bh = M.H - 90;
+      c.fillStyle = '#1A1F15'; c.fillRect(bx, by, 60, bh);
+      const zy = by + bh * (1 - .6 - s.lim), zh = bh * s.lim * 2; c.fillStyle = 'rgba(102,187,106,.45)'; c.fillRect(bx, zy, 60, zh);
+      const py = by + bh * (1 - s.p); c.fillStyle = Math.abs(s.p - .6) > s.lim ? '#FF7043' : '#E3B23C'; c.fillRect(bx - 12, py - 4, 84, 8);
+      c.fillStyle = '#F2F5EA'; c.font = '600 14px Barlow, sans-serif'; c.fillText('Kraft', M.W / 2, M.H - 40);
+      c.fillStyle = '#1A1F15'; c.fillRect(M.W / 2 - 80, M.H - 32, 160, 10); c.fillStyle = s.kraft > .8 ? '#66BB6A' : '#FF7043'; c.fillRect(M.W / 2 - 80, M.H - 32, 160 * Math.max(0, s.kraft) / 2.5, 10);
+    } else {
+      const bx = 24, bw = M.W - 48, by = M.H / 2 - 18;
+      c.fillStyle = '#1A1F15'; c.fillRect(bx, by, bw, 36);
+      c.fillStyle = 'rgba(102,187,106,.55)'; c.fillRect(bx + bw * (.5 - s.w / 2), by, bw * s.w, 36);
+      c.fillStyle = s.stol && el - s.stol < 700 ? '#FF7043' : '#E3B23C'; c.fillRect(bx + bw * s.m - 3, by - 8, 6, 52);
+      c.fillStyle = '#F2F5EA'; c.font = '700 18px Barlow, sans-serif'; c.fillText(s.hit * 50 + ' / 1000 m', M.W / 2, by - 30);
+      c.fillStyle = 'rgba(255,255,255,.15)'; c.fillRect(bx, by + 70, bw, 8); c.fillStyle = '#66BB6A'; c.fillRect(bx, by + 70, bw * s.hit / 20, 8);
+      if(s.stol && el - s.stol < 700){ c.fillStyle = '#FF7043'; c.fillText('Aus dem Tritt!', M.W / 2, by + 110); }
+    }
+  },
+  score(s){ return s.pts[0] + s.pts[1] + s.pts[2]; },
+  detail(s){ return 'Sprint ' + s.res[0] + ' (' + s.pts[0] + ') · Klimmhang ' + s.res[1] + ' (' + s.pts[1] + ') · 1000 m ' + s.res[2] + ' (' + s.pts[2] + ')'; },
+};
+
+/* ---------- Spindkontrolle ---------- */
+MG_IMPL.spind = {
+  init(s, M){
+    const W = M.W, H = M.H, x0 = 14, w = W - 28;
+    const colL = w * .38, shelfX = x0 + colL + 8, shelfW = w - colL - 8, y0 = 14, hh = H - 28;
+    const slots = [];
+    for(let i = 0; i < 3; i++) slots.push({x:x0 + 4 + i * (colL - 8) / 3, y:y0 + 26, w:(colL - 8) / 3 - 4, h:hh * .52, zone:'hang'});
+    const rows = 3, sh = hh * .7 / rows;
+    for(let r = 0; r < rows; r++) for(let k = 0; k < 3; k++) slots.push({x:shelfX + k * shelfW / 3 + 3, y:y0 + r * sh + 6, w:shelfW / 3 - 6, h:sh - 14, zone:'fach'});
+    for(let k = 0; k < 4; k++) slots.push({x:x0 + k * w / 4 + 4, y:y0 + hh * .78, w:w / 4 - 8, h:hh * .2, zone:'boden'});
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    const shuf = a => a.sort(() => Math.random() - .5);
+    const fach = shuf(['hemden', 'hemden', 'handtuch', 'handtuch', 'socken', 'socken', 'barett', 'guertel', 'tshirts']);
+    for(const sl of slots){ sl.type = sl.zone === 'hang' ? pick(['jacke', 'hemd', 'hose']) : sl.zone === 'boden' ? pick(['stiefel', 'stiefel', 'sport']) : fach.pop(); }
+    shuf(slots.slice()).slice(0, 6).forEach((sl, i) => { sl.err = true; if(i === 0 && sl.zone === 'fach') sl.type = pick(['chips', 'dose']); sl.v = Math.random(); });
+    Object.assign(s, {dur:30000, slots, found:0, pen:0, fx:[], el:0, x0, y0, w, hh, colL});
+    mgButtons([]);
+  },
+  frame(s, el){ s.el = el; const rest = s.dur - el - s.pen; s.fx = s.fx.filter(f => el - f.at < 600); mgInfo(Math.max(0, Math.ceil(rest / 1000)) + ' s · ' + s.found + ' / 6 Fehler'); return rest <= 0 || s.found >= 6; },
+  down(s, x, y){
+    const sl = s.slots.find(q => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h);
+    if(sl && sl.err && !sl.ok){ sl.ok = true; s.found++; return; }
+    if(sl && sl.ok) return;
+    s.pen += 3000; s.fx.push({x, y, at:s.el});
+  },
+  draw(s, c, M, el){
+    c.fillStyle = '#4A4F45'; c.fillRect(0, 0, M.W, M.H);
+    c.fillStyle = '#6E7466'; c.fillRect(s.x0, s.y0, s.w, s.hh); c.strokeStyle = '#33372F'; c.lineWidth = 3; c.strokeRect(s.x0, s.y0, s.w, s.hh);
+    c.fillStyle = '#5B6154'; c.fillRect(s.x0 + s.colL, s.y0, 8, s.hh * .74);
+    c.strokeStyle = '#9EA394'; c.lineWidth = 3; c.beginPath(); c.moveTo(s.x0 + 6, s.y0 + 22); c.lineTo(s.x0 + s.colL - 4, s.y0 + 22); c.stroke();
+    const sh = s.hh * .7 / 3; c.fillStyle = '#3E433A'; for(let r = 1; r <= 3; r++) c.fillRect(s.x0 + s.colL + 8, s.y0 + r * sh - 4, s.w - s.colL - 8, 4);
+    c.fillRect(s.x0, s.y0 + s.hh * .76, s.w, 4);
+    for(const sl of s.slots) this.item(c, sl);
+    for(const sl of s.slots) if(sl.ok){ c.strokeStyle = '#66BB6A'; c.lineWidth = 3; c.strokeRect(sl.x + 1, sl.y + 1, sl.w - 2, sl.h - 2); c.fillStyle = '#66BB6A'; c.font = '700 18px Barlow'; c.textAlign = 'center'; c.fillText('✓', sl.x + sl.w - 10, sl.y + 18); }
+    for(const f of s.fx){ c.globalAlpha = 1 - (el - f.at) / 600; c.fillStyle = '#FF5252'; c.font = '700 22px Barlow'; c.textAlign = 'center'; c.fillText('✗ −3 s', f.x, f.y); c.globalAlpha = 1; }
+  },
+  item(c, sl){
+    const {x, y, w, h, type, err, v} = sl, cx = x + w / 2;
+    const fl = '#5C6B3D', fd = '#46532D';
+    c.save();
+    if(type === 'jacke' || type === 'hemd' || type === 'hose'){
+      c.translate(cx, y); if(err) c.rotate((v > .5 ? 1 : -1) * .14);
+      c.strokeStyle = '#2A2A2A'; c.lineWidth = 2; c.beginPath(); c.moveTo(0, -4); c.lineTo(0, 6); c.stroke();
+      c.fillStyle = type === 'hemd' ? '#7D8A5A' : fl;
+      if(type === 'hose'){ c.fillRect(-w * .3, 8, w * .6, h * .2); c.fillRect(-w * .3, 8 + h * .18, w * .27, h * .7); c.fillRect(w * .03, 8 + h * .18, w * .27, h * .7); }
+      else { c.beginPath(); c.moveTo(-w * .42, 14); c.lineTo(w * .42, 14); c.lineTo(w * .38, h * (type === 'jacke' ? .95 : .8)); c.lineTo(-w * .38, h * (type === 'jacke' ? .95 : .8)); c.closePath(); c.fill(); c.fillStyle = fd; c.fillRect(-1.5, 14, 3, h * .7); }
+    } else if(type === 'hemden' || type === 'tshirts'){
+      const n = 4, lh = Math.min(10, h / 5), col = type === 'hemden' ? '#7D8A5A' : '#3D4630';
+      for(let i = 0; i < n; i++){ const off = err && i === (v > .5 ? 1 : 2) ? w * .16 : 0; c.fillStyle = col; c.fillRect(x + 6 + off, y + h - (i + 1) * (lh + 2), w - 12, lh); c.fillStyle = 'rgba(0,0,0,.2)'; c.fillRect(x + 6 + off, y + h - (i + 1) * (lh + 2) + lh - 2, w - 12, 2); }
+    } else if(type === 'handtuch'){
+      c.fillStyle = '#C9C3B0'; const th = Math.min(h * .6, 30); c.fillRect(x + 6, y + h - th, w - 12, th); c.fillStyle = 'rgba(0,0,0,.12)'; c.fillRect(x + 6, y + h - th / 2, w - 12, 2);
+      if(err){ c.fillStyle = '#C9C3B0'; c.beginPath(); c.moveTo(x + w - 6, y + h - th); c.lineTo(x + w + 2, y + h - th - 10); c.lineTo(x + w - 14, y + h - th); c.fill(); }
+    } else if(type === 'socken'){
+      for(let i = 0; i < 3; i++){ const px = x + 8 + i * (w - 16) / 3 + (w - 16) / 6; c.fillStyle = '#2E3226'; c.beginPath(); c.arc(px, y + h - 9, Math.min(8, w / 9), 0, 7); c.fill(); if(err && i === 1){ c.fillStyle = '#5B5E63'; c.beginPath(); c.arc(px + 3, y + h - 9, Math.min(8, w / 9) * .75, 0, 7); c.fill(); } }
+    } else if(type === 'barett'){
+      c.translate(cx, y + h - 10); if(err) c.rotate(.5);
+      c.fillStyle = '#7A1F2B'; c.beginPath(); c.ellipse(0, 0, w * .32, 9, 0, 0, 7); c.fill(); c.fillStyle = '#C9A44A'; c.beginPath(); c.arc(-w * .12, -2, 3, 0, 7); c.fill();
+    } else if(type === 'guertel'){
+      c.strokeStyle = '#2A2A2A'; c.lineWidth = 4;
+      if(err){ c.beginPath(); c.moveTo(x + 6, y + h - 8); c.bezierCurveTo(x + w * .4, y + h - 30, x + w * .6, y + h, x + w + 6, y + h - 20); c.stroke(); }
+      else { c.beginPath(); c.ellipse(cx, y + h - 12, w * .28, 8, 0, 0, 7); c.stroke(); }
+      c.fillStyle = '#B0B4A8'; c.fillRect(cx - 4, y + h - 16, 8, 8);
+    } else if(type === 'stiefel' || type === 'sport'){
+      for(let i = 0; i < 2; i++){ const bx = x + 6 + i * (w - 12) / 2; c.fillStyle = type === 'stiefel' ? '#151515' : '#D8D8D0'; c.fillRect(bx + 2, y + h * .2, (w - 12) / 2 - 8, h * .65); c.fillRect(bx + 2, y + h * .72, (w - 12) / 2 - 2, h * .16);
+        if(err && i === (v > .5 ? 0 : 1)){ c.fillStyle = '#7A5230'; for(const [dx, dy] of [[.3, .5], [.6, .7], [.4, .8], [.7, .4]]){ c.beginPath(); c.arc(bx + 2 + ((w - 12) / 2 - 6) * dx, y + h * dy, 2.6, 0, 7); c.fill(); } } }
+    } else if(type === 'chips'){
+      c.fillStyle = '#E53935'; c.fillRect(cx - w * .2, y + h - 30, w * .4, 28); c.fillStyle = '#FFD54F'; c.fillRect(cx - w * .14, y + h - 22, w * .28, 8);
+    } else if(type === 'dose'){
+      c.fillStyle = '#1E88E5'; c.fillRect(cx - 6, y + h - 26, 12, 24); c.fillStyle = '#B0BEC5'; c.fillRect(cx - 6, y + h - 28, 12, 3);
+    }
+    c.restore();
+  },
+  score(s){ const rest = Math.max(0, s.dur - s.el - s.pen) / 1000; return s.found * 25 + (s.found >= 6 ? Math.round(rest * 2.6) : 0); },
+  detail(s){ return s.found + ' von 6 Fehlern gefunden' + (s.pen ? ', ' + s.pen / 3000 + '× falsch getippt' : ''); },
+};
+
+/* ---------- Übungsplatz-Seite ---------- */
+Object.assign(ARTS, {
+  range:'<rect x="0" y="0" width="120" height="52" fill="#3B4630"/>' + [30, 60, 90].map(x => '<circle cx="' + x + '" cy="26" r="13" fill="#F2F0E6"/><circle cx="' + x + '" cy="26" r="9" fill="#1E1E1E"/><circle cx="' + x + '" cy="26" r="5" fill="#F2F0E6"/><circle cx="' + x + '" cy="26" r="2" fill="#C62828"/>').join(''),
+  run:'<rect x="0" y="34" width="120" height="18" fill="#8B5A3C"/><path d="M0 43h120" stroke="#fff" stroke-dasharray="6 6"/><circle cx="58" cy="12" r="5" fill="var(--olive)"/><path d="M58 17l-4 12 8 6M56 24l-9 4M58 22l9-3M54 29l-6 7" stroke="var(--olive)" stroke-width="4" fill="none" stroke-linecap="round"/>',
+  locker:'<rect x="34" y="4" width="52" height="48" fill="#6E7466" stroke="#33372F" stroke-width="2"/><path d="M60 4v48" stroke="#33372F" stroke-width="2"/><rect x="38" y="10" width="18" height="24" fill="#5C6B3D"/><rect x="64" y="12" width="18" height="5" fill="#7D8A5A"/><rect x="64" y="19" width="18" height="5" fill="#7D8A5A"/><rect x="64" y="40" width="7" height="10" fill="#151515"/><rect x="74" y="40" width="7" height="10" fill="#151515"/>',
+});
+function renderMini(){
+  const st = mgState();
+  let h = '<h2>Übungsplatz</h2><p class="small muted">Jeden Tag gibt es pro Station einen Wertungslauf mit Belohnung: Bronze ' + eur(Math.round(MG_REW[1].money * G.rank().sold)) + ', Silber ' + eur(Math.round(MG_REW[2].money * G.rank().sold)) + ', Gold ' + eur(Math.round(MG_REW[3].money * G.rank().sold)) + ' plus Beurteilungspunkte. Danach kannst du frei trainieren.</p><div class="cards">';
+  h += Object.entries(MG_GAMES).map(([g, x]) => {
+    const done = !!st.rew[g], res = st.res[g], tier = done ? mgTier(g, res || 0) : 0, gold = st.gold[g] || 0;
+    let inner = '<p class="flv">' + esc(x.desc) + '</p>'
+      + facts([['Stufen', x.tiers.join(' · ')], ['Bestwert', st.best[g] || '–'], ['Gold bisher', gold + '×']].concat(ONLINE_MG(g)))
+      + (done ? '<div class="small" style="text-align:center;margin:6px 0">Heute: <b>' + (res || 0) + '</b> ' + x.unit + ', ' + MG_TIER[tier] + '</div><button class="btn ghost wide" data-act="mg" data-id="' + g + ':0">Training</button>'
+              : '<button class="btn gold wide" data-act="mg" data-id="' + g + ':1">Wertungslauf</button><button class="btn ghost wide mini" data-act="mg" data-id="' + g + ':0" style="margin-top:6px">Erst trainieren</button>')
+      + (typeof mgTop === 'function' ? '<button class="linkbtn" data-act="mg_top" data-id="' + g + '" style="display:block;margin:4px auto 0">Wochenbestenliste</button>' : '');
+    return acard(x.name, x.art, inner, false);
+  }).join('') + '</div>';
+  return h;
+}
+function ONLINE_MG(g){ return []; }
+const MG_ACT = {
+  mg(v){ const [g, r] = String(v).split(':'); if(MG_GAMES[g]) mgOpen(g, r === '1'); },
+  mg_go(){ mgGo(); },
+  mg_again(){ const g = MG && MG.g; MG = null; if(g) mgOpen(g, false); },
+  mg_close(){
+    if(MG && MG.phase === 'run'){ mgEnd(MG.ranked); return; }
+    if(MG) cancelAnimationFrame(MG.raf);
+    MG = null; document.getElementById('modalHost').innerHTML = ''; render();
+  },
+};
+document.addEventListener('visibilitychange', () => { if(document.hidden && MG && MG.phase === 'run' && MG.ranked) mgEnd(true); });
+// Auszeichnungen
+ORDEN.splice(ORDEN.findIndex(o => o.id === 'bandit'), 0,
+  {id:'mg_ss', grp:'ss', tier:2, name:'Meisterschütze (Übungsplatz)', req:'5× Gold im Wertungslauf am Schießstand', cond:() => !!S.mini && (S.mini.gold.schiess || 0) >= 5},
+  {id:'mg_bft', grp:'la', tier:2, name:'Sportskanone (Übungsplatz)', req:'5× Gold im Basis-Fitness-Test', cond:() => !!S.mini && (S.mini.gold.bft || 0) >= 5},
+  {id:'mg_spind', grp:'mg', tier:1, name:'Musterspind (inoffiziell)', req:'5× Gold bei der Spindkontrolle', cond:() => !!S.mini && (S.mini.gold.spind || 0) >= 5}
+);
 
 const EV = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
 const LG_EV = {ual:['lg_ual1','lg_ual2','lg_ual3'], fwl:['lg_fwl1','lg_fwl2','lg_fwl3'], ofl:['lg_ofl1','lg_ofl2','lg_ofl3'], stu:['lg_stu1','lg_stu2','lg_stu3']};
@@ -4690,7 +5295,7 @@ const ACT = {
     S.money -= g.cost; S.gear[id] = now(); if(g.rel) applyFx({rel:g.rel});
     save(); toast(g.name + ' gekauft'); render();
   },
-  close(){ if(QZ) return; document.getElementById('modalHost').innerHTML=''; curEvent = null; },
+  close(){ if(QZ || (typeof MG !== 'undefined' && MG && MG.phase === 'run')) return; if(typeof MG !== 'undefined') MG = null; document.getElementById('modalHost').innerHTML=''; curEvent = null; },
   event(id){ showEvent(id); },
   storybook(){ STORY_OPEN = !STORY_OPEN; render(); },
   fs(id){ const e = fsStart(id); if(e) toast(e); else { save(); toast('Fahrschule ' + FS_I[id].name + ' gestartet'); } render(); },
@@ -5073,7 +5678,8 @@ const ACT = {
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
   if(!b || b.disabled) return;
-  ACT[b.dataset.act] && ACT[b.dataset.act](b.dataset.id);
+  const fn = ACT[b.dataset.act] || (typeof MG_ACT !== 'undefined' && MG_ACT[b.dataset.act]);
+  if(fn) fn(b.dataset.id);
 });
 document.addEventListener('change', e => {
   if(e.target.id==='bl' && STANDORTE[e.target.value]){
@@ -5588,14 +6194,16 @@ function fbCard(){
 ONLINE.fb = null; ONLINE.fbAlle = false;
 async function loadFb(){
   if(!ONLINE.admin) return;
+  if(ONLINE.fbLoading) return; ONLINE.fbLoading = true;
   const { data, error } = await sb.rpc('admin_feedback', {p_alle: ONLINE.fbAlle});
-  ONLINE.fb = error ? {err: error.message} : data;
+  ONLINE.fbLoading = false;
+  ONLINE.fb = error ? {err: error.message} : (data || {offen:0, liste:[]});
   if(tab === 'akte' && LASTSUB.akte === 'admin') render();
 }
 function renderFbAdmin(){
   const F = ONLINE.fb;
   let h = '<div class="panel pad adm"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h3>Feedback' + (F && !F.err && F.offen ? ' <span class="fbcount">' + F.offen + ' offen</span>' : '') + '</h3><button class="linkbtn" data-act="fb_reload">Aktualisieren</button></div>';
-  if(!F){ setTimeout(loadFb, 0); return h + '<p class="small muted">Lade …</p></div>'; }
+  if(!F){ if(!ONLINE.fbLoading) setTimeout(loadFb, 0); return h + '<p class="small muted">Lade …</p></div>'; }
   if(F.err) return h + '<p class="small muted">Nicht erreichbar: ' + esc(F.err) + '. Ist stillgestanden_feedback.sql ausgeführt?</p></div>';
   h += '<div class="seg" role="group" aria-label="Filter" style="margin:6px 0 10px"><button data-act="fb_filter" data-id="0" aria-pressed="' + !ONLINE.fbAlle + '">Offen</button><button data-act="fb_filter" data-id="1" aria-pressed="' + ONLINE.fbAlle + '">Alle</button></div>';
   if(!F.liste.length) return h + '<p class="small muted">Keine ' + (ONLINE.fbAlle ? '' : 'offenen ') + 'Meldungen. Läuft.</p></div>';
@@ -5625,6 +6233,38 @@ const FB_ACT = {
     loadFb();
   },
 };
+
+/* ---------- Übungsplatz online: Wochenbestenliste (Server: stillgestanden_uebungsplatz.sql) ---------- */
+ONLINE.mgw = {};
+async function mgMelden(g, sc){
+  if(!sb || !USER) return;
+  try{ await sb.rpc('mini_melden', {p_spiel:g, p_punkte:sc}); }catch(e){}
+  mgWoche(g);
+}
+async function mgWoche(g){
+  if(!sb || !USER) return;
+  const { data, error } = await sb.rpc('mini_top', {p_spiel:g});
+  if(!error && data){ ONLINE.mgw[g] = data; return data; }
+  return null;
+}
+ONLINE_MG = function(g){
+  const w = ONLINE.mgw[g];
+  if(!w && sb && USER && !ONLINE.mgw['_' + g]){ ONLINE.mgw['_' + g] = 1; mgWoche(g).then(d => { if(d && tab === 'ausb') render(); }); }
+  return w && w.ich ? [['Woche', 'Platz ' + w.platz + ' von ' + w.teilnehmer]] : [];
+};
+async function mgTop(g){
+  const host = document.getElementById('modalHost');
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true"><div class="sheet"><p class="small muted">Lade Bestenliste …</p></div></div>';
+  const d = await mgWoche(g), G0 = MG_GAMES[g];
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="mgtt"><div class="sheet" style="text-align:left">'
+    + '<h2 id="mgtt" style="margin:0 0 4px;text-align:center">' + esc(G0.name) + '</h2><p class="small muted" style="text-align:center;margin:0 0 12px">Wochenbestenliste, startet jeden Montag neu.</p>'
+    + (!d ? '<p class="small muted">Nicht erreichbar. Ist stillgestanden_uebungsplatz.sql ausgeführt?</p>'
+       : !d.top.length ? '<p class="small muted">Diese Woche noch keine Ergebnisse. Sei der Erste!</p>'
+       : '<ol class="rl">' + d.top.map((x, i) => '<li><span style="flex:none;width:22px;font-weight:700">' + (i + 1) + '.</span><span style="flex:1;min-width:0"><button class="plink" data-act="profil" data-id="' + esc(x.name) + '">' + esc(x.name) + '</button><br><span class="small muted">' + esc(R[x.rang] ? rankNameFor(x.tsk || 'heer', x.rang) : '') + '</span></span><span class="num">' + x.punkte + '</span></li>').join('') + '</ol>')
+    + (d && d.ich ? '<p class="small" style="margin:10px 0 0">Du: <b>' + d.ich + '</b> ' + G0.unit + ', Platz ' + d.platz + ' von ' + d.teilnehmer + '.</p>' : '')
+    + '<button class="btn wide" data-act="close" style="margin-top:14px">Schließen</button></div></div>';
+}
+MG_ACT.mg_top = g => mgTop(g);
 
 function renderAdmin(){
   if(!ONLINE.admin) return '';
