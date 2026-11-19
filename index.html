@@ -288,6 +288,10 @@ ul.req .rw{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;p
 .pfbar{display:grid;grid-template-columns:96px 1fr 34px;gap:8px;align-items:center;font-size:13.5px;margin:4px 0}.pfbar i{height:7px;border-radius:4px;background:var(--line);overflow:hidden}.pfbar b{display:block;height:100%;background:var(--signal)}.pfbar .num{text-align:right}
 .pfchips{display:flex;flex-wrap:wrap;gap:6px}.pfchips .tag{margin:0}
 .todo .row{display:flex;align-items:center;gap:10px;padding:10px 14px}.todo .row+.row{border-top:1px solid var(--line)}.todo .tdi{font-size:18px;flex:none}.todo .tdt{flex:1;min-width:0;font-size:14.5px;line-height:1.3}.todo .row.warn{box-shadow:inset 4px 0 0 var(--stamp)}.todo .btn{flex:none}
+.fbsheet{text-align:left}.fbsheet textarea{width:100%;margin-top:12px;font:inherit;padding:10px;border-radius:6px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);resize:vertical}
+.fbcount{font:700 12px Barlow,sans-serif;background:var(--stamp);color:#fff;border-radius:10px;padding:2px 8px;vertical-align:2px}
+.fbitem{border-top:1px solid var(--line);padding:10px 0 4px}.fbitem.done{opacity:.55}.fbitem.art-auto{box-shadow:inset 3px 0 0 var(--stamp);padding-left:10px}.fbitem.art-fehler{box-shadow:inset 3px 0 0 #E3B23C;padding-left:10px}.fbitem.art-idee{box-shadow:inset 3px 0 0 var(--ok);padding-left:10px}
+.fbh{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}.fbt{margin:4px 0;white-space:pre-wrap;word-break:break-word}.fbitem pre{white-space:pre-wrap;word-break:break-all;font-size:11px;max-height:160px;overflow:auto;background:var(--surface2);padding:6px;border-radius:4px}
 .strip.idle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
 .strip .sh{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600}
 .strip .prog{margin-top:4px;height:6px}
@@ -1654,6 +1658,7 @@ const SUBS = {
     {id:'leistung', label:'Beurteilung', src:'stube', match:['Beurteilung','Werte']},
     {id:'dv', label:'Dienstverhältnis', src:'laufbahn', match:['Teilstreitkraft','Dienstverhältnis','Verwendung','Standort']},
     {id:'orden', label:'Orden', src:'laufbahn', match:['Orden']},
+    {id:'feedback', label:'Feedback', src:'akte', match:['Feedback']},
     {id:'einst', label:'Einstellungen', src:'stube', match:['Einstellungen']},
     {id:'admin', label:'Admin', src:'admin', match:['Admin']},
   ],
@@ -3746,6 +3751,9 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:9, d:'19.11.2026', t:'Feedback direkt aus dem Spiel', p:[
+    {o:1, x:'Neu in der Akte: Feedback. Ideen, Lob und Fehler gehen direkt an die Spielleitung'},
+    'Hauptfeldwebel, Stabsfeldwebel, Oberstabsfeldwebel und Oberfähnrich tragen jetzt den richtigen Kopfwinkel'] },
   {v:8, d:'19.11.2026', t:'Stammakte und mehr Ordnung', p:[
     'Neuer Reiter „Akte“ unten rechts: deine Stammakte mit Personalien, Personenkennziffer, Statistik und Qualifikationen',
     'Laufbahn, Beurteilung, Dienstverhältnis, Orden und Einstellungen sind jetzt in der Akte gebündelt',
@@ -3775,7 +3783,7 @@ const CHANGELOG = [
     'Fahrdienste zahlen mehr, aber Routine lohnt sich nicht: Abwechslung bringt mehr',
     {o:1, x:'Soldatenlotto (6 aus 25) und Spielothek mit Bonusrunden'}] },
 ];
-const CL_NOW = CHANGELOG[0].v;
+const CL_NOW = (CHANGELOG.find(c => clItems(c).length) || CHANGELOG[0]).v;
 function clSeen(){ try{ return Number(localStorage.getItem('sg_cl_seen') || 0); }catch(e){ return CL_NOW; } }
 function clMark(){ try{ localStorage.setItem('sg_cl_seen', String(CL_NOW)); }catch(e){} }
 function clItems(c){
@@ -3788,7 +3796,7 @@ function clEntry(c, neu){
 }
 function clShow(alle){
   const seen = clSeen();
-  const list = alle ? CHANGELOG : seen ? CHANGELOG.filter(c => c.v > seen) : CHANGELOG.slice(0, 1);   // ohne Eintrag nur das neueste Update
+  const list = (alle ? CHANGELOG : seen ? CHANGELOG.filter(c => c.v > seen) : CHANGELOG.slice(0, 1)).filter(c => clItems(c).length);   // ohne Eintrag nur das neueste Update
   clMark();
   document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="clt"><div class="sheet clsheet">'
     + '<div class="stamp good" style="font-size:15px">' + (alle ? 'ÄNDERUNGEN' : 'NEU') + '</div>'
@@ -3856,6 +3864,7 @@ function renderAkte(){
   if(typeof profilZeigen === 'function' && USER)
     h += '<h2>Steckbrief</h2><div class="panel pad"><p class="small" style="margin:0 0 10px">So sehen dich andere Spieler, wenn sie dich in der Personensuche, der Rangliste oder im Chat antippen. Standort und Anmeldedaten sind nie sichtbar.</p>'
       + '<button class="btn ghost wide" data-act="profil" data-id="' + esc(S.name) + '">Meinen Steckbrief ansehen</button></div>';
+  if(typeof fbCard === 'function' && USER) h += fbCard();
   return h;
 }
 // Übersicht: alles, was zu tun ist, in einer Liste statt vieler einzelner Kästen
@@ -4316,7 +4325,8 @@ function insignia(id, size=56){
   // Tresse: offen (Unteroffizier, Fahnenjunker) oder geschlossen
   const tresse = closed => '<path d="M15 ' + (closed ? 82 : 86) + ' V33 Q15 24 28 23 Q41 24 41 33 V' + (closed ? 82 : 86) + (closed ? ' Z' : '') + '" fill="none" stroke="' + dark + '" stroke-width="4.6" stroke-linejoin="round"/>';
   const chev = y => '<path d="M21 ' + (y + 6) + ' L28 ' + (y - 1) + ' L35 ' + (y + 6) + '" fill="none" stroke="' + dark + '" stroke-width="3.6"/>';
-  const raute = y => '<path d="M28 ' + (y - 8) + ' L35 ' + y + ' L28 ' + (y + 8) + ' L21 ' + y + 'Z" fill="none" stroke="' + dark + '" stroke-width="2.8"/><path d="M24.5 ' + (y - 4) + ' L31.5 ' + (y + 4) + 'M31.5 ' + (y - 4) + ' L24.5 ' + (y + 4) + '" stroke="' + dark + '" stroke-width="2.2"/>';
+  // Kopfwinkel („Fisch“): Schlaufe oben, darunter gekreuzte Enden
+  const raute = y => '<path d="M23 ' + (y + 9) + ' L35.5 ' + (y - 3.5) + ' L28 ' + (y - 11) + ' L20.5 ' + (y - 3.5) + ' L33 ' + (y + 9) + '" fill="none" stroke="' + dark + '" stroke-width="3.6" stroke-linejoin="miter" stroke-miterlimit="6"/>';
   const cord = '<rect x="9" y="82.5" width="38" height="4" fill="' + silver + '"/><path d="M11 86.5l3-4M15 86.5l3-4M19 86.5l3-4M23 86.5l3-4M27 86.5l3-4M31 86.5l3-4M35 86.5l3-4M39 86.5l3-4M43 86.5l3-4" stroke="#8A8F95" stroke-width="1"/>';
   const star = (x, y, c, s) => { s = s || 6.5; const k = s * .32;
     return '<path d="M' + x + ' ' + (y - s) + ' L' + (x + k) + ' ' + (y - k) + ' L' + (x + s) + ' ' + y + ' L' + (x + k) + ' ' + (y + k) + ' L' + x + ' ' + (y + s) + ' L' + (x - k) + ' ' + (y + k) + ' L' + (x - s) + ' ' + y + ' L' + (x - k) + ' ' + (y - k) + 'Z" fill="' + c + '"/>'
@@ -4351,8 +4361,8 @@ function insignia(id, size=56){
     case 'fw': m = tresse(true) + chev(68); break;
     case 'ofw': m = tresse(true) + chev(68) + chev(60); break;
     case 'hfw': m = tresse(true) + raute(64); break;
-    case 'sfw': m = tresse(true) + raute(54) + chev(70); break;
-    case 'osfw': m = tresse(true) + raute(48) + chev(64) + chev(72); break;
+    case 'sfw': m = tresse(true) + raute(52) + chev(70); break;
+    case 'osfw': m = tresse(true) + raute(46) + chev(64) + chev(72); break;
     case 'fj': m = tresse(false) + cord; break;
     case 'fhr': m = tresse(true) + chev(68) + cord; break;
     case 'ofhr': m = tresse(true) + raute(64) + cord; break;
@@ -4400,7 +4410,7 @@ function renderNav(){
   nav.innerHTML = TABS.map(([id,label]) =>
     '<button data-act="main" data-id="'+id+'" '+(tab===id?'aria-current="page"':'')+'>'+(id==='stube' ? ICONS.raum : ICONS[id])+label
     + (id==='stube' && (S.pending.length || S.pakete || waReady()) ? '<span class="dot" aria-label="neue Meldung"></span>' : '')
-    + (id==='akte' && S.gaDone && (NEXT[S.rank] || []).some(x => G.promoReqs(x).every(r => r.ok)) ? '<span class="dot" aria-label="Beförderung möglich"></span>' : '')
+    + (id==='akte' && ((S.gaDone && (NEXT[S.rank] || []).some(x => G.promoReqs(x).every(r => r.ok))) || (ONLINE.admin && ONLINE.fb && ONLINE.fb.offen)) ? '<span class="dot" aria-label="Beförderung möglich"></span>' : '')
     + (id==='truppe' && typeof chatUnread === 'function' && chatUnread() ? '<span class="dot" aria-label="neue Nachrichten im Chat"></span>' : '')+'</button>').join('');
 }
 
@@ -5282,7 +5292,7 @@ async function authSubmit(mode){
   USER = res.data.session.user;
   showSplash('Melde mich zum Dienst …'); BOOTED = false; render();
   try{ await afterLogin(); }catch(e){ toast('Laden fehlgeschlagen.'); }
-  BOOTED = true; tab = 'stube'; render(); hideSplash(); setTimeout(() => { pingTs = 0; pingNow(); }, 2500); setTimeout(loadLotto, 1500); setTimeout(loadAdmin, 1200); setTimeout(loadChat, 1800);
+  BOOTED = true; tab = 'stube'; render(); hideSplash(); setTimeout(() => { pingTs = 0; pingNow(); }, 2500); setTimeout(fbFlush, 4000); setTimeout(loadLotto, 1500); setTimeout(loadAdmin, 1200); setTimeout(loadChat, 1800);
 }
 
 /* =========================================================
@@ -5461,7 +5471,8 @@ ONLINE.admin = false; ONLINE.ansage = null; ONLINE.adm = null;
 async function loadAdmin(){
   if(!sb || !USER) return;
   const a = await sb.rpc('ist_admin');
-  const war = ONLINE.admin; ONLINE.admin = !a.error && a.data === true; ONLINE.adminKnown = true;
+  const war = ONLINE.admin; ONLINE.admin = !a.error && a.data === true;
+  if(ONLINE.admin && !ONLINE.fb && typeof loadFb === 'function') loadFb(); ONLINE.adminKnown = true;
   const b = await sb.rpc('ansage_lesen');
   const alt = JSON.stringify(ONLINE.ansage); ONLINE.ansage = !b.error && b.data && b.data.text ? b.data : null;
   if(war !== ONLINE.admin || alt !== JSON.stringify(ONLINE.ansage)) render();
@@ -5507,10 +5518,118 @@ function renderLive(){
     + v.map(x => { const d = new Date(x.tag + 'T12:00:00'); return '<div class="lc" title="' + d.toLocaleDateString('de-DE') + ': ' + x.aktiv + ' aktiv, ' + x.neu + ' neu"><span class="num">' + (x.aktiv || '') + '</span><span class="lb"><i class="a" style="height:' + (x.aktiv / max * 70) + 'px"></i><i class="n" style="height:' + (x.neu / max * 70) + 'px"></i></span><em>' + d.getDate() + '.</em></div>'; }).join('') + '</div>';
   return h + '<p class="small muted" style="margin:8px 0 0">Online = in den letzten 2 Minuten im Spiel. Aktualisiert sich alle 30 Sekunden.</p></div>';
 }
+/* =========================================================
+   FEEDBACK UND FEHLERPROTOKOLL (Server: stillgestanden_feedback.sql)
+   ========================================================= */
+function fbInfo(extra){
+  const ua = navigator.userAgent || '';
+  const geraet = /iPhone|iPad/.test(ua) ? 'iOS' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'Mac' : 'Sonstiges';
+  const browser = /Edg\//.test(ua) ? 'Edge' : /SamsungBrowser/.test(ua) ? 'Samsung' : /Firefox|FxiOS/.test(ua) ? 'Firefox' : /CriOS|Chrome/.test(ua) ? 'Chrome' : /Safari/.test(ua) ? 'Safari' : 'Sonstiger';
+  return Object.assign({
+    version: typeof CL_NOW !== 'undefined' ? CL_NOW : null,
+    geraet, browser, ua: ua.slice(0, 180),
+    bildschirm: (window.innerWidth || 0) + '×' + (window.innerHeight || 0),
+    app: !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches) || !!navigator.standalone,
+    seite: (typeof tab !== 'undefined' ? tab : '') + (typeof LASTSUB !== 'undefined' && LASTSUB[tab] ? '/' + LASTSUB[tab] : ''),
+    rang: S ? S.rank : null, tsk: S ? S.tsk : null, ga: S ? !!S.gaDone : null,
+  }, extra || {});
+}
+// Abstürze automatisch melden (je Fehler einmal pro Sitzung, höchstens 5)
+const FB_SEEN = new Set(); let fbQ = [];
+try{ fbQ = JSON.parse(localStorage.getItem('sg_fbq') || '[]'); }catch(e){ fbQ = []; }
+function fbAuto(msg, stack){
+  msg = String(msg || 'Unbekannter Fehler').slice(0, 300);
+  if(FB_SEEN.has(msg) || FB_SEEN.size >= 5 || /ResizeObserver|Script error\.?$|NetworkError|Failed to fetch|Load failed/i.test(msg)) return;
+  FB_SEEN.add(msg);
+  fbQ.push({t: msg, i: fbInfo({stack: String(stack || '').slice(0, 1500)})}); fbQ = fbQ.slice(-5);
+  try{ localStorage.setItem('sg_fbq', JSON.stringify(fbQ)); }catch(e){}
+  setTimeout(fbFlush, 1500);
+}
+async function fbFlush(){
+  if(!sb || !USER || !fbQ.length) return;
+  const q = fbQ; fbQ = [];
+  try{ localStorage.setItem('sg_fbq', '[]'); }catch(e){}
+  for(const x of q){ try{ await sb.rpc('feedback_senden', {p_art:'auto', p_text:x.t, p_info:x.i}); }catch(e){} }
+}
+window.addEventListener('error', e => fbAuto(e.message + (e.lineno ? ' (Zeile ' + e.lineno + ')' : ''), e.error && e.error.stack));
+window.addEventListener('unhandledrejection', e => { const r = e.reason || {}; fbAuto('Promise: ' + (r.message || r), r.stack); });
+setInterval(fbFlush, 60000);
+
+// Formular für Spieler
+let fbArt = 'idee';
+function fbOpen(art){
+  if(art) fbArt = art;
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="fbt"><div class="sheet fbsheet">'
+    + '<h2 id="fbt" style="margin:0 0 4px;text-align:center">Feedback an die Spielleitung</h2>'
+    + '<p class="small muted" style="text-align:center;margin:0 0 14px">Ich lese jede Nachricht. Danke, dass du hilfst, das Spiel besser zu machen.</p>'
+    + '<div class="seg" role="group" aria-label="Art">' + [['idee', '💡 Idee oder Lob'], ['fehler', '🐞 Fehler melden']].map(([v, l]) => '<button data-act="fb_art" data-id="' + v + '" aria-pressed="' + (fbArt === v) + '">' + l + '</button>').join('') + '</div>'
+    + '<label for="fbText" class="sr">Nachricht</label><textarea id="fbText" rows="5" maxlength="1000" placeholder="' + (fbArt === 'fehler' ? 'Was ist passiert? Wo warst du gerade im Spiel, und was hast du davor gemacht?' : 'Was gefällt dir, was fehlt dir, was nervt?') + '"></textarea>'
+    + '<p class="small muted" style="margin:6px 0 0">Mitgeschickt werden dein Spielername, Dienstgrad, Gerät und Browser, damit sich Fehler nachstellen lassen. Bitte keine echten Namen oder Kontaktdaten.</p>'
+    + '<div style="display:flex;gap:8px;margin-top:14px"><button class="btn ghost" data-act="close" style="flex:1">Abbrechen</button><button class="btn gold" data-act="fb_send" id="fbSend" style="flex:2">Absenden</button></div></div></div>';
+  setTimeout(() => { const t = document.getElementById('fbText'); if(t) t.focus(); }, 50);
+}
+async function fbSend(){
+  const ta = document.getElementById('fbText'), btn = document.getElementById('fbSend'); if(!ta) return;
+  const t = ta.value.trim();
+  if(t.length < 3){ toast('Bitte schreib ein paar Worte.'); ta.focus(); return; }
+  btn.disabled = true; btn.textContent = 'Wird gesendet …';
+  const { error } = await sb.rpc('feedback_senden', {p_art: fbArt, p_text: t, p_info: fbInfo()});
+  if(error){ btn.disabled = false; btn.textContent = 'Absenden'; toast(error.message || 'Senden fehlgeschlagen.'); return; }
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true"><div class="sheet"><div class="stamp good">EINGEGANGEN</div>'
+    + '<h2 style="margin:10px 0 6px;text-align:center">Danke, Kamerad!</h2><p class="muted">Deine Meldung ist angekommen und wird gelesen. Gute Ideen landen im nächsten Update.</p>'
+    + '<button class="btn wide" data-act="close">Wegtreten</button></div></div>';
+}
+function fbCard(){
+  return '<h2>Feedback</h2><div class="panel pad"><p class="small" style="margin:0 0 12px">Fehler gefunden, Idee gehabt oder einfach etwas loswerden? Schreib direkt an die Spielleitung.</p>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn gold" data-act="fb_open" data-id="idee" style="flex:1">💡 Idee oder Lob</button><button class="btn ghost" data-act="fb_open" data-id="fehler" style="flex:1">🐞 Fehler melden</button></div></div>';
+}
+
+// Admin: Meldungen lesen
+ONLINE.fb = null; ONLINE.fbAlle = false;
+async function loadFb(){
+  if(!ONLINE.admin) return;
+  const { data, error } = await sb.rpc('admin_feedback', {p_alle: ONLINE.fbAlle});
+  ONLINE.fb = error ? {err: error.message} : data;
+  if(tab === 'akte' && LASTSUB.akte === 'admin') render();
+}
+function renderFbAdmin(){
+  const F = ONLINE.fb;
+  let h = '<div class="panel pad adm"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h3>Feedback' + (F && !F.err && F.offen ? ' <span class="fbcount">' + F.offen + ' offen</span>' : '') + '</h3><button class="linkbtn" data-act="fb_reload">Aktualisieren</button></div>';
+  if(!F){ setTimeout(loadFb, 0); return h + '<p class="small muted">Lade …</p></div>'; }
+  if(F.err) return h + '<p class="small muted">Nicht erreichbar: ' + esc(F.err) + '. Ist stillgestanden_feedback.sql ausgeführt?</p></div>';
+  h += '<div class="seg" role="group" aria-label="Filter" style="margin:6px 0 10px"><button data-act="fb_filter" data-id="0" aria-pressed="' + !ONLINE.fbAlle + '">Offen</button><button data-act="fb_filter" data-id="1" aria-pressed="' + ONLINE.fbAlle + '">Alle</button></div>';
+  if(!F.liste.length) return h + '<p class="small muted">Keine ' + (ONLINE.fbAlle ? '' : 'offenen ') + 'Meldungen. Läuft.</p></div>';
+  const ART = {idee:['💡', 'Idee'], fehler:['🐞', 'Fehler'], auto:['⚠️', 'Absturz']};
+  h += F.liste.map(x => {
+    const i = x.info || {}, d = new Date(x.last_at);
+    const meta = [i.rang && R[i.rang] ? rankNameFor(i.tsk || 'heer', i.rang) : null, i.geraet, i.browser, i.app ? 'als App' : null, i.seite ? 'Seite ' + i.seite : null, i.version ? 'Version ' + i.version : null].filter(Boolean).join(' · ');
+    return '<div class="fbitem art-' + x.art + (x.erledigt ? ' done' : '') + '"><div class="fbh"><span>' + ART[x.art][0] + ' <b>' + ART[x.art][1] + '</b>' + (x.anzahl > 1 ? ' <span class="tag">' + x.anzahl + '×</span>' : '') + '</span>'
+      + '<span class="small muted">' + (x.name ? '<button class="plink" data-act="profil" data-id="' + esc(x.name) + '">' + esc(x.name) + '</button> · ' : '') + d.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'}) + ' ' + d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + '</span></div>'
+      + '<div class="fbt">' + esc(x.text) + '</div>' + (meta ? '<div class="small muted">' + esc(meta) + '</div>' : '')
+      + (i.stack ? '<details class="small"><summary>Technische Details</summary><pre>' + esc(i.stack) + '</pre></details>' : '')
+      + '<div class="cma"><button class="linkbtn" data-act="fb_set" data-id="' + x.id + ':' + (x.erledigt ? 0 : 1) + '">' + (x.erledigt ? 'Wieder öffnen' : '✓ Erledigt') + '</button><button class="linkbtn" data-act="fb_set" data-id="' + x.id + ':del">Löschen</button></div></div>';
+  }).join('');
+  return h + '</div>';
+}
+const FB_ACT = {
+  fb_open(a){ fbOpen(a); },
+  fb_art(a){ const t = document.getElementById('fbText'), keep = t ? t.value : ''; fbOpen(a); const n = document.getElementById('fbText'); if(n) n.value = keep; },
+  fb_send(){ fbSend(); },
+  fb_reload(){ if(ONLINE.admin) loadFb(); },
+  fb_filter(v){ if(!ONLINE.admin) return; ONLINE.fbAlle = v === '1'; ONLINE.fb = null; render(); },
+  async fb_set(v){
+    if(!ONLINE.admin) return;
+    const [id, w] = String(v).split(':');
+    const { error } = await sb.rpc('admin_feedback_setzen', {p_id: Number(id), p_erledigt: w === '1', p_loeschen: w === 'del'});
+    if(error){ toast('Fehler: ' + error.message); return; }
+    loadFb();
+  },
+};
+
 function renderAdmin(){
   if(!ONLINE.admin) return '';
   const st = ONLINE.adm, btn = (act, label, id) => '<button class="btn ghost" data-act="' + act + '"' + (id !== undefined ? ' data-id="' + id + '"' : '') + '>' + label + '</button>';
-  let h = '<h2>Admin</h2><p class="small muted">Nur für dich sichtbar. Werkzeuge für deinen Spielstand wirken auch auf Ranglisten. Zum Testen am besten ein zweites Konto anlegen und ebenfalls als Admin eintragen.</p>' + renderLive();
+  let h = '<h2>Admin</h2><p class="small muted">Nur für dich sichtbar. Werkzeuge für deinen Spielstand wirken auch auf Ranglisten. Zum Testen am besten ein zweites Konto anlegen und ebenfalls als Admin eintragen.</p>' + renderLive() + renderFbAdmin();
   h += '<div class="panel pad adm"><h3>Zeit</h3><p class="small muted">Zeitraffer gilt nur für deinen Spielstand.</p><div class="seg" role="group" aria-label="Zeitraffer">'
     + [1, 10, 100, 1000].map(v => '<button data-act="speed" data-id="' + v + '" aria-pressed="' + (S.speed === v) + '">' + (v === 1 ? 'Normal' : v + '×') + '</button>').join('') + '</div>'
     + '<div class="admbtns">' + btn('adm_timer', 'Alle Timer sofort beenden') + btn('adm_stamina', 'Ausdauer auffüllen') + '</div></div>';
@@ -5761,6 +5880,7 @@ async function profilZeigen(name){
 const PS_ACT = { profil(name){ profilZeigen(name); } };
 
 for(const k in PS_ACT) ACT[k] = PS_ACT[k];
+for(const k in FB_ACT) ACT[k] = FB_ACT[k];
 let LOGIN_MODE = 'login';
 const LP_ICON = {
   karriere:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/></svg>',
