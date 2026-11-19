@@ -301,6 +301,29 @@ ul.req .rw{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;p
 .mgres .stamp{display:block;width:max-content;margin:0 auto 6px}.mgscore{font:400 44px 'Black Ops One',sans-serif;text-align:center;color:#E3B23C}.mgscore small{font:600 15px Barlow,sans-serif;color:#C9CDB8}
 .mgcount{font:400 90px 'Black Ops One',sans-serif;color:#E3B23C;text-shadow:0 4px 0 rgba(0,0,0,.4);background:none}
 .mgctl{display:flex;gap:8px;touch-action:manipulation;user-select:none;-webkit-user-select:none}.mgctl:empty{display:none}.mgctl .btn{min-height:58px;font-size:18px;touch-action:manipulation}
+:root[data-season="xmas"] .top{border-bottom-color:#B3261E}
+:root[data-season="xmas"] .top::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.85;
+  background-image:radial-gradient(1.6px 1.6px at 12px 8px,#fff 60%,transparent 70%),radial-gradient(1.2px 1.2px at 46px 30px,#fff 60%,transparent 70%),radial-gradient(2px 2px at 80px 16px,#fff 60%,transparent 70%),radial-gradient(1.4px 1.4px at 104px 44px,#fff 60%,transparent 70%),radial-gradient(1.8px 1.8px at 30px 52px,#fff 60%,transparent 70%),radial-gradient(1.2px 1.2px at 64px 4px,#fff 60%,transparent 70%);
+  background-size:120px 60px;animation:sgSnow 7s linear infinite}
+:root[data-season="xmas"] .top::after{content:'';position:absolute;left:0;right:0;bottom:-9px;height:11px;pointer-events:none;z-index:2;
+  background:radial-gradient(circle at 6px 7px,#FF5252 3.2px,transparent 3.8px) 0 0/48px 11px repeat-x,radial-gradient(circle at 18px 7px,#FFD54F 3.2px,transparent 3.8px) 0 0/48px 11px repeat-x,radial-gradient(circle at 30px 7px,#69F0AE 3.2px,transparent 3.8px) 0 0/48px 11px repeat-x,radial-gradient(circle at 42px 7px,#40C4FF 3.2px,transparent 3.8px) 0 0/48px 11px repeat-x,linear-gradient(#2A2A2A,#2A2A2A) 0 3px/100% 1.5px no-repeat;
+  animation:sgTwinkle 1.6s ease-in-out infinite alternate}
+:root[data-season="xmas"] .logo::before{content:'';display:inline-block;width:22px;height:18px;margin:0 3px 0 -2px;vertical-align:-1px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 20'%3E%3Cpath d='M2 16 C6 6 12 1 19 4 L16 9 C12 8 10 11 9 16Z' fill='%23C62828'/%3E%3Crect x='1' y='14' width='12' height='5' rx='2.5' fill='%23F5F5F5'/%3E%3Ccircle cx='19.5' cy='4.5' r='3' fill='%23F5F5F5'/%3E%3C/svg%3E") center/contain no-repeat}
+@keyframes sgSnow{to{background-position:0 60px}}
+@keyframes sgTwinkle{0%{filter:brightness(.75)}100%{filter:brightness(1.25) drop-shadow(0 0 3px rgba(255,235,150,.7))}}
+@media (prefers-reduced-motion: reduce){:root[data-season="xmas"] .top::before,:root[data-season="xmas"] .top::after{animation:none}}
+.advent{border-top:4px solid #B3261E;background-image:radial-gradient(circle at 92% 12%,rgba(255,213,79,.12),transparent 40%)}
+.advgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.advd{position:relative;aspect-ratio:1;border-radius:6px;border:1.5px solid rgba(255,255,255,.15);background:linear-gradient(145deg,#8E1B1B,#5E1212);color:#FFE7A3;font:400 18px 'Black Ops One',sans-serif;cursor:default;display:flex;align-items:center;justify-content:center;padding:0}
+.advd:nth-child(3n){background:linear-gradient(145deg,#2E5A35,#1D3B22)}.advd:nth-child(4n){background:linear-gradient(145deg,#6B4E16,#4A3510)}
+.advd.gross{font-size:22px;border-color:#FFD54F}
+.advd.jetzt{cursor:pointer;border:2px solid #FFD54F;box-shadow:0 0 0 2px rgba(255,213,79,.3),0 0 14px rgba(255,213,79,.55);animation:sgDoor 1.4s ease-in-out infinite alternate}
+.advd.auf{background:var(--surface2);color:var(--muted)}.advd.auf span:not(.advok){opacity:.5;font-size:14px}.advok{position:absolute;top:2px;right:5px;font:700 13px Barlow,sans-serif;color:var(--ok)}
+.advd.weg{opacity:.35;filter:grayscale(.6)}
+@keyframes sgDoor{to{transform:scale(1.06)}}
+@media (prefers-reduced-motion: reduce){.advd.jetzt{animation:none}}
+.advsheet .advbig{width:74px;height:74px;margin:0 auto;border-radius:10px;background:linear-gradient(145deg,#8E1B1B,#5E1212);color:#FFE7A3;font:400 36px/74px 'Black Ops One',sans-serif;text-align:center;border:2px solid #FFD54F}
+.xprog{position:relative;height:22px;border-radius:11px;background:var(--surface2);overflow:hidden}.xprog i{display:block;height:100%;background:linear-gradient(90deg,#B3261E,#E3B23C)}.xprog span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 13px Barlow,sans-serif;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
 .strip.idle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
 .strip .sh{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600}
 .strip .prog{margin-top:4px;height:6px}
@@ -1632,7 +1655,7 @@ function notifyEvents(ev){
 /* ---------- Seitenaufbau: Hauptbereiche mit Unterreitern ---------- */
 const SUBS = {
   stube: [
-    {id:'uebersicht', label:'Übersicht', src:'stube', rest:true, match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Zu erledigen']},
+    {id:'uebersicht', label:'Übersicht', src:'stube', rest:true, match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Adventskalender','Weihnachtsfeier','Auslandseinsatz','Zu erledigen']},
     {id:'stube', label:'Stube', src:'raum', rest:true, match:['Deine Stube','Ausrüstung']},
     {id:'vorsorge', label:'Vorsorge', src:'raum', match:['Anwartschaftsversicherung','Pflegepflichtversicherung']},
     {id:'kameraden', label:'Kameraden', src:'raum', match:['Kompanie','Sammelalbum']},
@@ -3525,7 +3548,7 @@ function waEnsure(){
     const lvl = list.length;            // erster leicht, zweiter mittel, dritter schwer
     const w = {ty:ty.id, prog:0, done:false, claimed:false, lvl};
     if(ty.id === 'dienst_x'){
-      const pool = DIENSTE.filter(d => !G.dienstLock(d) && !d.einsatz && !d.wx && !(d.hideFor && d.hideFor.includes(G.rank().g)) && d.min <= 120);
+      const pool = DIENSTE.filter(d => !G.dienstLock(d) && !d.einsatz && !d.wx && !d.xmas && !(d.hideFor && d.hideFor.includes(G.rank().g)) && d.min <= 120);
       if(!pool.length) continue;
       w.d = pool[Math.floor(Math.random()*pool.length)].id;
     }
@@ -3971,6 +3994,13 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:12, d:'19.11.2026', t:'Weihnachten in der Kaserne (ab 1. Dezember)', p:[
+    'Ab 1. Dezember: Winterlook mit Schnee, Lichterkette und Weihnachtsmütze',
+    'Adventskalender in der Übersicht: jeden Tag ein Türchen, an Heiligabend die große Bescherung',
+    'Ab 20 geöffneten Türchen gibt es die Adventsspange',
+    {o:1, x:'Weihnachtsfeier der Kompanie: Jeder Dienst im Dezember zählt, gemeinsam das Ziel erreichen und Belohnung abholen'},
+    'Weihnachtswache vom 24. bis 26. und Silvesterwache am 31. Dezember mit Feiertagszuschlag',
+    'Neue Meldungen: Wichteln, ein sehr großer Weihnachtsbaum und die Heimfahrt'] },
   {v:11, d:'19.11.2026', t:'Der Übungsplatz ist eröffnet', p:[
     'Neu unter Ausbildung: Übungsplatz mit drei Minispielen zum Selberspielen',
     'Schießstand: Ziele treffen, Zivilisten verschonen, rechtzeitig nachladen',
@@ -4487,6 +4517,101 @@ ORDEN.splice(ORDEN.findIndex(o => o.id === 'bandit'), 0,
   {id:'mg_spind', grp:'mg', tier:1, name:'Musterspind (inoffiziell)', req:'5× Gold bei der Spindkontrolle', cond:() => !!S.mini && (S.mini.gold.spind || 0) >= 5}
 );
 
+/* =========================================================
+   WEIHNACHTEN: Winterlook, Adventskalender, Feiertagsdienste
+   Läuft automatisch im Dezember. Zum Testen im Admin-Panel einen Tag setzen.
+   ========================================================= */
+function xmasTestTag(){ try{ return Number(localStorage.getItem('sg_xmas') || 0); }catch(e){ return 0; } }
+function xmasTag(){ const t = xmasTestTag(); if(t) return t; const d = new Date(); return d.getMonth() === 11 ? d.getDate() : 0; }
+function xmasLook(){ if(xmasTestTag()) return true; const d = new Date(); return d.getMonth() === 11 || (d.getMonth() === 0 && d.getDate() <= 6); }
+function xmasJahr(){ return new Date().getFullYear(); }
+function seasonApply(){ const el = document.documentElement; if(xmasLook()) el.dataset.season = 'xmas'; else delete el.dataset.season; }
+
+const ADVENT = [
+  {t:'Lebkuchen vom Spieß. Er sagt, sie seien „übrig“.', r:{money:1}},
+  {t:'Feldpost von zu Hause mit selbstgebackenen Plätzchen.', r:{paket:1}},
+  {t:'Der Kompaniechef lobt deinen Dienstanzug. Vor allen.', r:{bp:4}},
+  {t:'Ein Thermobecher Glühwein, alkoholfrei, aber heiß.', r:{st:true}},
+  {t:'Wichtelgeschenk aus der Stube: ein Umschlag mit Bargeld.', r:{money:1.5}},
+  {t:'Nikolaus! Dein Stiefel vor der Tür ist voll.', r:{paket:2, money:2}},
+  {t:'Du hast beim Adventssingen den Ton getroffen. Fast.', r:{bp:5}},
+  {t:'Weihnachtsgeld-Vorschuss von der Truppenverwaltung.', r:{money:1.5}},
+  {t:'Kalle hat Kaffee für die ganze Stube gekocht.', r:{st:true, bp:2}},
+  {t:'Ein Paket mit Wollsocken. Oma strickt schneller als die Bundeswehr liefert.', r:{paket:1}},
+  {t:'Du hast die Kompanie-Tombola gewonnen.', r:{money:2}},
+  {t:'Der Spieß hat heute keinen einzigen Fehler im Spind gefunden.', r:{bp:6}},
+  {t:'Lena hat Zimtsterne gebacken. Sie sind hart, aber ehrlich.', r:{st:true}},
+  {t:'Feldpost und ein Zwanziger von Tante Erika.', r:{paket:1, money:1}},
+  {t:'Zuschlag für den Dienst am Wochenende.', r:{money:2}},
+  {t:'Du hast beim Krippenaufbau in der Kapelle geholfen.', r:{bp:7}},
+  {t:'Ein Paket von der Patengemeinde.', r:{paket:1}},
+  {t:'Dennis hat dir seinen Platz an der Heizung überlassen.', r:{st:true, money:1}},
+  {t:'Sondervergütung für den Winterdienst.', r:{money:2.5}},
+  {t:'Zwei Pakete auf einmal. Die Poststelle hat aufgeräumt.', r:{paket:2}},
+  {t:'Lob vom Kommandeur bei der Weihnachtsansprache.', r:{bp:8}},
+  {t:'Weihnachtsgeld ist da. Endlich.', r:{money:3}},
+  {t:'Die Truppenküche gibt Stollen aus. Reichlich.', r:{st:true, paket:1}},
+  {t:'Heiligabend. Frohe Weihnachten, Kamerad!', r:{money:10, paket:3, bp:20}},
+];
+// Türchen-Anordnung wie bei einem echten Kalender durcheinander
+const ADV_ORDER = [7, 15, 2, 21, 11, 18, 4, 23, 9, 13, 1, 19, 16, 6, 24, 10, 3, 20, 12, 22, 5, 17, 8, 14];
+function advState(){ const y = xmasJahr(); if(!S.adv || S.adv.y !== y) S.adv = {y, open:{}}; return S.adv; }
+function advCount(){ return S && S.adv && S.adv.y === xmasJahr() ? Object.keys(S.adv.open).length : 0; }
+function adventCard(){
+  const tag = xmasTag(); if(!tag || tag > 24) return '';
+  const a = advState(), heute = !a.open[tag];
+  let h = '<h2>Adventskalender</h2><div class="panel pad advent"><p class="small" style="margin:0 0 10px">' + (heute ? '<b>Türchen ' + tag + ' wartet auf dich!</b> ' : 'Heute schon geöffnet. ') + 'Jeden Tag ein Türchen bis Heiligabend. Verpasste Türchen bleiben zu.</p><div class="advgrid">';
+  h += ADV_ORDER.map(n => {
+    const auf = !!a.open[n], jetzt = n === tag && !auf, vorbei = n < tag && !auf;
+    return '<button class="advd' + (auf ? ' auf' : jetzt ? ' jetzt' : vorbei ? ' weg' : '') + (n === 24 ? ' gross' : '') + '"' + (jetzt ? ' data-act="advent" data-id="' + n + '"' : ' disabled') + ' aria-label="Türchen ' + n + (auf ? ', geöffnet' : vorbei ? ', verpasst' : jetzt ? ', heute öffnen' : '') + '">'
+      + (auf ? '<span class="advok">✓</span>' : '') + '<span>' + n + '</span></button>';
+  }).join('');
+  return h + '</div><p class="small muted" style="margin:8px 0 0">' + advCount() + ' von 24 geöffnet. Ab 20 gibt es die Adventsspange.</p></div>';
+}
+function adventOpen(n){
+  n = Number(n); const tag = xmasTag(), a = advState();
+  if(n !== tag || a.open[n] || n > 24) return;
+  const it = ADVENT[n - 1]; a.open[n] = now(); rewGive(it.r); save(); render();
+  document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="advt"><div class="sheet advsheet">'
+    + '<div class="advbig">' + n + '</div><h2 id="advt" style="margin:6px 0;text-align:center">' + (n === 24 ? 'Frohe Weihnachten!' : n === 6 ? 'Nikolaus!' : 'Türchen ' + n) + '</h2>'
+    + '<p style="text-align:center">' + esc(it.t) + '</p><div class="chips" style="justify-content:center">' + rewText(it.r).split(', ').map(x => '<span class="chip">' + esc(x) + '</span>').join('') + '</div>'
+    + '<p class="small muted" style="text-align:center;margin:12px 0 0">' + (n < 24 ? 'Morgen wartet Türchen ' + (n + 1) + '.' : 'Danke, dass du dabei warst. Guten Rutsch!') + '</p>'
+    + '<button class="btn wide" data-act="close" style="margin-top:14px">Wegtreten</button></div></div>';
+}
+// Feiertagsdienste
+const XMAS_DIENSTE = [
+  {id:'x_wache', name:'Weihnachtswache', min:120, st:20, pay:420, bp:12, t:0, xmas:[24, 26],
+   desc:'Nur vom 24. bis 26. Dezember. Wache am Tor, während die anderen Gans essen. Dafür gibt es Feiertagszuschlag.'},
+  {id:'x_silvester', name:'Silvesterwache', min:180, st:25, pay:680, bp:16, t:0, xmas:[31, 31],
+   desc:'Nur am 31. Dezember. Um Mitternacht stehst du am Zaun und siehst das Feuerwerk. Von außen.'},
+];
+for(const d of XMAS_DIENSTE){ DIENSTE.push(d); D[d.id] = d; }
+Object.assign(DIENST_ART, {x_wache:'tower', x_silvester:'tower'});
+function xmasDienstOk(d){ const t = xmasTag(); return t >= d.xmas[0] && t <= d.xmas[1]; }
+// Auszeichnungen
+ORDEN.splice(ORDEN.findIndex(o => o.id === 'bandit'), 0,
+  {id:'advent', grp:'xm', tier:1, name:'Adventsspange (inoffiziell)', req:'Im Dezember mindestens 20 Türchen des Adventskalenders öffnen', cond:() => advCount() >= 20},
+  {id:'xfeier', grp:'xm', tier:2, name:'Weihnachtsfeier der Kompanie (inoffiziell)', req:'Mit deiner Kompanie das Ziel der Weihnachtsfeier erreichen', cond:() => !!S.xfeier}
+);
+// Weitere Meldungen im Dezember
+EVENTS.push(
+ {id:'x_wichteln', who:'lena', when:'advent', text:'Wichteln in der Stube. Du hast Brockmann gezogen. Lena sieht dein Gesicht und lacht.',
+  ch:[
+   {t:'Etwas Ordentliches: Schuhcreme und eine Kleiderbürste', out:{t:'Brockmann öffnet es, nickt und sagt: „Sinnvoll.“ Aus seinem Mund ist das eine Liebeserklärung.', fx:{rel:{spiess:6}}}},
+   {t:'Etwas Lustiges: eine Tasse mit „Bester Spieß der Welt“', roll:{stat:'vitaminb', base:45}, ok:{t:'Er benutzt sie ab sofort jeden Morgen. Mit voller Absicht sichtbar.', fx:{rel:{spiess:4, lena:2}, bp:3}}, fail:{t:'Er stellt sie wortlos ins Regal. Mit der Schrift zur Wand.', fx:{rel:{spiess:-2}}}},
+  ]},
+ {id:'x_baum', who:'kalle', when:'advent', text:'Kalle hat einen Weihnachtsbaum für den Flur organisiert. Er ist sehr groß und hat noch Erde am Ballen. Woher, sagt er nicht.',
+  ch:[
+   {t:'Beim Schmücken helfen', out:{t:'Der Flur sieht großartig aus. Sogar der Kompaniechef bleibt stehen.', fx:{bp:3, rel:{kalle:3}}}},
+   {t:'Fragen, woher der Baum kommt', out:{t:'„Vom Standortübungsplatz. Der war im Weg.“ Du fragst nicht weiter.', fx:{rel:{kalle:2, dennis:2}}}},
+  ]},
+ {id:'x_heimfahrt', who:'dennis', when:'weihnachten', text:'Heimfahrt zu Weihnachten. Der Zug ist voll mit Soldaten, und Dennis hat einen Platz für dich freigehalten.',
+  ch:[
+   {t:'Dankbar hinsetzen und schlafen', out:{t:'Du wachst erst zu Hause wieder auf. Bester Schlaf seit Monaten.', fx:{st:30, rel:{dennis:3}}}},
+   {t:'Den Platz einer Mutter mit Kind anbieten', out:{t:'Sie bedankt sich herzlich. Im Gang stehend lernst du drei andere Kameraden kennen.', fx:{bp:4, rel:{dennis:2, lena:2}}}},
+  ]}
+);
+
 const EV = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
 const LG_EV = {ual:['lg_ual1','lg_ual2','lg_ual3'], fwl:['lg_fwl1','lg_fwl2','lg_fwl3'], ofl:['lg_ofl1','lg_ofl2','lg_ofl3'], stu:['lg_stu1','lg_stu2','lg_stu3']};
 function lgCost(l){ let c = (S.lgRetry && S.lgRetry[l.id]) ? l.cost/2 : l.cost; if(hasGear('tablet')) c *= .8; return Math.round(c); }
@@ -4671,6 +4796,7 @@ const G = {
   note(){ const p = G.points(); for(let n=1;n<=4;n++) if(p >= noteMin(n)) return n; return 5; },
   dienstLock(d){
     const r = G.rank();
+    if(d.xmas && !xmasDienstOk(d)) return 'nur an den Feiertagen';
     if(S.einsatz && !d.einsatz) return 'im Auslandseinsatz';
     if(d.einsatz && !S.einsatz) return 'nur im Auslandseinsatz';
     if(d.fs && !fsHas(d.fs)) return 'nur mit Führerschein ' + FS_I[d.fs].name;
@@ -4788,7 +4914,7 @@ const G = {
     if(S.dienst && now() >= S.dienst.end){
       const d = D[S.dienst.id];
       if(typeof kpBonusAdd === 'function') kpBonusAdd(S.dienst.pay);
-      S.money += S.dienst.pay - earnCut(S.dienst.pay); G.addPoints(S.dienst.bp); S.dienstCount++; rtAdd(S.dienst.id); S.dc[S.dienst.id] = (S.dc[S.dienst.id]||0) + 1;
+      S.money += S.dienst.pay - earnCut(S.dienst.pay); G.addPoints(S.dienst.bp); S.dienstCount++; rtAdd(S.dienst.id); if(typeof xmasQ === 'function') xmasQ(); S.dc[S.dienst.id] = (S.dc[S.dienst.id]||0) + 1;
       if(D[S.dienst.id].einsatz && S.einsatz) S.einsatz.score += 1;
       if(Math.random() < (D[S.dienst.id].einsatz ? .25 : .12)){ S.pakete = Math.min(9, (S.pakete||0)+1); events.push('Feldpost ist da!'); }
       events.push(d.name + ' beendet: +' + eur(S.dienst.pay));
@@ -4857,6 +4983,7 @@ function toast(msg){
 
 function applyTheme(){
   const el = document.documentElement;
+  seasonApply();
   if(S && S.theme && S.theme !== 'system') el.dataset.theme = S.theme; else delete el.dataset.theme;
   el.dataset.tsk = (S && S.tsk) || CREATE_TSK;
   applyTsk();
@@ -5073,6 +5200,7 @@ function renderStube(){
       + reqList(req) + (S.dgOk ? '' : '<button class="btn ghost wide" data-act="dgtest" style="margin-bottom:8px">Dienstgradtest ablegen</button>') + '<button class="btn wide" data-act="geloebnis" '+(ok?'':'disabled')+'>Gelöbnis ablegen</button></div>';
   }
   h += todoList();
+  h += adventCard() + (typeof feierCard === 'function' ? feierCard() : '');
   h += appellCard() + rekrutCard();
   h += renderWA();
   h += storyCard();
@@ -5119,6 +5247,8 @@ function renderDienst(){
     if(d.verw && d.verw !== S.verw) return '';
     if(d.ga && S.gaDone) return '';
     if(d.wx && wxLock(d)) return '';
+    if(d.xmas && !xmasDienstOk(d)) return '';
+    if(d.fs && !fsHas(d.fs) && !(S.fs && S.fs.id === d.fs) && !fsReqs(FS_I[d.fs]).every(r => r.ok)) return ''; // Fahrdienste erst zeigen, wenn der Schein in Reichweite ist
     if(d.hideFor && d.hideFor.includes(G.rank().g)) return '';
     if(lock && (d.spec || d.groups) && G.rank().t < 3) return ''; // Fortgeschrittene Dienste erst zeigen, wenn sie in Reichweite sind
     const running = S.dienst && S.dienst.id === d.id;
@@ -5227,7 +5357,7 @@ function render(){
     main.innerHTML = renderPage();
   }
   if(S && tutOn() && main.insertAdjacentHTML) main.insertAdjacentHTML('afterbegin', tutBox());
-  renderNav(); renderRes(); live(); subnavHint(); clAuto(); appellAuto(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
+  renderNav(); renderRes(); live(); subnavHint(); seasonApply(); clAuto(); appellAuto(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
   if(typeof afterRender === "function") afterRender();
 }
 
@@ -5267,6 +5397,8 @@ function ask(text, fn, yes){
    AKTIONEN
    ========================================================= */
 const ACT = {
+  advent(n){ adventOpen(n); },
+  xfeier(){ xmasAbholen(); },
   changelog(){ clShow(true); },
   appell(){ appellAntreten(); },
   tab(id){ goPage(id); render(); window.scrollTo(0,0); if(tab==='truppe') loadTruppe(); },
@@ -5898,7 +6030,7 @@ async function authSubmit(mode){
   USER = res.data.session.user;
   showSplash('Melde mich zum Dienst …'); BOOTED = false; render();
   try{ await afterLogin(); }catch(e){ toast('Laden fehlgeschlagen.'); }
-  BOOTED = true; tab = 'stube'; render(); hideSplash(); setTimeout(() => { pingTs = 0; pingNow(); }, 2500); setTimeout(fbFlush, 4000); setTimeout(loadLotto, 1500); setTimeout(loadAdmin, 1200); setTimeout(loadChat, 1800);
+  BOOTED = true; tab = 'stube'; render(); hideSplash(); setTimeout(() => { pingTs = 0; pingNow(); }, 2500); setTimeout(fbFlush, 4000); setTimeout(xmasFlush, 5000); setTimeout(loadLotto, 1500); setTimeout(loadAdmin, 1200); setTimeout(loadChat, 1800);
 }
 
 /* =========================================================
@@ -6266,10 +6398,53 @@ async function mgTop(g){
 }
 MG_ACT.mg_top = g => mgTop(g);
 
+/* ---------- Weihnachtsfeier der Kompanie (Server: stillgestanden_weihnachten.sql) ---------- */
+ONLINE.xmas = null; ONLINE.xmasTs = 0;
+function xmasQ(){ if(xmasTag()){ S.xq = (S.xq || 0) + 1; } }
+async function xmasFlush(){
+  if(!sb || !USER || !S || !S.xq || !xmasTag()) return;
+  const n = S.xq; S.xq = 0; save();
+  const { error } = await sb.rpc('xmas_beitragen', {p_n:n});
+  if(error){ S.xq = (S.xq || 0) + n; save(); return; }
+  ONLINE.xmasTs = 0; xmasLoad();
+}
+async function xmasLoad(){
+  if(!sb || !USER || !xmasTag() || Date.now() - ONLINE.xmasTs < 60000) return;
+  ONLINE.xmasTs = Date.now();
+  const { data, error } = await sb.rpc('xmas_status');
+  ONLINE.xmas = error ? {err:error.message} : data;
+  if(tab === 'stube') render();
+}
+setInterval(() => { if(USER && S) xmasFlush(); }, 60000);
+function feierCard(){
+  if(!xmasTag() || xmasTag() > 31) return '';
+  const X = ONLINE.xmas;
+  if(!X){ setTimeout(xmasLoad, 0); return ''; }
+  if(X.err) return '';
+  if(!X.kompanie) return '<h2>Weihnachtsfeier</h2><div class="panel pad advent"><p style="margin:0">Im Dezember sammelt jede Kompanie gemeinsam Dienste für ihre Weihnachtsfeier. Wer das Ziel erreicht, bekommt eine Belohnung und eine Auszeichnung.</p><button class="btn ghost" data-act="tab" data-id="truppe" style="margin-top:10px">Kompanie suchen</button></div>';
+  const pct = Math.min(100, X.punkte / X.ziel * 100), fertig = X.punkte >= X.ziel;
+  let h = '<h2>Weihnachtsfeier</h2><div class="panel pad advent"><p class="small" style="margin:0 0 8px">Jeder beendete Dienst im Dezember zählt für die Weihnachtsfeier deiner Kompanie. Ziel: ' + X.ziel + ' Dienste.</p>'
+    + '<div class="xprog"><i style="width:' + pct + '%"></i><span>' + X.punkte + ' / ' + X.ziel + '</span></div>'
+    + '<p class="small" style="margin:8px 0 0">Dein Beitrag: <b>' + (X.mein + (S.xq || 0)) + '</b> Dienste' + (X.top && X.top.length ? '. Fleißigste: ' + X.top.map(t => esc(t.name) + ' (' + t.n + ')').join(', ') : '') + '.</p>';
+  if(fertig && !X.abgeholt) h += '<button class="btn gold wide" data-act="xfeier" style="margin-top:10px">Zur Weihnachtsfeier! Belohnung abholen</button>';
+  else if(fertig) h += '<p class="small" style="margin:8px 0 0"><b>Ziel erreicht, Belohnung abgeholt.</b> Frohe Weihnachten!</p>';
+  return h + '</div>';
+}
+async function xmasAbholen(){
+  const { data, error } = await sb.rpc('xmas_abholen');
+  if(error){ toast(error.message); return; }
+  if(data){ rewGive({money:5, paket:2, bp:15}); S.xfeier = xmasJahr(); save(); }
+  ONLINE.xmasTs = 0; await xmasLoad(); render();
+  if(data) document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true"><div class="sheet advsheet"><div class="advbig">🎄</div><h2 style="margin:6px 0;text-align:center">Weihnachtsfeier!</h2>'
+    + '<p style="text-align:center">Die Kompanie hat es geschafft. Von Ahlen hält eine kurze Rede, diesmal ohne Folien. Es gibt Gans, Stollen und für jeden ein Geschenk.</p><div class="chips" style="justify-content:center">' + rewText({money:5, paket:2, bp:15}).split(', ').map(x => '<span class="chip">' + esc(x) + '</span>').join('') + '</div>'
+    + '<button class="btn wide" data-act="close" style="margin-top:14px">Wegtreten</button></div></div>';
+}
+
 function renderAdmin(){
   if(!ONLINE.admin) return '';
   const st = ONLINE.adm, btn = (act, label, id) => '<button class="btn ghost" data-act="' + act + '"' + (id !== undefined ? ' data-id="' + id + '"' : '') + '>' + label + '</button>';
   let h = '<h2>Admin</h2><p class="small muted">Nur für dich sichtbar. Werkzeuge für deinen Spielstand wirken auch auf Ranglisten. Zum Testen am besten ein zweites Konto anlegen und ebenfalls als Admin eintragen.</p>' + renderLive() + renderFbAdmin();
+  h += '<div class="panel pad adm"><h3>Weihnachten testen</h3><p class="small muted">Nur auf diesem Gerät. Simuliert einen Dezembertag für Design, Adventskalender und Feiertagsdienste.</p><div class="admrow"><input id="admXmas" type="number" min="1" max="31" inputmode="numeric" placeholder="Tag 1–31" value="' + (xmasTestTag() || '') + '">' + btn('adm_xmas', 'Setzen') + btn('adm_xmas_aus', 'Aus') + '</div></div>';
   h += '<div class="panel pad adm"><h3>Zeit</h3><p class="small muted">Zeitraffer gilt nur für deinen Spielstand.</p><div class="seg" role="group" aria-label="Zeitraffer">'
     + [1, 10, 100, 1000].map(v => '<button data-act="speed" data-id="' + v + '" aria-pressed="' + (S.speed === v) + '">' + (v === 1 ? 'Normal' : v + '×') + '</button>').join('') + '</div>'
     + '<div class="admbtns">' + btn('adm_timer', 'Alle Timer sofort beenden') + btn('adm_stamina', 'Ausdauer auffüllen') + '</div></div>';
@@ -6287,6 +6462,8 @@ function renderAdmin(){
   return h;
 }
 const ADM = {
+  adm_xmas(){ const v = Number((document.getElementById('admXmas')||{}).value || 0); if(v < 1 || v > 31){ toast('Tag 1 bis 31 eingeben'); return; } try{ localStorage.setItem('sg_xmas', String(v)); }catch(e){} ONLINE.xmasTs = 0; ONLINE.xmas = null; render(); toast('Weihnachten: Testtag ' + v + '. Dezember'); },
+  adm_xmas_aus(){ try{ localStorage.removeItem('sg_xmas'); }catch(e){} render(); toast('Weihnachts-Test aus'); },
   adm_live(){ loadLive(); },
   adm_timer(){
     const t = now() - 1;
