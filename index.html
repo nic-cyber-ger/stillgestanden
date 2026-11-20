@@ -4821,7 +4821,9 @@ function lkState(){
   if(!S.lk) S.lk = {offen:[], aktiv:[], next:0, n:0};
   // Standort gewechselt: offene Aufträge gehören zum alten Standort und werden neu erzeugt
   const key = S.standort ? S.standort.bl + '/' + S.standort.ort : '';
-  if(S.lk.std !== key){ if(S.lk.std !== undefined) S.lk.offen = []; S.lk.std = key; S.lk.next = 0; if(typeof LKFIT !== 'undefined') LKFIT = ''; }
+  if(S.lk.std !== key){ S.lk.offen = []; S.lk.std = key; S.lk.next = 0; if(typeof LKFIT !== 'undefined') LKFIT = ''; }
+  // Sicherheitsnetz: Aufträge, die nicht zum aktuellen Standort passen, fliegen raus
+  const me = lkKoord(); if(me && S.lk.offen.some(a => lkKm(me, a.ll) > 300)){ S.lk.offen = S.lk.offen.filter(a => lkKm(me, a.ll) <= 300); S.lk.next = 0; }
   return S.lk;
 }
 // Fuhrpark: jedes Fahrzeug aus den Scheinen, ab Feldwebel doppelt, ab Offizier dreifach
