@@ -537,6 +537,25 @@ body.landing{padding-bottom:0}
 .slx-mini svg{vertical-align:middle;background:#F4F3EA;border-radius:4px}
 @media (prefers-reduced-motion:reduce){.slx-ov,.slx-cell.exp,.slx-pick.done,.slx-reel.wave::before{animation:none}}
 
+.kpvlist{display:flex;flex-direction:column;gap:8px}
+.kpvcard{display:flex;gap:11px;align-items:flex-start;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--ink);font:inherit;cursor:pointer;width:100%;min-width:0}
+.kpvcard.mine{border-color:var(--signal)}.kpvcard .kpvw{flex:none}
+.kpvc{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.kpvn{display:flex;align-items:center;gap:2px;flex-wrap:wrap}.kpvn b{font-size:17px;overflow-wrap:anywhere}
+.kpvd{font-size:14px;color:var(--ink);opacity:.85;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.kpvtags{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}
+.kpvb{display:inline-block;font-size:12px;font-weight:700;padding:1px 7px;border-radius:10px;border:1px solid var(--line);color:var(--muted);vertical-align:middle}
+.kpvb.offen{color:var(--ok);border-color:var(--ok)}.kpvb.bewerbung,.kpvb.bew{color:var(--signal);border-color:var(--signal)}.kpvb.geschlossen{color:var(--bad);border-color:var(--bad)}.kpvb.mine{background:var(--signal);color:#1E2416;border-color:var(--signal)}
+.kpvp{flex:none;text-align:right;font-weight:700}
+.kpvsuche{display:flex;gap:8px}.kpvsuche .inp{flex:1;min-width:0}.kpvsuche .btn{flex:none}
+.kpvsheet{text-align:left;max-height:88vh;overflow:auto}.kpvkopf{display:flex;gap:12px;align-items:center}.kpvkopf .kpvw{flex:none}
+.kpvtext{white-space:pre-line;overflow-wrap:anywhere;background:var(--surface2);border-radius:6px;padding:9px 11px;margin:10px 0;font-size:15px}
+.kpvzahlen{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:10px 0}.kpvzahlen div{background:var(--surface2);border-radius:6px;padding:7px 4px;text-align:center;display:flex;flex-direction:column}.kpvzahlen b{font-size:16px}.kpvzahlen span{font-size:11.5px;color:var(--muted)}
+.kpvmit summary{cursor:pointer;font-weight:600;padding:6px 0}.kpvakt{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.kpvakt textarea,.kpvedit textarea{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:10px;border-radius:6px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);resize:vertical}
+.kpvbew{display:flex;flex-direction:column;gap:10px}
+.kpvhead{display:flex;gap:12px;align-items:center}.kpvhead .kpvw{flex:none}
+.kpvpick{display:flex;gap:6px;flex-wrap:wrap}.kpvpick button{border:2px solid var(--line);background:var(--surface2);border-radius:8px;padding:4px;cursor:pointer;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center}.kpvpick button[aria-pressed="true"]{border-color:var(--signal);background:rgba(227,178,60,.15)}.kpvpick i{display:block;width:26px;height:26px;border-radius:50%}
+.kpvvorschau{display:flex;justify-content:center;margin:4px 0}
+.kpvb{white-space:nowrap}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1723,10 +1742,11 @@ const SUBS = {
     {id:'lotto', label:'Soldatenlotto', src:'lotto', match:['Soldatenlotto']},
   ],
   truppe: [
-    {id:'kompanie', label:'Kompanie', grp:'kp', src:'truppe', rest:true, match:['Kompanie','Mitglieder','Einladen']},
+    {id:'kompanie', label:'Kompanie', grp:'kp', src:'truppe', rest:true, match:['Kompanie','Bewerbungen','Kompanieprofil','Mitglieder','Einladen']},
     {id:'kasse', label:'Kasse', grp:'kp', src:'truppe', match:['Kompaniekasse','Kassenbuch']},
     {id:'ausbau', label:'Ausbau', grp:'kp', src:'truppe', match:['Kompanie-Ausbau','Kompanielager']},
     {id:'kaserne', label:'Standort', grp:'kp', src:'truppe', match:['Standortkarte','Kaserne']},
+    {id:'verzeichnis', label:'Verzeichnis', grp:'kp', src:'kpliste', match:['Kompanieverzeichnis']},
     {id:'chat', get label(){ const n = typeof chatUnread === 'function' ? chatUnread() : 0; return 'Funkkreis' + (n ? ' (' + n + ')' : ''); }, src:'chat', match:['Funkkreis']},
     {id:'suche', label:'Personensuche', src:'suche', match:['Personensuche']},
     {id:'rang', label:'Rangliste', src:'truppe', match:['Ranglisten']},
@@ -1777,7 +1797,7 @@ function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LAST
 function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === navOf(a[0])), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
   const f = {stube:renderStube, kaserne:renderKaserne, lage:renderLage, mini:renderMini, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
-    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null}[src];
+    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null, kpliste: typeof renderKpListe === 'function' && USER ? renderKpListe : null}[src];
   return f ? f() : '';
 }
 function splitSecs(html){
@@ -1808,7 +1828,7 @@ function subnavHint(){
   upd(); n.onscroll = upd;
 }
 function renderPage(){
-  const subs = (SUBS[tab] || []).filter(x => x.src !== 'truppe' || typeof renderTruppe === 'function');
+  const subs = (SUBS[tab] || []).filter(x => (x.src !== 'truppe' && x.src !== 'kpliste') || typeof renderTruppe === 'function');
   if(!subs.length) return runStrip();
   const parts = subs.map(x => ({x, html:''}));
   for(const src of [...new Set(subs.flatMap(srcOf))]){
@@ -1839,7 +1859,8 @@ function kTiles(){
   const on = typeof renderTruppe === 'function';
   return [
     {grp:'Kameraden', go:'truppe:kompanie', label:'Kompanie', ok:on, ic:'<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M12 20c0-3.3 1.8-6 4-6s6 2.7 6 6"/>',
-      info:sv(() => ONLINE.kp ? ONLINE.kp.name + ' · Kasse ' + eur(ONLINE.kp.kasse) : 'gründen oder beitreten', 'Kasse und Ausbau')},
+      badge:sv(() => ONLINE.bew.length, 0), info:sv(() => ONLINE.kp ? (ONLINE.bew.length ? ONLINE.bew.length + ' neue Bewerbung' + (ONLINE.bew.length > 1 ? 'en' : '') : ONLINE.kp.name + ' · Kasse ' + eur(ONLINE.kp.kasse)) : 'gründen, beitreten, bewerben', 'Kasse und Ausbau')},
+    {grp:'Kameraden', go:'truppe:verzeichnis', label:'Kompanien', ok:on && !!USER, ic:'<path d="M12 2.5l7.5 2.6v5.6c0 4.9-3.2 8.4-7.5 9.8-4.3-1.4-7.5-4.9-7.5-9.8V5.1z"/><path d="M9 11h6M12 8v6"/>', info:'Verzeichnis und Bewerbungen'},
     {grp:'Kameraden', go:'truppe:chat', label:'Funkkreis', ok:typeof renderChat === 'function' && !!USER, ic:'<path d="M4 5h16v11H9l-5 4z"/>',
       badge:sv(() => chatUnread(), 0), info:sv(() => { const m = ONLINE.chat[ONLINE.chat.length - 1]; return m ? m.name + ': ' + m.text : ''; }, 'Chat mit allen Spielern')},
     {grp:'Kameraden', go:'truppe:rang', label:'Rangliste', ok:on, ic:'<path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/>', info:'Spieler und Kompanien'},
@@ -4099,6 +4120,13 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:17, d:'21.11.2026', o:1, t:'Kompanieverzeichnis und Bewerbungen', p:[
+    'Neue Kachel Kompanien in der Kaserne: alle Kompanien ansehen, suchen und sortieren',
+    'Jede Kompanie hat ein Profil mit Wappen, Farbe, Beschreibung, Heimatstandort und Mitgliedern',
+    'Bewerben mit kurzem Anschreiben, höchstens drei Bewerbungen gleichzeitig',
+    'Chef und Spieß nehmen Bewerbungen an oder lehnen sie ab',
+    'Der Chef legt fest, ob die Kompanie offen ist, nur mit Bewerbung aufnimmt oder geschlossen ist, und ab welchem Dienstgrad'
+  ]},
   {v:16, d:'20.11.2026', t:'Lagekarte: mehr Abwechslung', p:[
     'Sechs neue Auftragsarten: Sturmschäden, Tierseuche, Munitionstransport, Sanitätsdienst, Behelfsbrücke und Tag der offenen Tür',
     'Jeder Auftrag hat jetzt mehrere Beschreibungen und mehrere mögliche Lagen vor Ort',
@@ -7255,6 +7283,244 @@ const PS_ACT = { profil(name){ profilZeigen(name); } };
 
 for(const k in PS_ACT) ACT[k] = PS_ACT[k];
 for(const k in FB_ACT) ACT[k] = FB_ACT[k];
+
+// ---------- Kompanieverzeichnis und Bewerbungen ----------
+const KPV_WAPPEN = {
+  adler:   ['Adler',   '<path d="M12 6.2c-1.1 0-1.9.8-1.9 1.9L5 7c.8 3 2.4 4.6 5 5l-1.1 4.1L12 15l3.1 1.1L14 12c2.6-.4 4.2-2 5-5l-5.1 1.1c0-1.1-.8-1.9-1.9-1.9z" fill="currentColor"/>'],
+  schwert: ['Schwert', '<path d="M12 4.5v10M9 14.5h6M12 14.5v4.5M10.6 6l1.4-1.5L13.4 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>'],
+  anker:   ['Anker',   '<circle cx="12" cy="6.3" r="1.5" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M12 7.8V18M9.2 10h5.6M7 13.5c0 2.8 2.2 4.5 5 4.5s5-1.7 5-4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>'],
+  fluegel: ['Schwinge','<path d="M12 12.5C10 9.6 7.6 8.6 5 8.6c.6 3 2.8 5 7 5.6M12 12.5c2-2.9 4.4-3.9 7-3.9-.6 3-2.8 5-7 5.6M12 12v6" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>'],
+  stern:   ['Stern',   '<polygon points="12,5.2 13.8,9.6 18.4,9.8 14.8,12.7 16.1,17.2 12,14.6 7.9,17.2 9.2,12.7 5.6,9.8 10.2,9.6" fill="currentColor"/>'],
+  eiche:   ['Eichenlaub','<path d="M12 18.5V10M12 10.5c-3.2 0-4.6-2.2-4.6-4.6 2.4 0 4.6 1.4 4.6 4.6zM12 13.4c3.2 0 4.6-2.2 4.6-4.6-2.4 0-4.6 1.4-4.6 4.6z" stroke="currentColor" stroke-width="1.5" fill="currentColor" fill-opacity=".35" stroke-linejoin="round"/>'],
+  blitz:   ['Blitz',   '<path d="M13.2 4.8 7.8 13h3.8l-.9 6.2 5.5-8.4h-3.8z" fill="currentColor"/>'],
+  burg:    ['Burg',    '<path d="M6.5 18.5v-9h2.2v2h2v-2h2.6v2h2v-2h2.2v9z" fill="currentColor"/><path d="M10.8 18.5v-3h2.4v3" fill="#000" fill-opacity=".35"/>'],
+};
+const KPV_FARBEN = ['#4B582C', '#1F5E4A', '#2F4A6B', '#5A3E7A', '#7A1F2B', '#A3271E', '#8A6D2B', '#3B3B3B'];
+const KPV_AUFNAHME = {offen:'Offen', bewerbung:'Mit Bewerbung', geschlossen:'Geschlossen'};
+const KPV_MIN = [[0, 'Alle Dienstgrade'], [2, 'ab Obergefreiter'], [4, 'ab Unteroffizier oder Stabsgefreiter'], [6, 'ab Feldwebel oder Korporal'], [8, 'ab Hauptfeldwebel oder Fähnrich'], [10, 'ab Leutnant oder Oberstabsfeldwebel']];
+const KPV_MIN_KURZ = {2:'ab Obergefreiter', 4:'ab Unteroffizier', 6:'ab Feldwebel', 8:'ab Hauptfeldwebel', 10:'ab Leutnant'};
+function kpvMinName(t, lang){ const m = KPV_MIN.filter(x => x[0] <= t).pop(); if(!t || !m) return ''; return lang ? m[1] : KPV_MIN_KURZ[m[0]]; }
+function kpvWappen(w, farbe, px){
+  const ic = (KPV_WAPPEN[w] || KPV_WAPPEN.adler)[1], f = /^#[0-9A-Fa-f]{6}$/.test(farbe || '') ? farbe : '#4B582C';
+  return '<svg class="kpvw" viewBox="0 0 24 24" width="' + (px || 40) + '" height="' + (px || 40) + '" aria-hidden="true"><path d="M12 1.8l8.6 3v6.4c0 5.6-3.7 9.6-8.6 11.2-4.9-1.6-8.6-5.6-8.6-11.2V4.8z" fill="' + f + '" stroke="#E3B23C" stroke-width="1.2"/><g style="color:#F2F0E6">' + ic + '</g></svg>';
+}
+function kpvBadge(k){
+  const a = k.aufnahme || 'bewerbung';
+  return '<span class="kpvb ' + a + '">' + KPV_AUFNAHME[a] + '</span>';
+}
+function kpvZeit(t){ const d = new Date(t); return d.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'}) + ' ' + d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}); }
+function kpvLs(k, v){ try{ if(v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); }catch(e){ return null; } }
+
+ONLINE.kpl = null; ONLINE.kplSort = 'aktiv'; ONLINE.kplQ = ''; ONLINE.kplLoading = false;
+ONLINE.bew = []; ONLINE.meineBew = []; ONLINE.kpProf = null;
+
+async function kpvListe(){
+  if(!sb || !USER || ONLINE.kplLoading) return;
+  ONLINE.kplLoading = true;
+  const { data, error } = await sb.rpc('kompanien_liste', {p_q:ONLINE.kplQ, p_sort:ONLINE.kplSort});
+  ONLINE.kplLoading = false;
+  ONLINE.kpl = error ? [] : (data || []);
+  ONLINE.kplFehler = error ? error.message : '';
+  if(tab === 'truppe') render();
+}
+// Nach jedem Laden der Kompanie: Bewerbungen und Profil holen
+async function kpvNach(){
+  if(!sb || !USER) return;
+  try{
+    const mb = await sb.rpc('meine_bewerbungen');
+    ONLINE.meineBew = mb.error ? [] : (mb.data || []);
+    const k = ONLINE.kp;
+    if(k && (k.rolle === 'chef' || k.rolle === 'spiess')){
+      const b = await sb.rpc('kompanie_bewerbungen');
+      ONLINE.bew = b.error ? [] : (b.data || []);
+    } else ONLINE.bew = [];
+    if(k && k.id){
+      const p = await sb.rpc('kompanie_profil', {p_id:k.id});
+      ONLINE.kpProf = p.error ? null : p.data;
+    } else ONLINE.kpProf = null;
+  }catch(e){}
+  kpvMelden();
+}
+// Entscheidungen und neue Bewerbungen einmal melden
+function kpvMelden(){
+  const seen = Number(kpvLs('sg_bew_seen') || 0), grenze = Date.now() - 7 * 864e5;
+  let maxT = seen;
+  for(const b of ONLINE.meineBew){
+    const t = b.entschieden_at ? new Date(b.entschieden_at).getTime() : 0;
+    if(!t || t <= seen || t < grenze || (b.status !== 'angenommen' && b.status !== 'abgelehnt')) continue;
+    maxT = Math.max(maxT, t);
+    if(b.status === 'angenommen') kpvWillkommen(b);
+    else toast('Die Kompanie ' + b.name + ' hat deine Bewerbung abgelehnt.');
+  }
+  if(maxT > seen) kpvLs('sg_bew_seen', String(maxT));
+  const chefSeen = Number(kpvLs('sg_bew_chef') || 0);
+  const neu = ONLINE.bew.filter(b => new Date(b.created_at).getTime() > chefSeen);
+  if(neu.length){
+    toast(neu.length === 1 ? 'Neue Bewerbung von ' + neu[0].name + '.' : neu.length + ' neue Bewerbungen für deine Kompanie.');
+    kpvLs('sg_bew_chef', String(Math.max(...neu.map(b => new Date(b.created_at).getTime()))));
+  }
+}
+function kpvWillkommen(b){
+  const host = document.getElementById('modalHost'); if(!host) return;
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="kpvwt"><div class="sheet">'
+    + '<div style="display:flex;justify-content:center;margin-bottom:8px">' + kpvWappen(b.wappen, b.farbe, 72) + '</div>'
+    + '<h2 id="kpvwt" style="margin:0 0 6px">Bewerbung angenommen</h2>'
+    + '<p>Willkommen in der <b>' + esc(b.name) + '</b>. Melde dich beim Kompaniefeldwebel und stell dich der Truppe vor.</p>'
+    + '<div style="display:flex;gap:8px;margin-top:14px"><button class="btn ghost" data-act="close" style="flex:1">Später</button><button class="btn gold" data-act="kpv_meine" style="flex:2">Zur Kompanie</button></div></div></div>';
+}
+
+function renderKpListe(){
+  if(!USER) return '';
+  if(ONLINE.kpl === null && !ONLINE.kplLoading) setTimeout(kpvListe, 0);
+  let h = '<h2>Kompanieverzeichnis</h2><p class="small muted">Alle Kompanien im Spiel. Tippe eine an, um ihr Profil zu sehen und dich zu bewerben.</p>'
+    + '<form class="kpvsuche" data-kpvsuche="1" onsubmit="return false"><label for="kpvq" class="sr">Kompanie suchen</label><input id="kpvq" class="inp" placeholder="Name oder Kürzel" maxlength="30" value="' + esc(ONLINE.kplQ) + '" autocomplete="off"><button class="btn" data-act="kpv_suche">Suchen</button></form>'
+    + '<div class="dpchips" role="group" aria-label="Sortierung" style="margin:10px 0 12px">' + [['aktiv', 'Am aktivsten'], ['punkte', 'Meiste Punkte'], ['neu', 'Neueste'], ['offen', 'Nimmt auf']].map(([v, l]) => '<button data-act="kpv_sort" data-id="' + v + '" aria-pressed="' + (ONLINE.kplSort === v) + '">' + l + '</button>').join('') + '</div>';
+  const offen = ONLINE.meineBew.filter(b => b.status === 'offen').length;
+  if(!ONLINE.kp && offen) h += '<p class="small" style="margin:0 0 10px">Du hast ' + offen + ' offene Bewerbung' + (offen > 1 ? 'en' : '') + '. Höchstens drei gleichzeitig.</p>';
+  if(ONLINE.kpl === null) return h + '<p class="muted">Lade …</p>';
+  if(ONLINE.kplFehler) return h + '<div class="panel pad"><p class="small">Das Verzeichnis lässt sich gerade nicht laden: ' + esc(ONLINE.kplFehler) + '</p></div>';
+  if(!ONLINE.kpl.length) return h + '<p class="muted">Keine Kompanie gefunden.</p>';
+  const mein = ONLINE.kp && ONLINE.kp.id;
+  h += '<div class="kpvlist">' + ONLINE.kpl.map(k => {
+    const z = k.zahlen || {}, voll = z.mitglieder >= 30;
+    return '<button class="kpvcard' + (k.id === mein ? ' mine' : '') + '" data-act="kpv_profil" data-id="' + esc(k.id) + '">'
+      + kpvWappen(k.wappen, k.farbe, 46)
+      + '<span class="kpvc"><span class="kpvn"><b>' + esc(k.name) + '</b><span class="tag">' + esc(k.kuerzel) + '</span></span>'
+      + '<span class="small muted">' + z.mitglieder + '/30 Mitglieder · ' + z.aktiv + ' aktiv' + (k.heimat ? ' · ' + esc(k.heimat) : '') + '</span>'
+      + (k.beschreibung ? '<span class="kpvd">' + esc(k.beschreibung) + '</span>' : '')
+      + '<span class="kpvtags">' + (k.id === mein ? '<span class="kpvb mine">Deine Kompanie</span>' : voll ? '<span class="kpvb geschlossen">Voll</span>' : kpvBadge(k))
+      + (k.mindest_rang && k.id !== mein ? '<span class="kpvb min">' + esc(kpvMinName(k.mindest_rang)) + '</span>' : '')
+      + (k.beworben ? '<span class="kpvb bew">Beworben</span>' : '') + '</span></span>'
+      + '<span class="kpvp num">' + Number(z.punkte || 0).toLocaleString('de-DE') + '<br><span class="small muted">Punkte</span></span></button>';
+  }).join('') + '</div>';
+  return h;
+}
+
+async function kpvProfil(id){
+  const host = document.getElementById('modalHost'); if(!host) return;
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true"><div class="sheet"><p class="muted">Lade Kompanie …</p></div></div>';
+  const { data:k, error } = await sb.rpc('kompanie_profil', {p_id:id});
+  if(error || !k){ host.innerHTML = ''; toast(error ? error.message : 'Kompanie nicht gefunden.'); return; }
+  ONLINE.kpvOffen = k;
+  const z = k.zahlen || {}, mein = ONLINE.kp && ONLINE.kp.id === k.id, me = G.rank().t, voll = z.mitglieder >= 30;
+  const ausbau = Object.entries(k.gebaeude || {}).filter(([, s]) => s > 0).map(([g, s]) => (typeof GEB_KP_I !== 'undefined' && GEB_KP_I[g] ? GEB_KP_I[g].name : g) + ' ' + s);
+  let akt = '';
+  if(mein) akt = '<p class="small muted">Das ist deine Kompanie.</p>';
+  else if(ONLINE.kp) akt = '<p class="small muted">Du bist schon in der Kompanie ' + esc(ONLINE.kp.name) + '. Um dich hier zu bewerben, musst du sie erst verlassen.</p>';
+  else if(k.meine && k.meine.status === 'offen') akt = '<p class="small"><b>Deine Bewerbung liegt vor.</b> Chef oder Spieß entscheiden.</p><button class="btn ghost wide" data-act="kpv_zurueck" data-id="' + k.meine.id + '">Bewerbung zurückziehen</button>';
+  else if(k.aufnahme === 'geschlossen') akt = '<p class="small muted">Diese Kompanie nimmt gerade niemanden auf.</p>';
+  else if(voll) akt = '<p class="small muted">Die Kompanie ist voll (30 Mitglieder).</p>';
+  else if(me < k.mindest_rang) akt = '<p class="small muted">Aufnahme erst ' + esc(kpvMinName(k.mindest_rang, 1)) + '. Weiter dienen!</p>';
+  else if(k.aufnahme === 'offen') akt = '<p class="small muted">Offene Kompanie: Du bist sofort dabei.</p><button class="btn gold wide" data-act="kpv_bewerben" data-id="' + esc(k.id) + '">Beitreten</button>';
+  else akt = '<label for="kpvText" class="lbl" style="margin-top:0;text-align:left">Bewerbungsschreiben (freiwillig)</label><textarea id="kpvText" rows="3" maxlength="280" placeholder="Warum gerade diese Kompanie? Was bringst du mit?"></textarea>'
+    + '<p class="small muted" style="margin:4px 0 8px;text-align:left">Chef und Spieß sehen deinen Namen, Dienstgrad, Punkte und Dienstwochen.</p><button class="btn gold wide" data-act="kpv_bewerben" data-id="' + esc(k.id) + '">Bewerbung abschicken</button>';
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="kpvpt"><div class="sheet kpvsheet">'
+    + '<div class="kpvkopf">' + kpvWappen(k.wappen, k.farbe, 64) + '<div><h2 id="kpvpt" style="margin:0">' + esc(k.name) + '</h2><span class="tag" style="margin:0">' + esc(k.kuerzel) + '</span> ' + kpvBadge(k)
+    + '<div class="small muted" style="margin-top:3px">' + (k.heimat ? esc(k.heimat) + ' · ' : '') + 'gegründet ' + new Date(k.created_at).toLocaleDateString('de-DE') + '</div></div></div>'
+    + (k.beschreibung ? '<p class="kpvtext">' + esc(k.beschreibung) + '</p>' : '')
+    + '<div class="kpvzahlen"><div><b>' + z.mitglieder + '/30</b><span>Mitglieder</span></div><div><b>' + z.aktiv + '</b><span>aktiv</span></div><div><b>' + k.platz + '.</b><span>Rangliste</span></div><div><b>' + Number(z.punkte || 0).toLocaleString('de-DE') + '</b><span>Punkte</span></div></div>'
+    + (k.mindest_rang ? '<p class="small" style="margin:6px 0">Aufnahme ' + esc(kpvMinName(k.mindest_rang, 1)) + '</p>' : '')
+    + (ausbau.length ? '<p class="small muted" style="margin:6px 0">Ausbau: ' + esc(ausbau.join(', ')) + '</p>' : '')
+    + '<details class="kpvmit"><summary>Mitglieder ansehen</summary><ul class="rl">' + (k.mitglieder || []).map(m => '<li><span class="who"><button class="plink" data-act="profil" data-id="' + esc(m.name) + '">' + esc(m.name) + '</button> <span class="tag">' + (ROLLEN[m.rolle] || 'Soldat') + '</span><br><span class="small muted">' + esc(rankNameFor(m.tsk, m.rang)) + '</span></span><span class="num">' + Number(m.punkte).toLocaleString('de-DE') + '</span></li>').join('') + '</ul></details>'
+    + '<div class="kpvakt">' + akt + '</div>'
+    + '<button class="btn ghost wide" data-act="close" style="margin-top:10px">Schließen</button></div></div>';
+}
+
+async function kpvBewerben(id){
+  const ta = document.getElementById('kpvText'), k = ONLINE.kpvOffen;
+  const btn = document.querySelector('[data-act="kpv_bewerben"]'); if(btn){ btn.disabled = true; btn.textContent = 'Wird gesendet …'; }
+  const { data, error } = await sb.rpc('kompanie_bewerben', {p_id:id, p_text:ta ? ta.value : ''});
+  if(error){ toast(error.message); if(btn){ btn.disabled = false; btn.textContent = 'Nochmal versuchen'; } return; }
+  ACT.close();
+  if(data === 'beigetreten'){ toast('Willkommen in der ' + (k ? k.name : 'Kompanie') + '!'); SUB.truppe = 'kompanie'; }
+  else toast('Bewerbung abgeschickt. Du bekommst Bescheid.');
+  ONLINE.kpl = null; await loadKompanie(); render();
+}
+
+function kpvBewerbungenHtml(){
+  const k = ONLINE.kp; if(!k || (k.rolle !== 'chef' && k.rolle !== 'spiess')) return '';
+  const p = ONLINE.kpProf, auf = p ? p.aufnahme : 'bewerbung';
+  let h = '<h2>Bewerbungen' + (ONLINE.bew.length ? ' (' + ONLINE.bew.length + ')' : '') + '</h2>';
+  if(!ONLINE.bew.length) return h + '<div class="panel pad"><p class="small muted" style="margin:0">Keine offenen Bewerbungen.' + (auf === 'geschlossen' ? ' Die Aufnahme ist gerade geschlossen.' : auf === 'offen' ? ' Neue Leute treten ohne Bewerbung direkt bei.' : ' Die Kompanie steht im Verzeichnis, Bewerber landen hier.') + '</p></div>';
+  return h + '<div class="kpvbew">' + ONLINE.bew.map(b => '<div class="panel pad"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><button class="plink" data-act="profil" data-id="' + esc(b.name) + '"><b>' + esc(b.name) + '</b></button><br><span class="small muted">' + esc(rankNameFor(b.tsk, b.rang)) + (b.tsk && b.tsk !== 'heer' ? ', ' + TSK[b.tsk].name : '') + ' · ' + b.dienstwochen + ' Dienstwochen</span></div><span class="num">' + Number(b.punkte).toLocaleString('de-DE') + '</span></div>'
+    + (b.text ? '<p class="kpvtext" style="margin:8px 0 0">„' + esc(b.text) + '“</p>' : '<p class="small muted" style="margin:8px 0 0">Ohne Bewerbungsschreiben.</p>')
+    + '<div class="small muted" style="margin-top:4px">' + kpvZeit(b.created_at) + '</div>'
+    + '<div style="display:flex;gap:8px;margin-top:10px"><button class="btn danger" style="flex:1" data-act="kpv_ab" data-id="' + b.id + '">Ablehnen</button><button class="btn gold" style="flex:2" data-act="kpv_an" data-id="' + b.id + '">Annehmen</button></div></div>').join('') + '</div>';
+}
+
+function kpvEditHtml(){
+  const k = ONLINE.kp, p = ONLINE.kpProf; if(!k || k.rolle !== 'chef' || !p) return '';
+  return '<h2>Kompanieprofil</h2><div class="panel pad kpvedit"><p class="small muted" style="margin-top:0">So sehen andere deine Kompanie im Verzeichnis.</p>'
+    + '<div class="kpvvorschau" id="kpvVor">' + kpvWappen(p.wappen, p.farbe, 56) + '</div>'
+    + '<div class="lbl">Wappen</div><div class="kpvpick" role="group" aria-label="Wappen">' + Object.entries(KPV_WAPPEN).map(([v, [l]]) => '<button data-act="kpv_w" data-id="' + v + '" aria-pressed="' + (p.wappen === v) + '" aria-label="' + l + '" title="' + l + '">' + kpvWappen(v, '#4B582C', 30) + '</button>').join('') + '</div>'
+    + '<div class="lbl">Farbe</div><div class="kpvpick" role="group" aria-label="Farbe">' + KPV_FARBEN.map(f => '<button data-act="kpv_f" data-id="' + f + '" aria-pressed="' + (p.farbe.toUpperCase() === f.toUpperCase()) + '" aria-label="Farbe ' + f + '"><i style="background:' + f + '"></i></button>').join('') + '</div>'
+    + '<label class="lbl" for="kpvBes">Beschreibung</label><textarea id="kpvBes" rows="3" maxlength="280" placeholder="Wofür steht eure Kompanie? Wen sucht ihr?">' + esc(p.beschreibung || '') + '</textarea>'
+    + '<label class="lbl" for="kpvHei">Heimatstandort</label><input id="kpvHei" class="inp" maxlength="40" value="' + esc(p.heimat || '') + '" placeholder="z. B. Eutin">'
+    + '<div class="lbl">Aufnahme</div><div class="seg" role="group" aria-label="Aufnahme">' + Object.entries(KPV_AUFNAHME).map(([v, l]) => '<button data-act="kpv_a" data-id="' + v + '" aria-pressed="' + (p.aufnahme === v) + '">' + l.replace('Mit ', '') + '</button>').join('') + '</div>'
+    + '<p class="small muted" style="margin:6px 0 0">Offen: jeder tritt direkt bei. Bewerbung: Chef oder Spieß entscheiden. Geschlossen: niemand kommt rein, nur noch per Einladecode.</p>'
+    + '<label class="lbl" for="kpvMin">Mindestdienstgrad</label><select id="kpvMin" class="sel">' + KPV_MIN.map(([t, l]) => '<option value="' + t + '"' + (p.mindest_rang === t ? ' selected' : '') + '>' + l + '</option>').join('') + '</select>'
+    + '<button class="btn wide" style="margin-top:12px" data-act="kpv_speichern">Profil speichern</button></div>';
+}
+
+function kpvMeineHtml(){
+  if(ONLINE.kp) return '';
+  const l = ONLINE.meineBew.filter(b => b.status !== 'zurueckgezogen').slice(0, 6);
+  const st = {offen:['Offen', 'bew'], angenommen:['Angenommen', 'offen'], abgelehnt:['Abgelehnt', 'geschlossen']};
+  let h = '<div class="panel pad kpvfind"><p><b>Kompanie suchen</b></p><p class="small muted">Im Verzeichnis findest du alle Kompanien. Du kannst dich bei bis zu drei gleichzeitig bewerben.</p><button class="btn gold wide" data-act="kpv_go">Kompanieverzeichnis öffnen</button></div>';
+  if(l.length) h += '<div class="panel" style="margin-top:12px"><p style="margin:12px 14px 0"><b>Meine Bewerbungen</b></p><ul class="rl">' + l.map(b => '<li><span style="flex:none">' + kpvWappen(b.wappen, b.farbe, 30) + '</span><span class="who"><button class="plink" data-act="kpv_profil" data-id="' + esc(b.kompanie_id) + '">' + esc(b.name) + '</button> <span class="kpvb ' + st[b.status][1] + '">' + st[b.status][0] + '</span><br><span class="small muted">' + kpvZeit(b.created_at) + '</span></span>'
+    + (b.status === 'offen' ? '<button class="btn ghost" style="min-height:36px;padding:4px 10px" data-act="kpv_zurueck" data-id="' + b.id + '">Zurückziehen</button>' : '') + '</li>').join('') + '</ul></div>';
+  return h;
+}
+
+const KPV_ACT = {
+  kpv_go(){ SUB.truppe = 'verzeichnis'; ONLINE.kpl = null; render(); window.scrollTo(0, 0); },
+  kpv_meine(){ ACT.close(); goPage('truppe'); SUB.truppe = 'kompanie'; render(); window.scrollTo(0, 0); },
+  kpv_sort(v){ ONLINE.kplSort = v; ONLINE.kpl = null; render(); },
+  kpv_suche(){ const i = document.getElementById('kpvq'); ONLINE.kplQ = i ? i.value.trim() : ''; ONLINE.kpl = null; render(); },
+  kpv_profil(id){ kpvProfil(id); },
+  kpv_bewerben(id){ kpvBewerben(id); },
+  kpv_zurueck(id){
+    sb.rpc('bewerbung_zurueckziehen', {p_id:Number(id)}).then(async ({error}) => {
+      if(error){ toast(error.message); return; }
+      toast('Bewerbung zurückgezogen.'); ACT.close(); ONLINE.kpl = null; await kpvNach(); render();
+    });
+  },
+  kpv_an(id){ kpvEntscheiden(id, true); },
+  kpv_ab(id){ const b = ONLINE.bew.find(x => String(x.id) === String(id)); ask('Bewerbung von ' + (b ? b.name : '?') + ' ablehnen?', () => kpvEntscheiden(id, false), 'Ablehnen'); },
+  kpv_w(v){ kpvPick('kpv_w', v); },
+  kpv_f(v){ kpvPick('kpv_f', v); },
+  kpv_a(v){ kpvPick('kpv_a', v); },
+  async kpv_speichern(){
+    const sel = a => { const b = document.querySelector('[data-act="' + a + '"][aria-pressed="true"]'); return b ? b.dataset.id : null; };
+    const p = ONLINE.kpProf || {};
+    const args = {p_beschreibung:(document.getElementById('kpvBes') || {}).value || '', p_aufnahme:sel('kpv_a') || p.aufnahme, p_mindest_rang:Number((document.getElementById('kpvMin') || {}).value || 0),
+      p_wappen:sel('kpv_w') || p.wappen, p_farbe:sel('kpv_f') || p.farbe, p_heimat:(document.getElementById('kpvHei') || {}).value || ''};
+    const { error } = await sb.rpc('kompanie_profil_setzen', args);
+    if(error){ toast(error.message); return; }
+    toast('Kompanieprofil gespeichert.'); ONLINE.kpl = null; await kpvNach(); render();
+  },
+};
+// Auswahl im Profil-Editor ohne neu zu rendern, damit getippter Text bleibt
+function kpvPick(act, v){
+  document.querySelectorAll('[data-act="' + act + '"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === v)));
+  const sel = a => { const b = document.querySelector('[data-act="' + a + '"][aria-pressed="true"]'); return b ? b.dataset.id : null; };
+  const vor = document.getElementById('kpvVor'); if(vor) vor.innerHTML = kpvWappen(sel('kpv_w'), sel('kpv_f'), 56);
+}
+async function kpvEntscheiden(id, an){
+  const b = ONLINE.bew.find(x => String(x.id) === String(id));
+  const { error } = await sb.rpc('bewerbung_entscheiden', {p_id:Number(id), p_annehmen:an});
+  if(error) toast(error.message);
+  else toast(an ? (b ? b.name : 'Der Bewerber') + ' gehört jetzt zur Kompanie.' : 'Bewerbung abgelehnt.');
+  await loadKompanie(); render();
+}
+for(const k in KPV_ACT) ACT[k] = KPV_ACT[k];
+document.addEventListener('keydown', e => { if(e.key === 'Enter' && e.target && e.target.id === 'kpvq'){ e.preventDefault(); KPV_ACT.kpv_suche(); } });
+// Kompanie laden erweitert: danach Bewerbungen und Profil
+const kpvLoadBase = loadKompanie;
+loadKompanie = async function(){ await kpvLoadBase(); await kpvNach(); };
+// Chef und Spieß: alle zwei Minuten nach neuen Bewerbungen schauen
+setInterval(() => { if(USER && sb && !document.hidden && ONLINE.kp && (ONLINE.kp.rolle === 'chef' || ONLINE.kp.rolle === 'spiess')) { const vor = ONLINE.bew.map(b => b.id).join(); kpvNach().then(() => { const ae = document.activeElement, tippt = ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName); if(ONLINE.bew.map(b => b.id).join() !== vor && !tippt && !document.querySelector('#modalHost .overlay') && (tab === 'truppe' || tab === 'kaserne')) render(); }); } }, 120000);
+
 let LOGIN_MODE = 'login';
 const LP_ICON = {
   karriere:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/></svg>',
@@ -7338,6 +7604,9 @@ function renderTruppe(){
     const rolle = k.rolle;
     h += '<div class="panel pad"><div style="font-weight:700;font-size:19px">'+esc(k.name)+' <span class="tag">'+esc(k.kuerzel)+'</span></div>'
       + '<p class="small muted" style="margin:4px 0 0">Dein Rang: <b>'+ROLLEN[rolle]+'</b> ('+ROLLEN_RECHTE[rolle]+')</p></div>';
+    if(ONLINE.kpProf) h = h.replace(/<div class="panel pad"><div style="font-weight:700;font-size:19px">([\s\S]*?)<\/div>(?=<p class="small muted" style="margin:4px 0 0">Dein Rang)/, (m, t) => '<div class="panel pad kpvhead">' + kpvWappen(ONLINE.kpProf.wappen, ONLINE.kpProf.farbe, 52) + '<div><div style="font-weight:700;font-size:19px">' + t + '</div>');
+    if(ONLINE.kpProf) h = h.replace(/(Dein Rang: <b>[^<]*<\/b> \([^)]*\)<\/p>)<\/div>$/, '$1<p class="small" style="margin:6px 0 0">' + kpvBadge(ONLINE.kpProf) + ' <button class="plink" data-act="kpv_profil" data-id="' + esc(ONLINE.kpProf.id) + '">So sehen andere eure Kompanie</button></p></div></div>');
+    h += kpvBewerbungenHtml();
 
     // Kasse
     const rest = Math.max(0, kpLimit() - Number(k.heute||0));
@@ -7406,12 +7675,13 @@ function renderTruppe(){
       }).join('') + '</ul></div>';
     }
 
+    h += kpvEditHtml();
     // Einladung und Verlassen
     h += '<h2>Einladen</h2><div class="panel pad">'
       + (k.code ? '<span class="code">'+esc(k.code)+'</span><p class="small muted" style="margin-top:6px">Gib den Code nur an Leute weiter, die du in der Kompanie haben willst.</p>' : '')
       + '<button class="btn danger" style="margin-top:8px" data-act="kp_verlassen">Kompanie verlassen</button></div>';
   } else {
-    h += '<div class="panel pad"><p><b>Einer Kompanie beitreten</b></p><p class="small muted">Den Einladecode bekommst du von jemandem aus der Kompanie.</p>'
+    h += kpvMeineHtml() + '<div class="panel pad" style="margin-top:12px"><p><b>Mit Einladecode beitreten</b></p><p class="small muted">Den Einladecode bekommst du von jemandem aus der Kompanie.</p>'
       + '<input id="kpc" class="inp" placeholder="Einladecode" autocomplete="off" maxlength="12" style="text-transform:uppercase">'
       + '<button class="btn wide" style="margin-top:10px" data-act="kp_beitreten">Beitreten</button></div>'
       + '<div class="panel pad" style="margin-top:12px"><p><b>Eigene Kompanie gründen</b></p><p class="small muted">Du wirst Kompaniechef und kannst Ränge vergeben.</p>'
