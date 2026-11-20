@@ -340,6 +340,7 @@ ul.req .rw{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;p
 .lki.aktiv{background:#FFE08A;border-color:#B3261E}.lki.frage{animation:lkPuls .8s ease-in-out infinite;border-color:#FF5252}
 .lki.fz{background:transparent;border:0;box-shadow:none;font-size:24px}.lkfz{position:relative;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}.lkfz b{position:absolute;right:-8px;top:-6px;background:#B3261E;color:#fff;font:700 10px Barlow,sans-serif;border-radius:8px;padding:0 4px}
 @keyframes lkPuls{50%{transform:scale(1.15)}}@media (prefers-reduced-motion: reduce){.lki.offen,.lki.frage{animation:none}}
+.lkmod{display:inline-block;background:#B3261E;color:#fff;font:700 11.5px Barlow,sans-serif;border-radius:4px;padding:1px 6px;vertical-align:1px}.lkmodp{margin:-4px 0 10px;color:var(--muted)}
 .lkrow{cursor:pointer}.lkrow.zu{opacity:.55}.lkrow.frage{box-shadow:inset 4px 0 0 #FF5252}.lkbig{font-size:22px;flex:none;width:30px;text-align:center}.lkgo{font-size:24px;color:var(--muted);padding-left:6px}
 .lkhead{display:flex;gap:12px;align-items:center;margin-bottom:6px}
 .lkpick{display:grid;gap:6px;margin-bottom:10px}.lkfzb{display:flex;gap:10px;align-items:center;text-align:left;padding:8px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface2);color:var(--ink);cursor:pointer;font:inherit}.lkfzb.on{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal);background:rgba(227,178,60,.12)}.lkfzb.np{opacity:.5}
@@ -4098,6 +4099,12 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:16, d:'20.11.2026', t:'Lagekarte: mehr Abwechslung', p:[
+    'Sechs neue Auftragsarten: Sturmschäden, Tierseuche, Munitionstransport, Sanitätsdienst, Behelfsbrücke und Tag der offenen Tür',
+    'Jeder Auftrag hat jetzt mehrere Beschreibungen und mehrere mögliche Lagen vor Ort',
+    'Besondere Umstände: Eilt!, Presse vor Ort, Unwetter, Nachteinsatz oder der Kommandeur schaut zu',
+    'Das Wetter beeinflusst, welche Aufträge kommen',
+    'Jeder Standort hat jetzt Ziele in der direkten Umgebung und einen eigenen Standortübungsplatz'] },
   {v:15, d:'20.11.2026', t:'Aufgeräumt: neue Navigation', p:[
     'Unten nur noch fünf Bereiche: Heute, Dienst, Ausbildung, Kaserne und Akte',
     'Neu: die Kaserne. Kompanie, Funkkreis, Rangliste, Spielothek, Lotto, Leergut, Werkstatt, Stube und Vorsorge als Kacheln mit den wichtigsten Infos',
@@ -4744,7 +4751,11 @@ const TRUEBPL = [
   ['Truppenübungsplatz Jägerbrück', 53.62, 13.93], ['Truppenübungsplatz Oberlausitz', 51.40, 14.62], ['Truppenübungsplatz Senne', 51.83, 8.73],
   ['Truppenübungsplatz Wildflecken', 50.38, 9.92], ['Truppenübungsplatz Baumholder', 49.62, 7.33], ['Truppenübungsplatz Grafenwöhr', 49.70, 11.94],
   ['Truppenübungsplatz Hohenfels', 49.20, 11.84], ['Truppenübungsplatz Heuberg', 48.12, 9.03],
+  ['Truppenübungsplatz Hammelburg', 50.12, 9.89], ['Gebirgsübungsplatz Reiter Alpe', 47.65, 12.80],
 ];
+// Ziele direkt in der Umgebung des eigenen Standorts, damit überall genug Aufträge in der Nähe liegen
+const LK_NAH = [['-Nord', 0, 9], ['-Ost', 90, 12], ['-Süd', 180, 7], ['-West', 270, 14], ['-Land', 45, 18]];
+function lkVersatz(ll, grad, km){ const r = grad * Math.PI / 180; return [+(ll[0] + km * Math.cos(r) / 111).toFixed(4), +(ll[1] + km * Math.sin(r) / (111 * Math.cos(ll[0] * Math.PI / 180))).toFixed(4)]; }
 const KUESTE = ['Kiel','Eckernförde','Laboe','Fehmarn','Flensburg','Glücksburg','Neustadt in Holstein','Oldenburg in Holstein','Panker','Kronshagen','Husum','Heide','Rostock','Kramerhof','Sanitz','Bremerhaven','Wilhelmshaven','Cuxhaven','Emden','Aurich','Leer (Ostfriesland)','Nordholz','Seedorf','Varel','Wittmund','Jever','Schortens','Wangerland','Bad Sülze'];
 // Fahrzeuge: aus welchem Schein, Tempo in km/h, Fähigkeiten
 const LK_FZ = [
@@ -4806,7 +4817,13 @@ const LK_CREW = ['Kalle', 'Dennis', 'Lena', 'Gefreiter Weber', 'Obergefreiter Yi
 function lkKoord(){ if(!S || !S.standort || typeof STANDORT_KOORD === 'undefined') return null; return STANDORT_KOORD[S.standort.bl + '/' + S.standort.ort] || null; }
 function lkKm(a, b){ const R6 = 6371, r = x => x * Math.PI / 180, dl = r(b[0] - a[0]), dn = r(b[1] - a[1]); const h = Math.sin(dl/2)**2 + Math.cos(r(a[0])) * Math.cos(r(b[0])) * Math.sin(dn/2)**2; return 2 * R6 * Math.asin(Math.sqrt(h)); }
 function lkBefehl(){ const g = G.rank().g; return {M:{fz:1, auf:1, name:'Kraftfahrer'}, U:{fz:2, auf:1, name:'Truppführer'}, A:{fz:3, auf:1, name:'Zugführer in Ausbildung'}, F:{fz:4, auf:2, name:'Zugführer'}, O:{fz:6, auf:3, name:'Kompaniechef'}, G:{fz:8, auf:4, name:'Kommandeur'}}[g] || {fz:1, auf:1, name:'Kraftfahrer'}; }
-function lkState(){ if(!S.lk) S.lk = {offen:[], aktiv:[], next:0, n:0}; return S.lk; }
+function lkState(){
+  if(!S.lk) S.lk = {offen:[], aktiv:[], next:0, n:0};
+  // Standort gewechselt: offene Aufträge gehören zum alten Standort und werden neu erzeugt
+  const key = S.standort ? S.standort.bl + '/' + S.standort.ort : '';
+  if(S.lk.std !== key){ if(S.lk.std !== undefined) S.lk.offen = []; S.lk.std = key; S.lk.next = 0; if(typeof LKFIT !== 'undefined') LKFIT = ''; }
+  return S.lk;
+}
 // Fuhrpark: jedes Fahrzeug aus den Scheinen, ab Feldwebel doppelt, ab Offizier dreifach
 function lkFuhrpark(){
   const g = G.rank().g, n = g === 'F' || g === 'A' ? 2 : g === 'O' || g === 'G' ? 3 : 1, out = [];
@@ -4818,11 +4835,12 @@ function lkMitAktiv(){ return !!(S && S.lk && S.lk.aktiv.some(a => a.mit)); }
 // Ziele in der Umgebung
 function lkOrte(art){
   const me = lkKoord(); if(!me) return [];
-  if(art === 'uebpl') return TRUEBPL.map(([n, a, b]) => ({ort:n, ll:[a, b], km:lkKm(me, [a, b])})).sort((x, y) => x.km - y.km).slice(0, 4);
+  if(art === 'uebpl') return [{ort:'Standortübungsplatz ' + S.standort.ort, ll:lkVersatz(me, 120, 5), km:5}].concat(TRUEBPL.map(([n, a, b]) => ({ort:n, ll:[a, b], km:lkKm(me, [a, b])})).sort((x, y) => x.km - y.km).slice(0, 3));
   const all = Object.entries(STANDORT_KOORD).map(([k, ll]) => ({ort:k.split('/')[1], ll, km:lkKm(me, ll)})).filter(x => x.km > 3);
   if(art === 'kueste') return all.filter(x => KUESTE.includes(x.ort)).sort((x, y) => x.km - y.km).slice(0, 5);
   const max = art === 'weit' ? 250 : 70;
-  let l = all.filter(x => x.km <= max); if(l.length < 4) l = all.sort((x, y) => x.km - y.km).slice(0, 6);
+  let l = all.filter(x => x.km <= max); if(l.length < 4) l = l.concat(all.filter(x => x.km > max).sort((x, y) => x.km - y.km).slice(0, 4 - l.length));
+  if(art !== 'weit') l = l.concat(LK_NAH.map(([t, g, k]) => ({ort:S.standort.ort.replace(/ \(.*\)$/, '') + t, ll:lkVersatz(me, g, k), km:k})));
   return l;
 }
 function lkMatch(needs, fz){
@@ -4837,16 +4855,17 @@ function lkNeu(){
   if(!typen.length) return null;
   // Aufträge bevorzugen, die mit dem eigenen Fuhrpark machbar sind; ab und zu einen größeren als Ausblick
   for(let k = 0; k < 12; k++){
-    const t = typen[Math.floor(Math.random() * typen.length)];
+    const wx = typeof wetterHeute === 'function' ? wetterHeute().id : '', gew = typen.map(t => 1 + ((wx === 'regen' || wx === 'sturm' || wx === 'gewitter') && (t.id === 'hochwasser' || t.id === 'sturm') ? 1 : 0) + ((wx === 'schnee' || wx === 'frost') && t.id === 'schnee' ? 1 : 0) + ((wx === 'hitze' || wx === 'sonne') && t.id === 'waldbrand' ? 1 : 0));
+    let rr = Math.random() * gew.reduce((x, y) => x + y, 0), t = typen[0]; for(let q = 0; q < typen.length; q++){ rr -= gew[q]; if(rr <= 0){ t = typen[q]; break; } }
     const machbar = t.v.map((n, i) => i).filter(i => t.v[i].length <= bef.fz && lkMatch(t.v[i], fz));
     let vi;
     if(machbar.length && Math.random() < .8) vi = machbar[Math.floor(Math.random() * machbar.length)];
     else vi = Math.floor(Math.random() * t.v.length);
     if(!machbar.length && k < 8) continue;
-    const orte = lkOrte(t.ziel), o = orte[Math.floor(Math.random() * orte.length)];
+    const alle = lkOrte(t.ziel), frei = alle.filter(x => !st.offen.some(y => y.ort === x.ort)), orte = frei.length ? frei : alle, o = orte[Math.floor(Math.random() * orte.length)];
     if(st.offen.some(x => x.ort === o.ort && x.typ === t.id)) continue;
     st.n++;
-    return {id:'a' + st.n + '_' + Date.now().toString(36), typ:t.id, vi, ort:o.ort, ll:o.ll, km:Math.round(o.km), bis:now() + 4 * 3600000 / S.speed};
+    return lkWuerfeln({id:'a' + st.n + '_' + Date.now().toString(36), typ:t.id, vi, ort:o.ort, ll:o.ll, km:Math.round(o.km), bis:now() + 4 * 3600000 / S.speed});
   }
   return null;
 }
@@ -4854,13 +4873,14 @@ function lkDauer(a, fzUids){
   const t = LK_TYP.find(x => x.id === a.typ), fz = lkFuhrpark().filter(f => fzUids.includes(f.uid));
   const v = Math.min(...fz.map(f => f.t.v)), weg = a.km * (fz.some(f => f.t.cap.includes('luft') || f.t.cap.includes('jet')) && fz.every(f => f.t.cap.includes('luft') || f.t.cap.includes('jet')) ? 1 : 1.3);
   const fahrt = Math.min(120, 4 + weg / v * 60 * .6); // Minuten einfach, im Spiel etwas gerafft
-  return {fahrt, work:t.work, total:fahrt * 2 + t.work};
+  const m = lkMod(a), work = t.work * (m ? m.zeit : 1);
+  return {fahrt, work, total:fahrt * 2 + work};
 }
 function lkLohn(a, total){
   const t = LK_TYP.find(x => x.id === a.typ), n = t.v[a.vi].length;
-  const pay = Math.round(total * 2.9 * t.f * (1 + .15 * (n - 1)) * G.payMult());
+  const m = lkMod(a), pay = Math.round(total * 2.9 * t.f * (1 + .15 * (n - 1)) * G.payMult() * (m ? m.pay : 1));
   const sprit = Math.round(a.km * 2 * .35 * n);
-  return {pay, sprit, bp:Math.round(total / 6 * t.f), st:Math.round((6 + total / 6) * (typeof rekrut === 'function' && rekrut() ? .7 : 1))};
+  return {pay, sprit, bp:Math.round(total / 6 * t.f * (m ? m.bp : 1)), st:Math.round((6 + total / 6) * (typeof rekrut === 'function' && rekrut() ? .7 : 1))};
 }
 function lkTick(events){
   if(!S || !S.standort) return false;
@@ -4900,14 +4920,14 @@ function lkStart(id, uids){
   if(mit){ S.stamina -= l.st; S.staminaTs = now(); }
   const t0 = now(), ms = m => m * 60000 / S.speed;
   st.offen = st.offen.filter(x => x !== a);
-  st.aktiv.push(Object.assign({}, a, {fz:uids, mit, start:t0, tAn:t0 + ms(d.fahrt), tWork:t0 + ms(d.fahrt + d.work), tEnd:t0 + ms(d.total), phase:'an', pay:l.pay, sprit:l.sprit, bp:l.bp, wahl:null, erg:1}));
+  st.aktiv.push(Object.assign({}, a, {von:lkKoord(), fz:uids, mit, start:t0, tAn:t0 + ms(d.fahrt), tWork:t0 + ms(d.fahrt + d.work), tEnd:t0 + ms(d.total), phase:'an', pay:l.pay, sprit:l.sprit, bp:l.bp, wahl:null, erg:1}));
   return null;
 }
 function lkWahl(id, w){
   const a = lkState().aktiv.find(x => x.id === id); if(!a || a.phase !== 'vor' || a.wahl != null) return;
-  const L0 = LK_LAGE[a.typ]; a.wahl = w;
+  const L0 = lkLage(a), kdr = lkMod(a) && lkMod(a).wagnis; a.wahl = w;
   let txt;
-  if(w === 1){ const ok = Math.random() * 100 < rollChance({stat:L0[3], base:50}); a.erg = ok ? 1.3 : .8; txt = ok ? 'Gewagt und gewonnen! Das gibt Extra-Lob.' : 'Ging schief. Der Auftrag wird erledigt, aber mit Abzügen.'; }
+  if(w === 1){ const ok = Math.random() * 100 < rollChance({stat:L0[3], base:50}); a.erg = ok ? (kdr ? 1.5 : 1.3) : (kdr ? .7 : .8); a.etxt = ok ? L0[4] : L0[5]; txt = (ok ? 'Gewagt und gewonnen! ' : 'Ging schief. ') + L0[(ok ? 4 : 5)]; }
   else { a.erg = 1.05; txt = 'Sicher und sauber. Niemand beschwert sich.'; }
   save(); render(); toast(txt);
 }
@@ -4916,11 +4936,11 @@ function lkWahl(id, w){
 let LKMAP = null, LKWRAP = null, LKLAYER = null, LKFIT = '';
 const LK_MARK = {};
 function lkPos(a){
-  const me = lkKoord(), p = now() < a.tAn ? (now() - a.start) / (a.tAn - a.start) : now() < a.tWork ? 1 : 1 - (now() - a.tWork) / (a.tEnd - a.tWork);
+  const me = a.von || lkKoord(), p = now() < a.tAn ? (now() - a.start) / (a.tAn - a.start) : now() < a.tWork ? 1 : 1 - (now() - a.tWork) / (a.tEnd - a.tWork);
   const q = Math.max(0, Math.min(1, p)), mx = (me[0] + a.ll[0]) / 2 + (a.ll[1] - me[1]) * .12, my = (me[1] + a.ll[1]) / 2 - (a.ll[0] - me[0]) * .12;
   return [(1-q)*(1-q)*me[0] + 2*(1-q)*q*mx + q*q*a.ll[0], (1-q)*(1-q)*me[1] + 2*(1-q)*q*my + q*q*a.ll[1]];
 }
-function lkKurve(a){ const me = lkKoord(), mx = (me[0] + a.ll[0]) / 2 + (a.ll[1] - me[1]) * .12, my = (me[1] + a.ll[1]) / 2 - (a.ll[0] - me[0]) * .12, pts = []; for(let i = 0; i <= 20; i++){ const q = i / 20; pts.push([(1-q)*(1-q)*me[0] + 2*(1-q)*q*mx + q*q*a.ll[0], (1-q)*(1-q)*me[1] + 2*(1-q)*q*my + q*q*a.ll[1]]); } return pts; }
+function lkKurve(a){ const me = a.von || lkKoord(), mx = (me[0] + a.ll[0]) / 2 + (a.ll[1] - me[1]) * .12, my = (me[1] + a.ll[1]) / 2 - (a.ll[0] - me[0]) * .12, pts = []; for(let i = 0; i <= 20; i++){ const q = i / 20; pts.push([(1-q)*(1-q)*me[0] + 2*(1-q)*q*mx + q*q*a.ll[0], (1-q)*(1-q)*me[1] + 2*(1-q)*q*my + q*q*a.ll[1]]); } return pts; }
 function lkIcon(html, cls){ return window.L.divIcon({html:'<span class="lki ' + (cls || '') + '">' + html + '</span>', className:'lkic', iconSize:[34, 34], iconAnchor:[17, 17]}); }
 function lkDraw(){
   if(!LKMAP || !window.L) return;
@@ -4971,7 +4991,7 @@ function renderLage(){
   }
   h += '<h2>Offene Aufträge</h2>' + (st.offen.length ? '<div class="panel">' + st.offen.map(a => { const t = LK_TYP.find(x => x.id === a.typ), needs = t.v[a.vi];
       const zuGross = needs.length > bef.fz, geht = !zuGross && lkMatch(needs, fz.filter(f => !belegt.has(f.uid)));
-      return '<div class="row lkrow' + (geht ? '' : ' zu') + '" data-act="lk_open" data-id="' + a.id + '"><div style="display:flex;gap:10px;align-items:center;min-width:0;flex:1"><span class="lkbig">' + t.ic + '</span><div class="info"><div class="title">' + esc(t.name) + ' · ' + esc(a.ort) + '</div><div class="meta">' + a.km + ' km · ' + needs.map(n => LK_CAP[n]).join(', ') + (zuGross ? ' · ab ' + ({2:'Unteroffizier', 3:'Feldwebel', 4:'Feldwebel', 5:'Offizier', 6:'Offizier'}[needs.length] || 'Offizier') : !geht ? ' · Fahrzeug fehlt' : '') + '</div></div></div><span class="lkgo">›</span></div>'; }).join('') + '</div>'
+      return '<div class="row lkrow' + (geht ? '' : ' zu') + '" data-act="lk_open" data-id="' + a.id + '"><div style="display:flex;gap:10px;align-items:center;min-width:0;flex:1"><span class="lkbig">' + t.ic + '</span><div class="info"><div class="title">' + esc(t.name) + ' · ' + esc(a.ort) + (lkMod(a) ? ' <span class="lkmod">' + esc(lkMod(a).name) + '</span>' : '') + '</div><div class="meta">' + a.km + ' km · ' + needs.map(n => LK_CAP[n]).join(', ') + (zuGross ? ' · ab ' + ({2:'Unteroffizier', 3:'Feldwebel', 4:'Feldwebel', 5:'Offizier', 6:'Offizier'}[needs.length] || 'Offizier') : !geht ? ' · Fahrzeug fehlt' : '') + '</div></div></div><span class="lkgo">›</span></div>'; }).join('') + '</div>'
     : '<div class="panel pad"><p class="small muted" style="margin:0">Gerade ruhig. Neue Aufträge kommen etwa alle 40 Minuten.</p></div>');
   const grp = {}; for(const f of fz){ grp[f.t.id] = grp[f.t.id] || {t:f.t, n:0, b:0}; grp[f.t.id].n++; if(belegt.has(f.uid)) grp[f.t.id].b++; }
   h += '<h2>Fuhrpark</h2><div class="panel pad"><div class="lkfp">' + Object.values(grp).map(g => '<div><span class="lkbig">' + g.t.ic + '</span><span><b>' + esc(g.t.name) + '</b><br><span class="small muted">' + (g.n - g.b) + ' von ' + g.n + ' frei · ' + g.t.cap.map(c => LK_CAP[c]).join(', ') + '</span></span></div>').join('') + '</div>'
@@ -4983,11 +5003,11 @@ function lkOpen(id){
   const st = lkState(), host = document.getElementById('modalHost');
   const akt = st.aktiv.find(x => x.id === id);
   if(akt){
-    const t = LK_TYP.find(x => x.id === akt.typ), L0 = LK_LAGE[akt.typ];
+    const t = LK_TYP.find(x => x.id === akt.typ), L0 = lkLage(akt);
     let h = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="lkt"><div class="sheet ev" style="text-align:left"><div class="lkhead"><span class="lkbig">' + t.ic + '</span><div><div class="evname" id="lkt">' + esc(t.name) + '</div><div class="small muted">' + esc(akt.ort) + ' · ' + akt.km + ' km · ' + lkPhase(akt) + '</div></div></div>';
     if(akt.phase === 'vor' && akt.wahl == null)
       h += '<p class="evtext">' + esc(L0[0].replace('{ort}', akt.ort)) + '</p><div class="choices"><button class="btn ghost choice" data-act="lk_wahl" data-id="' + akt.id + ':0"><span>' + esc(L0[1]) + '<br><small class="muted">sicher, kleiner Bonus</small></span></button><button class="btn ghost choice" data-act="lk_wahl" data-id="' + akt.id + ':1"><span>' + esc(L0[2]) + '<br><small class="muted">Wagnis: großer Bonus oder Abzug</small></span></button></div>';
-    else h += '<p class="small">' + (akt.wahl == null ? 'Die Fahrzeuge sind unterwegs. Vor Ort wartet eine Entscheidung auf dich.' : akt.erg > 1.1 ? 'Vor Ort lief es hervorragend.' : akt.erg < 1 ? 'Vor Ort gab es Probleme.' : 'Vor Ort lief alles nach Plan.') + '</p>';
+    else h += '<p class="small">' + (akt.wahl == null ? 'Die Fahrzeuge sind unterwegs. Vor Ort wartet eine Entscheidung auf dich.' : akt.etxt ? esc(akt.etxt) : akt.erg > 1.1 ? 'Vor Ort lief es hervorragend.' : akt.erg < 1 ? 'Vor Ort gab es Probleme.' : 'Vor Ort lief alles nach Plan.') + '</p>';
     h += facts([['Verdienst', eur(Math.round(akt.pay * (akt.erg || 1)))], ['Sprit', '−' + eur(akt.sprit)], ['Punkte', Math.round(akt.bp * (akt.erg || 1))], ['Fertig in', fmtLeft(akt.tEnd - now())]])
       + '<p class="small muted" style="margin:8px 0 0">' + akt.fz.map((u, i) => { const f = LK_FZ.find(x => u.startsWith(x.id)); return f.ic + ' ' + esc(f.name) + ' · ' + (i === 0 && akt.mit ? 'du' : LK_CREW[(i + (akt.mit ? -1 : 0) + LK_CREW.length) % LK_CREW.length]); }).join('<br>') + '</p>'
       + '<button class="btn wide" data-act="close" style="margin-top:14px">Schließen</button></div></div>';
@@ -5001,7 +5021,7 @@ function lkOpen(id){
   const d = ok ? lkDauer(a, LK_SEL.uids) : null, l = d ? lkLohn(a, d.total) : null;
   const zuGross = needs.length > bef.fz;
   let h = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="lkt"><div class="sheet ev" style="text-align:left;max-height:88vh;overflow:auto"><div class="lkhead"><span class="lkbig">' + t.ic + '</span><div><div class="evname" id="lkt">' + esc(t.name) + '</div><div class="small muted">' + esc(a.ort) + ' · ' + a.km + ' km · offen noch ' + fmtLeft(a.bis - now()) + '</div></div></div>'
-    + '<p class="evtext">' + esc(t.txt.replace('{ort}', a.ort)) + '</p>'
+    + '<p class="evtext">' + esc(lkText(a)) + '</p>' + (lkMod(a) ? '<p class="small lkmodp"><span class="lkmod">' + esc(lkMod(a).name) + '</span> ' + esc(lkMod(a).txt) + '</p>' : '')
     + '<p class="small" style="margin:0 0 6px"><b>Benötigt:</b> ' + needs.map(n => '<span class="tag" style="margin:0 4px 4px 0">' + LK_CAP[n] + '</span>').join('') + '</p>';
   if(zuGross) h += '<div class="lock">Dieser Auftrag braucht ' + needs.length + ' Fahrzeuge. Als ' + esc(bef.name) + ' führst du höchstens ' + bef.fz + '.</div>';
   else {
@@ -5025,6 +5045,108 @@ const LK_ACT = {
   lk_wahl(v){ const [id, w] = String(v).split(':'); lkWahl(id, Number(w)); document.getElementById('modalHost').innerHTML = ''; },
 };
 function lkStrip(it){ if(S && S.lk) for(const a of S.lk.aktiv) if(a.mit) it.push(['lk:' + a.id, LK_TYP.find(x => x.id === a.typ).name + ' ' + a.ort + ' · ' + lkPhase(a)]); }
+/* ---------- Lagekarte: Vielfalt bei Aufträgen, Lagen und Umständen ---------- */
+// Weitere Auftragsarten (echte Amtshilfe- und Truppenaufgaben)
+LK_TYP.push(
+  {id:'sturm', name:'Sturmschäden', ic:'🌪️', work:45, f:1.35, ziel:'nah', saison:['herbst','winter','fruehling'], v:[['last','pionier'], ['last','last','pionier','bergen']], txt:'Nach dem Orkan sind die Straßen um {ort} voller umgestürzter Bäume.'},
+  {id:'seuche', name:'Amtshilfe Tierseuche', ic:'🐖', work:60, f:1.3, ziel:'nah', v:[['last','pers'], ['last','last','pers','pers']], txt:'Bei {ort} wurde die Afrikanische Schweinepest nachgewiesen. Schutzzaun bauen, Suchtrupps unterstützen.'},
+  {id:'munition', name:'Munitionstransport', ic:'🧨', work:25, f:1.4, ziel:'weit', v:[['schwer','schutz'], ['schwer','schwer','schutz','erkund']], txt:'Munition unter Bewachung nach {ort} bringen. Pausen nur an gesicherten Plätzen.'},
+  {id:'sanitaet', name:'Sanitätsdienst', ic:'⛑️', work:50, f:1.3, ziel:'nah', v:[['san'], ['san','pers']], txt:'Großveranstaltung in {ort}. Die Bundeswehr stellt Sanitätskräfte.'},
+  {id:'bruecke', name:'Behelfsbrücke', ic:'🌉', work:80, f:1.5, ziel:'nah', v:[['pionier','schwer'], ['pionier','pionier','schwer','last']], txt:'Bei {ort} ist eine Brücke gesperrt. Die Pioniere sollen eine Behelfsbrücke errichten.'},
+  {id:'besuch', name:'Tag der offenen Tür', ic:'🎪', work:60, f:1.1, ziel:'nah', saison:['fruehling','sommer'], v:[['schutz'], ['schutz','luft'], ['schutz','luft','san']], txt:'Fahrzeugschau in {ort}. Hunderte Besucher wollen einmal in einen Panzer klettern.'}
+);
+Object.assign(LK_LAGE, {sturm:LK_LAGE.waldbrand, seuche:LK_LAGE.suche, munition:LK_LAGE.transport, sanitaet:LK_LAGE.bombe, bruecke:LK_LAGE.konvoi, besuch:LK_LAGE.verlegen});
+// Mehrere Beschreibungen pro Auftrag
+const LK_TXT = {
+  transport:['Material und Ersatzteile nach {ort} bringen.', 'Zwei Paletten Feldbetten und eine Kiste, auf der nur „Vorsicht“ steht, müssen nach {ort}.', 'Ein Bataillon in {ort} wartet dringend auf Ersatzteile. Der Kommandeur hat schon zweimal angerufen.', 'Verpflegung für eine Übung nach {ort}. Die Truppe hat Hunger, und zwar jetzt.'],
+  verlegen:['Eine Gruppe Soldaten nach {ort} bringen. Pünktlich, versteht sich.', 'Rekruten zum Schießstand nach {ort} fahren. Sie sind aufgeregt und reden ununterbrochen.', 'Ein Lehrgang endet in {ort}. Die Teilnehmer wollen nach Hause, du sollst sie abholen.'],
+  hochwasser:['Pegel steigen bei {ort}. Sandsäcke füllen, Deich sichern, Anwohner unterstützen.', 'Dauerregen seit drei Tagen. Bei {ort} läuft ein Keller nach dem anderen voll.', 'Der Fluss bei {ort} ist über die Ufer getreten. Ein Altenheim muss geräumt werden.'],
+  waldbrand:['Waldbrand bei {ort}. Wasser heranschaffen, mit dem Pionierpanzer eine Schneise ziehen.', 'Trockenheit seit Wochen. Bei {ort} brennt eine Heidefläche, der Wind steht ungünstig.', 'Die Feuerwehr bei {ort} braucht Unterstützung beim Löschwasser-Pendelverkehr.'],
+  bombe:['Bei Bauarbeiten in {ort} wurde eine Fliegerbombe gefunden. Absperren, evakuieren, Kampfmittelräumdienst unterstützen.', 'Ein Bagger hat in {ort} eine Granate ausgegraben. Die halbe Straße steht auf dem Gehweg und schaut.', 'Blindgänger auf einem Schulhof in {ort}. Es ist Montagmorgen.'],
+  schnee:['Schneechaos rund um {ort}. Liegengebliebene Fahrzeuge bergen, abgeschnittene Höfe versorgen.', 'Eisregen über Nacht. Bei {ort} hängen Lkw quer auf der Bundesstraße.', 'Ein Dorf bei {ort} ist seit zwei Tagen eingeschneit. Der Strom ist auch weg.'],
+  suche:['Ein Wanderer wird bei {ort} vermisst. Die Polizei bittet um Unterstützung bei der Suche.', 'Ein Kind ist bei {ort} vom Spielplatz verschwunden. Jede Minute zählt.', 'Ein älterer Herr mit Demenz ist in {ort} nicht nach Hause gekommen. Es wird dunkel.'],
+  konvoi:['Eine Marschkolonne steht mit Achsbruch bei {ort}. Bergen und weiterbringen.', 'Ein Panzer ist bei {ort} im Graben gelandet. Der Fahrer schwört, das Navi war schuld.', 'Ein Lkw der Kolonne hat bei {ort} einen Motorschaden. Der Rest wartet auf dem Parkplatz.'],
+  uebung:['Übung auf dem {ort}. Verlegen, üben, sauber zurückkommen.', 'Gefechtsübung auf dem {ort}. Der Leitende ist für seine Strenge bekannt.', 'Nachtübung auf dem {ort}. Taschenlampen nur mit Rotfilter.'],
+  alarm:['Ein Flugzeug über {ort} antwortet nicht auf Funk. Die Alarmrotte steigt auf.', 'Unbekanntes Flugobjekt im Luftraum bei {ort}. Die Flugsicherung meldet sich.'],
+  lufttransport:['Dringend benötigtes Material per Luft nach {ort}.', 'Ein Verletzter muss schnell von {ort} in ein Bundeswehrkrankenhaus.'],
+  betankung:['Kerosin zu einem Fliegerhorst bei {ort} bringen.', 'Bei {ort} landen heute mehr Maschinen als geplant. Der Tank wird knapp.'],
+  seenot:['Ein Segler ist vor {ort} in Seenot. Die Seenotretter bitten um Unterstützung.', 'Ein Kutter treibt mit Maschinenschaden vor {ort}. Es zieht Sturm auf.', 'Ein Kitesurfer wird vor {ort} vermisst.'],
+  sturm:['Nach dem Orkan sind die Straßen um {ort} voller umgestürzter Bäume.', 'Ein Sturm hat bei {ort} Dächer abgedeckt. Notdächer und Planen werden gebraucht.'],
+  seuche:['Bei {ort} wurde die Afrikanische Schweinepest nachgewiesen. Schutzzaun bauen, Suchtrupps unterstützen.', 'Vogelgrippe bei {ort}. Das Veterinäramt braucht Hilfe bei der Absperrung.'],
+  munition:['Munition unter Bewachung nach {ort} bringen. Pausen nur an gesicherten Plätzen.', 'Übungsmunition für ein Schießen bei {ort}. Die Papiere sind dicker als die Kisten.'],
+  sanitaet:['Großveranstaltung in {ort}. Die Bundeswehr stellt Sanitätskräfte.', 'Stadtlauf in {ort} bei 30 Grad. Es werden viele Kreislaufprobleme erwartet.'],
+  bruecke:['Bei {ort} ist eine Brücke gesperrt. Die Pioniere sollen eine Behelfsbrücke errichten.', 'Nach dem Hochwasser bei {ort} fehlt eine Brücke ganz. Das Dorf ist abgeschnitten.'],
+  besuch:['Fahrzeugschau in {ort}. Hunderte Besucher wollen einmal in einen Panzer klettern.', 'Schulbesuch in {ort}. Dreißig Kinder, ein Fahrzeug und sehr viele Fragen.'],
+};
+// Mehrere Lagen pro Auftrag: [Lage, sichere Wahl, Wagnis, Wert, Text bei Erfolg, Text bei Fehlschlag]
+const LK_LAGEN = {
+  transport:[
+    ['Die Zufahrt in {ort} ist wegen einer Baustelle gesperrt.', 'Umleitung fahren', 'Mit Einweiser durch die Baustelle', 'fachwissen', 'Zentimeterarbeit, aber geschafft. Die Bauarbeiter klatschen.', 'Der Spiegel bleibt an der Absperrung hängen. Papierkram.'],
+    ['Am Ziel in {ort} fehlt der Lieferschein. Der Lagerverwalter will nichts annehmen.', 'Zurückrufen und warten', 'Den Lagerverwalter überzeugen', 'vitaminb', 'Ein Kaffee, ein Händedruck, alles abgeladen.', 'Er bleibt hart. Ihr steht zwei Stunden auf dem Hof.'],
+    ['Auf halber Strecke nach {ort} leuchtet die Motorkontrolle.', 'Anhalten und Werkstatt rufen', 'Selbst nachsehen', 'fachwissen', 'Ein loser Stecker. Weiter geht es.', 'Es war nicht der Stecker. Abschleppwagen.'],
+  ],
+  verlegen:[
+    ['Zwei Soldaten fehlen beim Abmarsch. Sie stehen noch in der Kantinenschlange.', 'Warten, bis alle da sind', 'Sofort los, die beiden kommen nach', 'fuehrung', 'Pünktlich angekommen. Die beiden nehmen den Zug und sind sogar schneller.', 'Die beiden kommen nie an. Lange Erklärung beim Spieß.'],
+    ['Auf der Autobahn nach {ort} ist Stau. Navi sagt: zwei Stunden.', 'Im Stau bleiben', 'Über die Dörfer abkürzen', 'fachwissen', 'Durch die Dörfer, zehn Minuten zu früh.', 'Ein Feldweg endet an einem Bach. Rückwärts zurück.'],
+  ],
+  hochwasser:[
+    ['Der Deich bei {ort} weicht an einer zweiten Stelle auf.', 'Kräfte zusammenhalten, eine Stelle richtig sichern', 'Aufteilen und beide Stellen gleichzeitig halten', 'fuehrung', 'Beide Stellen halten. Die Anwohner bringen Kuchen.', 'Eine Stelle bricht. Zwei Keller laufen voll.'],
+    ['Ein älteres Ehepaar in {ort} will sein Haus nicht verlassen. Das Wasser steigt.', 'Polizei rufen und weiter Sandsäcke legen', 'Selbst reingehen und überzeugen', 'vitaminb', 'Mit dem Hund auf dem Arm kommen sie heraus. Ein Foto davon geht durch die Presse.', 'Sie bleiben. Später müssen sie mit dem Boot geholt werden.'],
+    ['Der Sandsack-Nachschub stockt. Die Füllmaschine ist kaputt.', 'Auf Ersatz warten', 'Alle schaufeln von Hand', 'fitness', 'Muskelkater, aber der Deich steht.', 'Zu langsam. Das Wasser ist schneller.'],
+  ],
+  waldbrand:[
+    ['Der Wind dreht. Das Feuer läuft auf ein Dorf bei {ort} zu.', 'Zurückziehen und neu ansetzen', 'Schneise direkt vor dem Dorf ziehen', 'fitness', 'Die Schneise hält. Das Dorf bleibt verschont.', 'Funkenflug über die Schneise. Rückzug.'],
+    ['Im Brandgebiet bei {ort} liegt alte Munition im Boden.', 'Abstand halten, von außen löschen', 'Mit dem Pionierpanzer durch', 'fachwissen', 'Der Panzer ist gepanzert. Gut so. Das Feuer ist aus.', 'Ein Knall. Niemand verletzt, aber der Einsatz wird abgebrochen.'],
+  ],
+  bombe:[
+    ['Ein Anwohner in {ort} weigert sich, sein Haus zu verlassen.', 'Polizei hinzuziehen und abwarten', 'Selbst ruhig mit ihm reden', 'vitaminb', 'Er geht, aber nur mit seiner Katze. Kein Problem.', 'Er schließt sich ein. Zwei Stunden Verzögerung.'],
+    ['Ein Reporter schleicht sich durch die Absperrung in {ort}.', 'Freundlich hinausbegleiten', 'Ein kurzes Interview geben, dann raus', 'vitaminb', 'Du bist abends im Regionalfernsehen. Gute Figur.', 'Das Zitat steht aus dem Zusammenhang gerissen in der Zeitung.'],
+  ],
+  schnee:[
+    ['Auf der Zufahrt nach {ort} steckt ein Linienbus fest.', 'Erst den Bus bergen', 'Bus stehen lassen und zuerst die Höfe versorgen', 'fuehrung', 'Die Höfe sind versorgt, der Bus ist später auch frei.', 'Der Busfahrer beschwert sich beim Bürgermeister.'],
+    ['Ein Hof bei {ort} hat 80 Kühe und keinen Strom mehr.', 'Aggregat anfordern', 'Mit eurem eigenen Aggregat aushelfen', 'fachwissen', 'Die Melkmaschine läuft. Der Bauer schenkt euch Käse.', 'Das Aggregat ist zu schwach. Stromausfall Teil zwei.'],
+  ],
+  suche:[
+    ['Ein Hund der Suchstaffel schlägt im Wald bei {ort} an, aber in einer anderen Richtung als geplant.', 'Nach Plan weitersuchen', 'Dem Hund folgen', 'fitness', 'Gefunden! Unterkühlt, aber wohlauf.', 'Der Hund hat ein Reh gefunden.'],
+    ['Es wird dunkel bei {ort}. Die Polizei will die Suche bis morgen unterbrechen.', 'Abbrechen wie besprochen', 'Mit Wärmebild weitersuchen', 'fuehrung', 'Um 23 Uhr: Treffer auf der Wärmebildkamera. Gerettet.', 'Bis drei Uhr nichts. Die Truppe ist erschöpft.'],
+  ],
+  konvoi:[
+    ['Der Bergehaken passt nicht an das Fahrzeug.', 'Ersatzteil anfordern', 'Improvisieren mit Kette und Schäkel', 'fachwissen', 'Hält bombenfest. Der Schirrmeister nickt anerkennend.', 'Die Kette reißt. Jetzt stehen zwei Fahrzeuge.'],
+    ['Die Polizei bei {ort} will die Straße für die Bergung nur 20 Minuten sperren.', 'Um eine längere Sperrung bitten', 'In 20 Minuten schaffen', 'fitness', '19 Minuten 30. Rekord.', 'Nach 20 Minuten Hupkonzert. Die Bergung dauert trotzdem.'],
+  ],
+  uebung:[
+    ['Die Gegenseite greift früher an als im Drehbuch.', 'Nach Lehrbuch verteidigen', 'Selbst den Gegenstoß führen', 'fuehrung', 'Gegenstoß gelungen. Der Leitende macht sich Notizen. Gute.', 'Eingekesselt. Der Leitende macht sich Notizen. Schlechte.'],
+    ['Nachts im Biwak bei {ort} fängt es an zu regnen. Die Zelte stehen in einer Senke.', 'Liegen bleiben', 'Mitten in der Nacht umziehen', 'fitness', 'Trocken bis zum Morgen. Die Nachbarzüge schwimmen.', 'Beim Umzug fällt alles in den Matsch.'],
+  ],
+  alarm:[
+    ['Das Flugzeug reagiert endlich auf Funk, will aber nicht abdrehen.', 'Nach Verfahren begleiten', 'Mit Flugzeugbewegungen deutlich zum Abdrehen auffordern', 'fachwissen', 'Es dreht ab. Einsatz erfolgreich.', 'Missverständnis. Lange Nachbesprechung.'],
+    ['Das „Flugobjekt“ ist ein großer Wetterballon.', 'Melden und zurück', 'Näher heran, um sicherzugehen', 'fachwissen', 'Sauber identifiziert. Der Wetterdienst bedankt sich.', 'Zu nah. Der Ballon platzt. Der Wetterdienst bedankt sich nicht.'],
+  ],
+  lufttransport:[['Am Zielflugplatz in {ort} zieht Nebel auf.', 'Ausweichflugplatz anfliegen', 'Instrumentenanflug wagen', 'fachwissen', 'Butterweiche Landung im Nebel.', 'Durchstarten, Ausweichflugplatz. Doppelter Sprit.']],
+  betankung:[['Am Tor des Fliegerhorsts fehlt dein Name auf der Liste.', 'Geduldig warten, bis es geklärt ist', 'Den Wachhabenden von früher kennen', 'vitaminb', 'Ihr kennt euch aus der Grundausbildung. Tor auf.', 'Er kennt dich nicht. Zwei Stunden Wartezeit.']],
+  seenot:[
+    ['Die Wellen werden höher. Der Segler treibt auf die Steine vor {ort} zu.', 'Abstand halten und auf den Seenotkreuzer warten', 'Längsseits gehen und übernehmen', 'fitness', 'Rüber gesprungen, Leine fest, gerettet.', 'Zu hohe Welle. Der Seenotkreuzer muss übernehmen.'],
+    ['Im Nebel vor {ort} ist der Funkkontakt zum Boot abgerissen.', 'Feste Suchmuster fahren', 'Nach Gehör auf das Nebelhorn zuhalten', 'fachwissen', 'Das Nebelhorn führt euch direkt hin.', 'Es war ein anderes Schiff. Neue Suche.'],
+  ],
+};
+// Besondere Umstände, die einen Auftrag einzigartig machen
+const LK_MOD = [
+  {id:'eilig', name:'Eilt!', pay:1.25, bp:1.1, zeit:.85, txt:'Höchste Dringlichkeit. Schneller fertig, besser bezahlt.'},
+  {id:'presse', name:'Presse vor Ort', pay:1, bp:1.4, zeit:1, txt:'Ein Kamerateam begleitet euch. Gute Arbeit bringt viel Lob.'},
+  {id:'unwetter', name:'Unwetter', pay:1.2, bp:1.15, zeit:1.2, txt:'Starker Regen und Wind. Es dauert länger, gibt aber Zuschlag.'},
+  {id:'kdr', name:'Kommandeur schaut zu', pay:1, bp:1.5, zeit:1, txt:'Der Kommandeur ist persönlich da. Ein Wagnis zählt doppelt.', wagnis:true},
+  {id:'nacht', name:'Nachteinsatz', pay:1.3, bp:1.1, zeit:1.1, txt:'Einsatz in der Nacht mit Nachtzuschlag.'},
+];
+function lkMod(a){ return a && a.mod ? LK_MOD.find(m => m.id === a.mod) : null; }
+function lkText(a){ const l = LK_TXT[a.typ]; const t = l ? l[(a.ti || 0) % l.length] : LK_TYP.find(x => x.id === a.typ).txt; return t.replace('{ort}', a.ort); }
+function lkLage(a){ const l = LK_LAGEN[a.typ]; if(l) return l[(a.li || 0) % l.length]; const o = LK_LAGE[a.typ]; return o.concat(['Gewagt und gewonnen! Das gibt Extra-Lob.', 'Ging schief. Der Auftrag wird erledigt, aber mit Abzügen.']); }
+function lkWuerfeln(a){
+  a.ti = Math.floor(Math.random() * 10); a.li = Math.floor(Math.random() * 10);
+  const h = new Date().getHours();
+  if(h >= 22 || h < 6) a.mod = 'nacht';
+  else if(Math.random() < .35){ const m = LK_MOD.filter(x => x.id !== 'nacht'); a.mod = m[Math.floor(Math.random() * m.length)].id; }
+  return a;
+}
 
 const EV = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
 const LG_EV = {ual:['lg_ual1','lg_ual2','lg_ual3'], fwl:['lg_fwl1','lg_fwl2','lg_fwl3'], ofl:['lg_ofl1','lg_ofl2','lg_ofl3'], stu:['lg_stu1','lg_stu2','lg_stu3']};
