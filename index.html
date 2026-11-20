@@ -324,6 +324,14 @@ ul.req .rw{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;p
 @media (prefers-reduced-motion: reduce){.advd.jetzt{animation:none}}
 .advsheet .advbig{width:74px;height:74px;margin:0 auto;border-radius:10px;background:linear-gradient(145deg,#8E1B1B,#5E1212);color:#FFE7A3;font:400 36px/74px 'Black Ops One',sans-serif;text-align:center;border:2px solid #FFD54F}
 .xprog{position:relative;height:22px;border-radius:11px;background:var(--surface2);overflow:hidden}.xprog i{display:block;height:100%;background:linear-gradient(90deg,#B3261E,#E3B23C)}.xprog span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 13px Barlow,sans-serif;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.dpview{display:flex;justify-content:flex-end;margin:-4px 0 10px}.dpview .seg{width:auto}
+.dpmini{display:grid;grid-template-columns:1fr;gap:6px}@media (min-width:700px){.dpmini{grid-template-columns:repeat(2,1fr)}}
+.dmini{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:6px;background:var(--surface);overflow:hidden;min-height:50px}
+.dmini.run{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal)}.dmini.lk{opacity:.55}
+.dmini .dmo{flex:1;min-width:0;background:none;border:0;color:var(--ink);text-align:left;padding:8px 10px;cursor:pointer;font:inherit}
+.dmini .dmo b{display:block;font-size:15px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dmini .dmo span{font-size:12px;color:var(--muted)}
+.dmini .dmgo{flex:none;border:0;border-left:1px solid var(--line);background:var(--olive);color:var(--olive-ink);font:700 14px Barlow,sans-serif;padding:0 16px;cursor:pointer}.dmini .dmgo:disabled{opacity:.4;cursor:default}
+.dpopen{grid-column:1/-1}
 .strip.idle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
 .strip .sh{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600}
 .strip .prog{margin-top:4px;height:6px}
@@ -3994,6 +4002,10 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:13, d:'20.11.2026', t:'Eure Rückmeldungen umgesetzt', p:[
+    'Dienstplan: neue Ansicht „Kompakt“. Jeder Dienst als kleines Feld mit Dauer, Verdienst und Antreten-Knopf, antippen klappt die Kachel auf',
+    'Basis-Fitness-Test: Der Sprint hat jetzt 8 statt 10 Schritte pro Bahn und wird fairer bewertet. Auch 30 bis 40 Sekunden bringen Punkte',
+    'Marine: Hauptbootsmann, Stabsbootsmann und Oberstabsbootsmann tragen jetzt den richtigen Kopfwinkel'] },
   {v:12, d:'19.11.2026', t:'Weihnachten in der Kaserne (ab 1. Dezember)', p:[
     'Ab 1. Dezember: Winterlook mit Schnee, Lichterkette und Weihnachtsmütze',
     'Adventskalender in der Übersicht: jeden Tag ein Türchen, an Heiligabend die große Bescherung',
@@ -4332,8 +4344,8 @@ MG_IMPL.bft = {
     if(s.st === 0){
       mgInfo('Sprint ' + t.toFixed(1) + ' s · Bahn ' + Math.min(11, s.lane + 1) + ' / 11');
       if(s.turn && el - s.turn > 900){ s.pen += 1; s.turn = 0; s.lane++; s.step = 0; s.side = ''; s.late = el; }
-      if(t + s.pen > 40 && s.lane < 11){ s.pts[0] = 0; s.res[0] = 'zu langsam'; this.stage(s, 1, el); return false; }
-      if(s.lane >= 11){ const tt = t + s.pen; s.pts[0] = Math.max(0, Math.min(100, Math.round(100 - (tt - 16) * 5))); s.res[0] = tt.toFixed(1) + ' s'; this.stage(s, 1, el); }
+      if(t + s.pen > 48 && s.lane < 11){ s.pts[0] = 0; s.res[0] = 'zu langsam'; this.stage(s, 1, el); return false; }
+      if(s.lane >= 11){ const tt = t + s.pen; s.pts[0] = Math.max(0, Math.min(100, Math.round(100 - (tt - 15) * 3))); s.res[0] = tt.toFixed(1) + ' s'; this.stage(s, 1, el); }
     } else if(s.st === 1){
       const lim = .15 - Math.min(.1, t * .0022), gAmp = .5 + Math.min(1.3, t * .03);
       s.gv += (Math.random() - .5) * gAmp * 9 * dt; s.gv *= .96;
@@ -4357,7 +4369,7 @@ MG_IMPL.bft = {
       if(id === 'W'){ if(s.turn){ if(el - s.turn > 450) s.pen += .4; s.turn = 0; s.lane++; s.step = 0; s.side = ''; } else s.frz = el + 350; return; }
       if(s.turn) return;
       if(id === s.side){ s.frz = el + 380; s.stol = el; return; }
-      s.side = id; s.step++; if(s.step >= 10) s.turn = el;
+      s.side = id; s.step++; if(s.step >= 8) s.turn = el;
     } else if(s.st === 1){ if(id === 'H') s.hold = true; }
     else if(id === 'S'){ if(el < s.frz) return; if(Math.abs(s.m - .5) <= s.w / 2) s.hit++; else { s.frz = el + 700; s.stol = el; } }
   },
@@ -4376,7 +4388,7 @@ MG_IMPL.bft = {
       const top = 40, bot = M.H - 40, lanes = 11;
       c.fillStyle = '#8B5A3C'; c.fillRect(30, top, M.W - 60, bot - top);
       c.strokeStyle = 'rgba(255,255,255,.5)'; c.setLineDash([6, 6]); for(let i = 1; i < lanes; i++){ const y = top + (bot - top) * i / lanes; c.beginPath(); c.moveTo(30, y); c.lineTo(M.W - 30, y); c.stroke(); } c.setLineDash([]);
-      const ln = Math.min(10, s.lane), y = top + (bot - top) * (ln + .5) / lanes, prog = s.step / 10, dir = ln % 2 ? -1 : 1;
+      const ln = Math.min(10, s.lane), y = top + (bot - top) * (ln + .5) / lanes, prog = s.step / 8, dir = ln % 2 ? -1 : 1;
       const x = dir > 0 ? 40 + prog * (M.W - 80) : M.W - 40 - prog * (M.W - 80);
       c.fillStyle = s.stol && el - s.stol < 380 ? '#FF7043' : '#E3B23C'; c.beginPath(); c.arc(x, y, 9, 0, 7); c.fill();
       if(s.turn){ c.fillStyle = '#FFD54F'; c.font = '700 22px Barlow, sans-serif'; c.fillText('WENDE!', M.W / 2, 28); }
@@ -5001,7 +5013,7 @@ function insigniaMarine(id, size){
   const slash = (y, w) => '<path d="M20 ' + (y + 13) + ' L36 ' + (y - 1) + '" stroke="' + gold + '" stroke-width="' + (w || 4) + '"/>';
   const tresse = closed => '<path d="M15 ' + (closed ? 82 : 88) + ' V30 Q15 18 28 17 Q41 18 41 30 V' + (closed ? 82 : 88) + (closed ? ' Z' : '') + '" fill="none" stroke="' + gold + '" stroke-width="4.6" stroke-linejoin="round"/>';
   const chev = y => '<path d="M21 ' + (y + 6) + ' L28 ' + (y - 1) + ' L35 ' + (y + 6) + '" fill="none" stroke="' + gold + '" stroke-width="3.6"/>';
-  const kopf = y => '<path d="M28 ' + (y - 8) + ' L35 ' + y + ' L28 ' + (y + 8) + ' L21 ' + y + 'Z" fill="none" stroke="' + gold + '" stroke-width="2.8"/><path d="M24.5 ' + (y - 4) + ' L31.5 ' + (y + 4) + 'M31.5 ' + (y - 4) + ' L24.5 ' + (y + 4) + '" stroke="' + gold + '" stroke-width="2.2"/>';
+  const kopf = y => '<path d="M23 ' + (y + 9) + ' L35.5 ' + (y - 3.5) + ' L28 ' + (y - 11) + ' L20.5 ' + (y - 3.5) + ' L33 ' + (y + 9) + '" fill="none" stroke="' + gold + '" stroke-width="3.6" stroke-linejoin="miter" stroke-miterlimit="6"/>';   // Kopfwinkel („Fisch“)
   const stern = y => { const s = 6.5, k = 2.6; let p = ''; for(let i = 0; i < 5; i++){ const a = -Math.PI/2 + i*2*Math.PI/5, b = a + Math.PI/5; p += (i ? 'L' : 'M') + (28 + s*Math.cos(a)).toFixed(1) + ' ' + (y + s*Math.sin(a)).toFixed(1) + 'L' + (28 + k*Math.cos(b)).toFixed(1) + ' ' + (y + k*Math.sin(b)).toFixed(1); } return '<path d="' + p + 'Z" fill="' + gold + '"/>'; };
   // Ärmelstreifen als waagerechte Balken von unten nach oben: m = mittelbreit, s = schmal, b = handbreit
   const balken = list => { let y = 84, p = ''; for(const t of list){ const h = t === 'b' ? 10 : t === 'm' ? 4.5 : 1.8; y -= h; p += '<rect x="8.5" y="' + y.toFixed(1) + '" width="39" height="' + h + '" fill="' + gold + '"/>'; y -= 3; } return p; };
@@ -5240,7 +5252,9 @@ function renderStube(){
 function renderDienst(){
   let h = '<h2>Dienstplan</h2>';
   h += '<p class="small muted">Dienste kosten Ausdauer und bringen Geld und Beurteilungspunkte. Ausdauer lädt sich alle '+fmtMin(3/S.speed)+' um einen Punkt auf, aber nicht während eines Dienstes. Wer immer denselben Dienst schiebt, wird nachlässig: Ab dem dritten Mal hintereinander gibt es pro Wiederholung 10 % weniger Geld, höchstens 40 %. Ein anderer Dienst setzt das zurück.</p>';
-  h += '<div class="cards">' + DIENSTE.map(d => {
+  const kompakt = !!S.dpKompakt;
+  h += '<div class="dpview"><div class="seg" role="group" aria-label="Ansicht"><button data-act="dp_view" data-id="0" aria-pressed="' + !kompakt + '">Kacheln</button><button data-act="dp_view" data-id="1" aria-pressed="' + kompakt + '">Kompakt</button></div></div>';
+  h += '<div class="' + (kompakt ? 'cards dpmini' : 'cards') + '">' + DIENSTE.map(d => {
     const lock = G.dienstLock(d);
     if(!!d.einsatz !== !!S.einsatz) return '';
     if(d.tsk && d.tsk !== S.tsk) return '';
@@ -5258,7 +5272,11 @@ function renderDienst(){
       + (running ? '<div class="small">Fertig in <span class="num" data-left="dienst"></span></div><div class="prog" style="margin:0"><i data-prog="dienst"></i></div>'
         : lock ? '<div class="lock">Gesperrt: '+esc(lock)+'</div>'
         : '<button class="btn wide" data-act="dienst" data-id="'+d.id+'" '+(dis?'disabled':'')+'>Antreten</button>');
-    return acard(d.name, DIENST_ART[d.id], inner, running);
+    if(kompakt && S.dpOpen !== d.id)
+      return '<div class="dmini' + (running ? ' run' : lock ? ' lk' : '') + '"><button class="dmo" data-act="dp_open" data-id="' + d.id + '" aria-label="' + esc(d.name) + ' aufklappen"><b>' + esc(d.name) + '</b><span>' + (running ? 'läuft, fertig in <span class="num" data-left="dienst"></span>' : lock ? 'gesperrt' : fmtMin(G.dienstMin(d)/S.speed) + ' · ' + eur(G.dienstPay(d)) + ' · ' + G.dienstSt(d) + ' Ausd.') + '</span></button>'
+        + (running || lock ? '' : '<button class="dmgo" data-act="dienst" data-id="' + d.id + '" ' + (dis ? 'disabled' : '') + ' aria-label="' + esc(d.name) + ' antreten">Antreten</button>') + '</div>';
+    const card = acard(d.name, DIENST_ART[d.id], inner, running);
+    return kompakt ? '<div class="dpopen">' + card.replace('<div class="ah">', '<div class="ah" data-act="dp_open" data-id="' + d.id + '" style="cursor:pointer" title="Einklappen">') + '</div>' : card;
   }).join('') + '</div>';
   return h;
 }
@@ -5397,6 +5415,8 @@ function ask(text, fn, yes){
    AKTIONEN
    ========================================================= */
 const ACT = {
+  dp_view(v){ S.dpKompakt = v === '1'; S.dpOpen = null; save(); render(); },
+  dp_open(id){ S.dpOpen = S.dpOpen === id ? null : id; render(); },
   advent(n){ adventOpen(n); },
   xfeier(){ xmasAbholen(); },
   changelog(){ clShow(true); },
