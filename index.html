@@ -344,6 +344,23 @@ ul.req .rw{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;p
 .lkhead{display:flex;gap:12px;align-items:center;margin-bottom:6px}
 .lkpick{display:grid;gap:6px;margin-bottom:10px}.lkfzb{display:flex;gap:10px;align-items:center;text-align:left;padding:8px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface2);color:var(--ink);cursor:pointer;font:inherit}.lkfzb.on{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal);background:rgba(227,178,60,.12)}.lkfzb.np{opacity:.5}
 .lkfp{display:grid;gap:8px}.lkfp>div{display:flex;gap:10px;align-items:center}
+.secfold{margin:14px 0 0;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.secfold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:13px 14px;font-weight:700;font-size:16px;min-height:22px}
+.secfold>summary::-webkit-details-marker{display:none}
+.secfold>summary::after{content:'';width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);flex:none;margin:0 2px 3px 6px}
+.secfold[open]>summary::after{transform:rotate(-135deg);margin-bottom:-3px}
+.secfold .fh{margin-left:auto;font-weight:500;font-size:13px;color:var(--muted);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%}
+.secfold>.fb{padding:0 10px 12px}.secfold>.fb>.panel:first-child,.secfold>.fb>p:first-child{margin-top:0}
+.kback{display:flex;align-items:center;gap:12px;margin:2px 0 10px}.kback button{background:var(--surface2);border:1px solid var(--line);color:var(--ink);font:700 14px Barlow,sans-serif;border-radius:6px;padding:8px 12px;min-height:40px;cursor:pointer}.kback b{font-size:18px}
+.kgrp{font-size:12.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--signal);margin:14px 0 8px}
+.khub{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ktile{display:flex;flex-direction:column;gap:3px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--ink);font:inherit;cursor:pointer;min-height:76px;min-width:0}
+.ktile:hover{border-color:var(--signal)}.ktile b{font-size:15px}.ktile .small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kti{display:flex;justify-content:space-between;align-items:center;color:var(--signal)}.kbadge{background:#B3261E;color:#fff;border-radius:9px;padding:0 7px;font:700 12px Barlow,sans-serif;line-height:18px}
+.dpbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 10px;flex-wrap:wrap}
+.dpchips{display:flex;gap:6px;flex-wrap:wrap}.dpchips button{border:1.5px solid var(--line);background:transparent;color:var(--muted);border-radius:16px;font:600 13px Barlow,sans-serif;padding:6px 11px;cursor:pointer;min-height:34px}.dpchips button[aria-pressed="true"]{border-color:var(--signal);color:var(--ink);background:rgba(227,178,60,.15)}
+details.info{margin:-4px 0 10px}details.info>summary{cursor:pointer;color:var(--muted);font-size:13.5px;list-style:none}details.info>summary::-webkit-details-marker{display:none}details.info>summary::before{content:'ⓘ ';}
+details.dplock{margin-top:8px}details.dplock>summary{cursor:pointer;list-style:none;padding:10px 12px;border:1px dashed var(--line);border-radius:8px;color:var(--muted);font-size:13.5px}details.dplock>summary::-webkit-details-marker{display:none}details.dplock[open]>summary{margin-bottom:6px}
 .strip.idle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
 .strip .sh{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600}
 .strip .prog{margin-top:4px;height:6px}
@@ -1533,7 +1550,7 @@ const TUT = [
   {tab:'stube', t:'Wegtreten!', x:'Das war die Einweisung. Als Startgeld gibt es 200 € und noch ein Paket von zu Hause. Und jetzt: Wegtreten!', final:true},
 ];
 function tutOn(){ return !!(S && S.tut && !S.tut.done); }
-function tutSteps(){ return TUT.filter(s => TABS.some(t => t[0] === pageOf(s.tab)[0])); }
+function tutSteps(){ return TUT.filter(s => TABS.some(t => t[0] === navOf(pageOf(s.tab)[0])) && (pageOf(s.tab)[0] !== 'truppe' || typeof renderTruppe === 'function')); }
 function tutCheck(){
   const st = tutSteps();
   while(S.tut.step < st.length && st[S.tut.step].done && st[S.tut.step].done()) S.tut.step++;
@@ -1542,7 +1559,7 @@ function tutCheck(){
 function tutBox(){
   tutCheck();
   const st = tutSteps(), s = st[S.tut.step], here = onPage(s.tab);
-  setTimeout(() => { const b = document.querySelector('.nav [data-id="'+pageOf(s.tab)[0]+'"]'); if(b && b.classList && !here) b.classList.add('pulse'); }, 0);
+  setTimeout(() => { const b = document.querySelector('.nav [data-id="'+navOf(pageOf(s.tab)[0])+'"]'); if(b && b.classList && !here) b.classList.add('pulse'); }, 0);
   let h = '<div class="tut" role="region" aria-label="Einführung">'+npcBadge('spiess', 44)+'<div style="flex:1;min-width:0">'
     + '<div class="small muted">Einführung, Schritt '+(S.tut.step+1)+' von '+st.length+'</div><div class="tt">'+esc(s.t)+'</div>';
   if(!here){
@@ -1675,58 +1692,90 @@ function notifyEvents(ev){
 /* ---------- Seitenaufbau: Hauptbereiche mit Unterreitern ---------- */
 const SUBS = {
   stube: [
-    {id:'uebersicht', label:'Übersicht', src:'stube', rest:true, match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Adventskalender','Weihnachtsfeier','Auslandseinsatz','Zu erledigen']},
-    {id:'stube', label:'Stube', src:'raum', rest:true, match:['Deine Stube','Ausrüstung']},
-    {id:'vorsorge', label:'Vorsorge', src:'raum', match:['Anwartschaftsversicherung','Pflegepflichtversicherung']},
-    {id:'kameraden', label:'Kameraden', src:'raum', match:['Kompanie','Sammelalbum']},
+    {id:'uebersicht', label:'Heute', src:'stube', rest:true, fold:true,
+     open:['Meldungen','Zu erledigen','Grundausbildung','Prüfungen','Adventskalender','Weihnachtsfeier','Auslandseinsatz','Tageslage','Dienstzeitende'],
+     match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Zu erledigen','Adventskalender','Weihnachtsfeier','Tageslage']},
   ],
   dienst: [
     {id:'plan', label:'Dienstplan', src:'dienst', rest:true, match:['Dienstplan']},
     {id:'lage', label:'Lagekarte', src:'lage', match:['Lagekarte','Laufende Aufträge','Offene Aufträge','Fuhrpark']},
-    {id:'einsatz', label:'Auslandseinsatz', src:'laufbahn', match:['Auslandseinsatz']},
+    {id:'einsatz', label:'Einsatz', src:'laufbahn', match:['Auslandseinsatz']},
   ],
   ausb: [
-    {id:'ausbildung', label:'Ausbildung', src:'ausb', rest:true, match:['Ausbildung']},
+    {id:'ausbildung', label:'Werte', src:'ausb', rest:true, match:['Ausbildung']},
     {id:'lehrgaenge', label:'Lehrgänge', src:'ausb', match:['Lehrgänge']},
     {id:'fahrschule', label:'Fahrschule', src:'ausb', match:['Fahrschule']},
     {id:'uebung', label:'Übungsplatz', src:'mini', match:['Übungsplatz']},
   ],
+  kaserne: [
+    {id:'hub', label:'Kaserne', src:'kaserne', rest:true, match:['Kaserne']},
+  ],
+  zuhause: [
+    {id:'stube', label:'Stube', src:'raum', rest:true, match:['Deine Stube','Ausrüstung']},
+    {id:'kameraden', label:'Kameraden und Album', src:'raum', match:['Kompanie','Sammelalbum']},
+    {id:'vorsorge', label:'Vorsorge', src:'raum', match:['Anwartschaftsversicherung','Pflegepflichtversicherung']},
+  ],
   feier: [
     {id:'leergut', label:'Leergut', src:'feier', rest:true, match:['Leergut']},
-    {id:'schrauben', label:'Schrauben', src:'feier', match:['Schrauben','Kleinanzeigen','Werkstatt']},
-    {id:'spiele', label:'Spiele', src:'feier', match:['Spielothek','Stubenrunde']},
-    {id:'lotto', label:'Lotto', src:'lotto', match:['Soldatenlotto']},
+    {id:'schrauben', label:'Werkstatt', src:'feier', match:['Schrauben','Kleinanzeigen','Werkstatt']},
+    {id:'spiele', label:'Spielothek', src:'feier', match:['Spielothek','Stubenrunde']},
+    {id:'lotto', label:'Soldatenlotto', src:'lotto', match:['Soldatenlotto']},
   ],
   truppe: [
-    {id:'kompanie', label:'Kompanie', src:'truppe', rest:true, match:['Kompanie','Mitglieder','Einladen']},
-    {id:'chat', get label(){ const n = typeof chatUnread === 'function' ? chatUnread() : 0; return 'Chat' + (n ? ' (' + n + ')' : ''); }, src:'chat', match:['Funkkreis']},
-    {id:'suche', label:'Suche', src:'suche', match:['Personensuche']},
-    {id:'kasse', label:'Kasse', src:'truppe', match:['Kompaniekasse','Kassenbuch']},
-    {id:'ausbau', label:'Ausbau', src:'truppe', match:['Kompanie-Ausbau','Kompanielager']},
-    {id:'kaserne', label:'Kaserne', src:'truppe', match:['Standortkarte','Kaserne']},
+    {id:'kompanie', label:'Kompanie', grp:'kp', src:'truppe', rest:true, match:['Kompanie','Mitglieder','Einladen']},
+    {id:'kasse', label:'Kasse', grp:'kp', src:'truppe', match:['Kompaniekasse','Kassenbuch']},
+    {id:'ausbau', label:'Ausbau', grp:'kp', src:'truppe', match:['Kompanie-Ausbau','Kompanielager']},
+    {id:'kaserne', label:'Standort', grp:'kp', src:'truppe', match:['Standortkarte','Kaserne']},
+    {id:'chat', get label(){ const n = typeof chatUnread === 'function' ? chatUnread() : 0; return 'Funkkreis' + (n ? ' (' + n + ')' : ''); }, src:'chat', match:['Funkkreis']},
+    {id:'suche', label:'Personensuche', src:'suche', match:['Personensuche']},
     {id:'rang', label:'Rangliste', src:'truppe', match:['Ranglisten']},
   ],
   akte: [
-    {id:'personalien', label:'Personalien', src:'akte', rest:true, match:['Personalien','Statistik','Qualifikationen','Steckbrief']},
-    {id:'laufbahn', label:'Laufbahn', src:'laufbahn', rest:true, match:['Dienstgrade','Nächste Beförderung','Werdegang']},
-    {id:'leistung', label:'Beurteilung', src:'stube', match:['Beurteilung','Werte']},
-    {id:'dv', label:'Dienstverhältnis', src:'laufbahn', match:['Teilstreitkraft','Dienstverhältnis','Verwendung','Standort']},
+    {id:'personalien', label:'Personalien', srcs:['akte','stube'], rest:'akte', fold:true, open:['Personalien'], match:['Personalien','Statistik','Qualifikationen','Beurteilung','Werte']},
+    {id:'laufbahn', label:'Laufbahn', src:'laufbahn', rest:true, fold:true, open:['Dienstgrade','Nächste Beförderung'], match:['Dienstgrade','Nächste Beförderung','Werdegang','Teilstreitkraft','Dienstverhältnis','Verwendung','Standort']},
     {id:'orden', label:'Orden', src:'laufbahn', match:['Orden']},
-    {id:'feedback', label:'Feedback', src:'akte', match:['Feedback']},
-    {id:'einst', label:'Einstellungen', src:'stube', match:['Einstellungen']},
-    {id:'admin', label:'Admin', src:'admin', match:['Admin']},
+    {id:'mehr', label:'Mehr', srcs:['akte','stube','admin'], fold:true, open:[], match:['Steckbrief','Feedback','Einstellungen','Admin']},
   ],
 };
+const GRP_NAME = {kp:'Kompanie'};
+// Seiten, die man über die Kacheln der Kaserne erreicht
+const KCHILD = ['zuhause', 'feier', 'truppe'];
+function navOf(t){ return KCHILD.includes(t) ? 'kaserne' : t; }
+function srcOf(x){ return x.srcs || [x.src]; }
+const FOLD_HINT = {
+  'Wochenaufträge': () => { const wa = waEnsure(); return wa.list.filter(w => w.done).length + ' von ' + wa.list.length + ' erledigt'; },
+  'Beurteilung': () => 'Note ' + G.note() + ' · ' + NOTES[G.note()],
+  'Werte': () => STATS.map(s => s.name.slice(0, 3) + ' ' + S.stats[s.id]).join(' · '),
+  'Statistik': () => (S.dienstCount || 0) + ' Dienste',
+  'Qualifikationen': () => FAHRSCHULE.filter(x => fsHas(x.id)).length + ' Scheine · ' + Object.keys(S.lehrgaenge || {}).length + ' Lehrgänge',
+  'Werdegang': () => (S.history || []).length + ' Stationen',
+  'Teilstreitkraft': () => ({heer:'Heer', lw:'Luftwaffe', marine:'Marine'})[S.tsk || 'heer'],
+  'Dienstverhältnis': () => DZ[S.verpfl].short,
+  'Verwendung': () => S.verw ? VERW[S.verw].name : 'noch offen',
+  'Standort': () => S.standort ? S.standort.ort : 'noch offen',
+  'Einstellungen': () => 'Darstellung, Konto',
+};
+function foldWrap(x, html){
+  if(!x.fold) return html;
+  S.ui = S.ui || {};
+  return splitSecs(html).map((sec, i) => {
+    if(i === 0 || !sec.title || (x.open || []).includes(sec.title)) return sec.html;
+    const body = sec.html.replace(/^<h2>[\s\S]*?<\/h2>/, ''), k = 'f:' + sec.title;
+    let hint = ''; try{ hint = FOLD_HINT[sec.title] ? FOLD_HINT[sec.title]() : ''; }catch(e){}
+    return '<details class="secfold" data-k="' + esc(k) + '"' + (S.ui[k] ? ' open' : '') + '><summary><span>' + esc(sec.title) + '</span>' + (hint ? '<span class="fh">' + esc(hint) + '</span>' : '') + '</summary><div class="fb">' + body + '</div></details>';
+  }).join('');
+}
+document.addEventListener('toggle', e => { const d = e.target; if(d && d.dataset && d.dataset.k && S){ S.ui = S.ui || {}; S.ui[d.dataset.k] = d.open; } }, true);
 // Abschnitte, die der Laufend-Streifen oben ersetzt
 const SUB_DROP = ['Im Dienst', 'Feierabend'];
 const SUB = {}, LASTSUB = {};
-const ALIAS = {stube:['stube','uebersicht'], raum:['stube','stube'], laufbahn:['akte','laufbahn'], akte:['akte','personalien'], dv:['akte','dv'], orden:['akte','orden'], einst:['akte','einst'], vorsorge:['stube','vorsorge'], fahrschule:['ausb','fahrschule'], lage:['dienst','lage'], uebungsplatz:['ausb','uebung'], lehrgaenge:['ausb','lehrgaenge'], dienst:['dienst','plan'], ausb:['ausb','ausbildung'], feier:['feier',null], truppe:['truppe',null]};
+const ALIAS = {stube:['stube','uebersicht'], raum:['zuhause','stube'], kaserne:['kaserne','hub'], kameraden:['zuhause','kameraden'], feedback:['akte','mehr'], laufbahn:['akte','laufbahn'], akte:['akte','personalien'], dv:['akte','laufbahn'], orden:['akte','orden'], einst:['akte','mehr'], vorsorge:['zuhause','vorsorge'], fahrschule:['ausb','fahrschule'], lage:['dienst','lage'], uebungsplatz:['ausb','uebung'], lehrgaenge:['ausb','lehrgaenge'], dienst:['dienst','plan'], ausb:['ausb','ausbildung'], feier:['feier',null], truppe:['truppe',null]};
 function pageOf(id){ return ALIAS[id] || [id, null]; }
 function goPage(id){ const a = pageOf(id); tab = a[0]; if(a[1]) SUB[tab] = a[1]; }
 function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LASTSUB[tab] === a[1]); }
-function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === a[0]), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
+function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === navOf(a[0])), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
-  const f = {stube:renderStube, lage:renderLage, mini:renderMini, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
+  const f = {stube:renderStube, kaserne:renderKaserne, lage:renderLage, mini:renderMini, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
     truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null}[src];
   return f ? f() : '';
 }
@@ -1761,14 +1810,14 @@ function renderPage(){
   const subs = (SUBS[tab] || []).filter(x => x.src !== 'truppe' || typeof renderTruppe === 'function');
   if(!subs.length) return runStrip();
   const parts = subs.map(x => ({x, html:''}));
-  for(const src of [...new Set(subs.map(x => x.src))]){
+  for(const src of [...new Set(subs.flatMap(srcOf))]){
     for(const sec of splitSecs(pageSrc(src))){
       if(SUB_DROP.includes(sec.title)) continue;
-      // Abschnitte, die ein anderer Hauptbereich für sich beansprucht, hier überspringen
-      const hit = x => x.src === src && x.match.some(m => sec.title === m || sec.title.startsWith(m + ' '));
+      // Abschnitte, die ein anderer Bereich für sich beansprucht, hier überspringen
+      const hit = x => srcOf(x).includes(src) && x.match.some(m => sec.title === m || sec.title.startsWith(m + ' '));
       if(!subs.some(hit) && Object.entries(SUBS).some(([k, l]) => k !== tab && l.some(hit))) continue;
-      let t = parts.find(p => p.x.src === src && p.x.match.some(m => sec.title === m || sec.title.startsWith(m + ' ')));
-      if(!t) t = parts.find(p => p.x.src === src && p.x.rest);
+      let t = parts.find(p => hit(p.x));
+      if(!t) t = parts.find(p => p.x.rest && (p.x.rest === true ? srcOf(p.x).includes(src) : p.x.rest === src));
       if(t) t.html += sec.html;
     }
   }
@@ -1776,8 +1825,41 @@ function renderPage(){
   if(!vis.length) return runStrip();
   const cur = vis.find(p => p.x.id === SUB[tab]) || vis[0];
   LASTSUB[tab] = cur.x.id;
-  const nav = vis.length > 1 ? '<div class="subnav" role="group" aria-label="Unterbereiche">' + vis.map(p => '<button data-act="sub" data-id="' + p.x.id + '" aria-pressed="' + (p === cur) + '">' + p.x.label + '</button>').join('') + '</div>' : '';
-  return nav + runStrip() + cur.html;
+  const kind = KCHILD.includes(tab);
+  const grp = kind ? vis.filter(p => cur.x.grp && p.x.grp === cur.x.grp) : vis;
+  const nav = grp.length > 1 ? '<div class="subnav" role="group" aria-label="Unterbereiche">' + grp.map(p => '<button data-act="sub" data-id="' + p.x.id + '" aria-pressed="' + (p === cur) + '">' + p.x.label + '</button>').join('') + '</div>' : '';
+  const back = kind ? '<div class="kback"><button data-act="main" data-id="kaserne">‹ Kaserne</button><b>' + esc(cur.x.grp ? GRP_NAME[cur.x.grp] : cur.x.label) + '</b></div>' : '';
+  return back + nav + runStrip() + foldWrap(cur.x, cur.html);
+}
+
+/* ---------- Kaserne: Kacheln statt Reiter ---------- */
+function kTiles(){
+  const sv = (f, d) => { try{ return f() || d; }catch(e){ return d; } };
+  const on = typeof renderTruppe === 'function';
+  return [
+    {grp:'Kameraden', go:'truppe:kompanie', label:'Kompanie', ok:on, ic:'<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M12 20c0-3.3 1.8-6 4-6s6 2.7 6 6"/>',
+      info:sv(() => ONLINE.kp ? ONLINE.kp.name + ' · Kasse ' + eur(ONLINE.kp.kasse) : 'gründen oder beitreten', 'Kasse und Ausbau')},
+    {grp:'Kameraden', go:'truppe:chat', label:'Funkkreis', ok:typeof renderChat === 'function' && !!USER, ic:'<path d="M4 5h16v11H9l-5 4z"/>',
+      badge:sv(() => chatUnread(), 0), info:sv(() => { const m = ONLINE.chat[ONLINE.chat.length - 1]; return m ? m.name + ': ' + m.text : ''; }, 'Chat mit allen Spielern')},
+    {grp:'Kameraden', go:'truppe:rang', label:'Rangliste', ok:on, ic:'<path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/>', info:'Spieler und Kompanien'},
+    {grp:'Kameraden', go:'truppe:suche', label:'Personensuche', ok:typeof renderSuche === 'function' && !!USER, ic:'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>', info:'Steckbriefe ansehen'},
+    {grp:'Kameraden', go:'zuhause:kameraden', label:on ? 'Stubenkameraden' : 'Kameraden', ok:true, ic:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/>', info:sv(() => 'Ansehen · Album ' + ITEMS.filter(i => S.album[i.id]).length + '/' + ITEMS.length, 'Ansehen und Sammelalbum')},
+    {grp:'Feierabend', go:'feier:spiele', label:on ? 'Spielothek' : 'Stubenrunde', ok:true, ic:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 9v6M12 9v6M16 9v6"/>', info:on ? 'Automaten und Karten' : 'Karten mit Kalle'},
+    {grp:'Feierabend', go:'feier:lotto', label:'Soldatenlotto', ok:typeof renderLotto === 'function' && !!USER, ic:'<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>', info:sv(() => ONLINE.lotto && ONLINE.lotto.jackpot ? 'Jackpot ' + eur(ONLINE.lotto.jackpot) : '', 'Tippschein ausfüllen')},
+    {grp:'Feierabend', go:'feier:leergut', label:'Leergut', ok:true, ic:'<path d="M10 2h4v4l2 3v13H8V9l2-3z"/>', info:'Flaschen sammeln'},
+    {grp:'Feierabend', go:'feier:schrauben', label:'Werkstatt', ok:true, ic:'<path d="M14 6l4 4-8 8H6v-4z"/><path d="M12 8l4 4"/>', info:'Autos reparieren und verkaufen'},
+    {grp:'Zuhause', go:'zuhause:stube', label:'Stube', ok:true, ic:'<path d="M3 11 12 4l9 7v9H3z"/><path d="M9 20v-6h6v6"/>', info:'Ausbau und Ausrüstung'},
+    {grp:'Zuhause', go:'zuhause:vorsorge', label:'Vorsorge', ok:true, ic:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+      badge:sv(() => pflegePflicht() && !S.pflege ? '!' : 0, 0), info:sv(() => pflegePflicht() && !S.pflege ? 'Pflegeversicherung fehlt!' : '', 'Versicherungen')},
+  ].filter(t => t.ok);
+}
+function renderKaserne(){
+  const t = kTiles(), grps = [...new Set(t.map(x => x.grp))];
+  let h = '<h2>Kaserne' + (S.standort ? ' ' + esc(S.standort.ort) : '') + '</h2>';
+  for(const g of grps) h += '<div class="kgrp">' + g + '</div><div class="khub">' + t.filter(x => x.grp === g).map(x =>
+    '<button class="ktile" data-act="ktile" data-id="' + x.go + '"><span class="kti"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' + x.ic + '</svg>' + (x.badge ? '<span class="kbadge">' + x.badge + '</span>' : '') + '</span>'
+    + '<b>' + esc(x.label) + '</b><span class="small muted">' + esc(String(x.info || '')) + '</span></button>').join('') + '</div>';
+  return h;
 }
 
 function hasGear(id){ return !!(S && S.gear && S.gear[id]); }
@@ -4016,6 +4098,12 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:15, d:'20.11.2026', t:'Aufgeräumt: neue Navigation', p:[
+    'Unten nur noch fünf Bereiche: Heute, Dienst, Ausbildung, Kaserne und Akte',
+    'Neu: die Kaserne. Kompanie, Funkkreis, Rangliste, Spielothek, Lotto, Leergut, Werkstatt, Stube und Vorsorge als Kacheln mit den wichtigsten Infos',
+    'Heute zeigt nur noch, was jetzt wichtig ist. Wochenaufträge und Stubenfunk sind eingeklappt',
+    'Dienstplan: Kompaktansicht als Standard, Filter für Drinnen, Draußen und Fahrdienste, gesperrte Dienste zusammengefasst',
+    'Akte: Personalien, Laufbahn, Orden und Mehr. Abschnitte klappen auf und zeigen vorher eine Kurzinfo'] },
   {v:14, d:'20.11.2026', t:'Neu: die Lagekarte', p:[
     'Unter Dienst gibt es jetzt die Lagekarte: Aufträge in echten Orten rund um deinen Standort',
     'Amtshilfe bei Hochwasser, Waldbrand oder Schneechaos, Weltkriegsbomben, Vermisstensuche, Transporte und Übungen auf echten Truppenübungsplätzen',
@@ -5452,6 +5540,7 @@ function insignia(id, size=56){
    OBERFLÄCHE
    ========================================================= */
 const ICONS = {
+  kaserne:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
   akte:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 9h18M8 13h8M8 16h5"/></svg>',
   feier:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2h4v4l2 3v13H8V9l2-3z"/><path d="M8 13h8"/></svg>',
   stube:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.5"/><path d="M14 10h4M14 14h4"/></svg>',
@@ -5461,7 +5550,7 @@ const ICONS = {
   ausb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></svg>',
   laufbahn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/></svg>',
 };
-const TABS = [['stube','Start'],['dienst','Dienst'],['ausb','Ausbildung'],['feier','Feierabend'],['truppe','Truppe'],['akte','Akte']];
+const TABS = [['stube','Heute'],['dienst','Dienst'],['ausb','Ausbildung'],['kaserne','Kaserne'],['akte','Akte']];
 
 function renderNav(){
   const nav = document.getElementById('nav');
@@ -5469,10 +5558,10 @@ function renderNav(){
   if(nav.hidden) return;
   nav.style.gridTemplateColumns = 'repeat('+TABS.length+',1fr)';
   nav.innerHTML = TABS.map(([id,label]) =>
-    '<button data-act="main" data-id="'+id+'" '+(tab===id?'aria-current="page"':'')+'>'+(id==='stube' ? ICONS.raum : ICONS[id])+label
+    '<button data-act="main" data-id="'+id+'" '+(navOf(tab)===id?'aria-current="page"':'')+'>'+(id==='stube' ? ICONS.raum : ICONS[id])+label
     + (id==='stube' && (S.pending.length || S.pakete || waReady()) ? '<span class="dot" aria-label="neue Meldung"></span>' : '')
     + (id==='akte' && ((S.gaDone && (NEXT[S.rank] || []).some(x => G.promoReqs(x).every(r => r.ok))) || (ONLINE.admin && ONLINE.fb && ONLINE.fb.offen)) ? '<span class="dot" aria-label="Beförderung möglich"></span>' : '')
-    + (id==='truppe' && typeof chatUnread === 'function' && chatUnread() ? '<span class="dot" aria-label="neue Nachrichten im Chat"></span>' : '')+'</button>').join('');
+    + (id==='kaserne' && typeof chatUnread === 'function' && chatUnread() ? '<span class="dot" aria-label="neue Nachrichten im Chat"></span>' : '')+'</button>').join('');
 }
 
 function renderRes(){
@@ -5533,7 +5622,7 @@ function renderStube(){
   h += appellCard() + rekrutCard();
   h += renderWA();
   h += storyCard();
-  h += '<div class="panel pad lage" style="margin-top:16px"><div class="small muted">Tageslage, gilt heute für alle</div><div style="font-weight:700;font-size:18px">'+esc(lageHeute().name)+'</div><p class="small" style="margin:4px 0 0">'+esc(lageHeute().desc)+'</p>'+wetterLine()+'</div>'
+  h += '<h2>Tageslage</h2><div class="panel pad lage"><div class="small muted">Gilt heute für alle</div><div style="font-weight:700;font-size:18px">'+esc(lageHeute().name)+'</div><p class="small" style="margin:4px 0 0">'+esc(lageHeute().desc)+'</p>'+wetterLine()+'</div>'
     + '<p class="quote">„'+esc(lageHeute().spruch || pick(SPIESS))+'“ – Hauptfeldwebel Brockmann, Spieß</p>';
   if(S.einsatz){
     const E = EINSATZ_I[S.einsatz.id];
@@ -5568,9 +5657,11 @@ function renderStube(){
 
 function renderDienst(){
   let h = '<h2>Dienstplan</h2>';
-  h += '<p class="small muted">Dienste kosten Ausdauer und bringen Geld und Beurteilungspunkte. Ausdauer lädt sich alle '+fmtMin(3/S.speed)+' um einen Punkt auf, aber nicht während eines Dienstes. Wer immer denselben Dienst schiebt, wird nachlässig: Ab dem dritten Mal hintereinander gibt es pro Wiederholung 10 % weniger Geld, höchstens 40 %. Ein anderer Dienst setzt das zurück.</p>';
-  const kompakt = !!S.dpKompakt;
-  h += '<div class="dpview"><div class="seg" role="group" aria-label="Ansicht"><button data-act="dp_view" data-id="0" aria-pressed="' + !kompakt + '">Kacheln</button><button data-act="dp_view" data-id="1" aria-pressed="' + kompakt + '">Kompakt</button></div></div>';
+  S.ui = S.ui || {};
+  h += '<details class="info" data-k="i:dienst"' + (S.ui['i:dienst'] ? ' open' : '') + '><summary>Hinweise zum Dienstplan</summary>' + '<p class="small muted">Dienste kosten Ausdauer und bringen Geld und Beurteilungspunkte. Ausdauer lädt sich alle '+fmtMin(3/S.speed)+' um einen Punkt auf, aber nicht während eines Dienstes. Wer immer denselben Dienst schiebt, wird nachlässig: Ab dem dritten Mal hintereinander gibt es pro Wiederholung 10 % weniger Geld, höchstens 40 %. Ein anderer Dienst setzt das zurück.</p>' + '</details>';
+  const kompakt = S.dpKompakt !== false, flt = S.dpFilter || 'alle', gesperrt = [];
+  h += '<div class="dpbar"><div class="dpchips" role="group" aria-label="Filter">' + [['alle','Alle'],['drinnen','Drinnen'],['draussen','Draußen'],['fahr','Fahrdienste']].map(([v, l]) => '<button data-act="dp_flt" data-id="' + v + '" aria-pressed="' + (flt === v) + '">' + l + '</button>').join('') + '</div>';
+  h += '<div class="dpview" style="margin:0"><div class="seg" role="group" aria-label="Ansicht"><button data-act="dp_view" data-id="0" aria-pressed="' + !kompakt + '">Kacheln</button><button data-act="dp_view" data-id="1" aria-pressed="' + kompakt + '">Kompakt</button></div></div></div>';
   h += '<div class="' + (kompakt ? 'cards dpmini' : 'cards') + '">' + DIENSTE.map(d => {
     const lock = G.dienstLock(d);
     if(!!d.einsatz !== !!S.einsatz) return '';
@@ -5583,18 +5674,21 @@ function renderDienst(){
     if(d.hideFor && d.hideFor.includes(G.rank().g)) return '';
     if(lock && (d.spec || d.groups) && G.rank().t < 3) return ''; // Fortgeschrittene Dienste erst zeigen, wenn sie in Reichweite sind
     const running = S.dienst && S.dienst.id === d.id;
+    if(flt !== 'alle' && !running){ const raus = OUT_IDS.includes(d.id); if((flt === 'fahr') !== !!d.fs || (flt === 'draussen' && !raus) || (flt === 'drinnen' && (raus || d.fs))) return ''; }
     const dis = !!lock || !!S.dienst || S.stamina < G.dienstSt(d);
     const inner = '<p class="flv">'+esc(d.desc)+'</p>' + wxNote(d) + rtNote(d)
       + facts([['Dauer', fmtMin(G.dienstMin(d)/S.speed)], ['Ausdauer', G.dienstSt(d)], ['Verdienst', eur(G.dienstPay(d))], ['Punkte', d.bp]].concat(d.q ? [['Fahrzeuge heute', Math.max(0, d.q - dqUsed(d.id)) + ' von ' + d.q]] : []))
       + (running ? '<div class="small">Fertig in <span class="num" data-left="dienst"></span></div><div class="prog" style="margin:0"><i data-prog="dienst"></i></div>'
         : lock ? '<div class="lock">Gesperrt: '+esc(lock)+'</div>'
         : '<button class="btn wide" data-act="dienst" data-id="'+d.id+'" '+(dis?'disabled':'')+'>Antreten</button>');
+    if(kompakt && S.dpOpen !== d.id && lock && !running){ gesperrt.push('<div class="dmini lk"><button class="dmo" data-act="dp_open" data-id="' + d.id + '"><b>' + esc(d.name) + '</b><span>' + esc(lock) + '</span></button></div>'); return ''; }
     if(kompakt && S.dpOpen !== d.id)
       return '<div class="dmini' + (running ? ' run' : lock ? ' lk' : '') + '"><button class="dmo" data-act="dp_open" data-id="' + d.id + '" aria-label="' + esc(d.name) + ' aufklappen"><b>' + esc(d.name) + '</b><span>' + (running ? 'läuft, fertig in <span class="num" data-left="dienst"></span>' : lock ? 'gesperrt' : fmtMin(G.dienstMin(d)/S.speed) + ' · ' + eur(G.dienstPay(d)) + ' · ' + G.dienstSt(d) + ' Ausd.') + '</span></button>'
         + (running || lock ? '' : '<button class="dmgo" data-act="dienst" data-id="' + d.id + '" ' + (dis ? 'disabled' : '') + ' aria-label="' + esc(d.name) + ' antreten">Antreten</button>') + '</div>';
     const card = acard(d.name, DIENST_ART[d.id], inner, running);
     return kompakt ? '<div class="dpopen">' + card.replace('<div class="ah">', '<div class="ah" data-act="dp_open" data-id="' + d.id + '" style="cursor:pointer" title="Einklappen">') + '</div>' : card;
   }).join('') + '</div>';
+  if(gesperrt.length) h += '<details class="dplock" data-k="dp:lock"' + (S.ui['dp:lock'] ? ' open' : '') + '><summary>' + gesperrt.length + (gesperrt.length === 1 ? ' gesperrter Dienst' : ' gesperrte Dienste') + ' anzeigen</summary><div class="cards dpmini">' + gesperrt.join('') + '</div></details>';
   return h;
 }
 
@@ -5732,6 +5826,8 @@ function ask(text, fn, yes){
    AKTIONEN
    ========================================================= */
 const ACT = {
+  ktile(v){ const [t, sb] = String(v).split(':'); tab = t; SUB[t] = sb; render(); window.scrollTo(0, 0); if(t === 'truppe' && typeof loadTruppe === 'function') loadTruppe(); },
+  dp_flt(v){ S.dpFilter = v; save(); render(); },
   dp_view(v){ S.dpKompakt = v === '1'; S.dpOpen = null; save(); render(); },
   dp_open(id){ S.dpOpen = S.dpOpen === id ? null : id; render(); },
   advent(n){ adventOpen(n); },
@@ -6576,9 +6672,9 @@ async function loadLive(){
   ONLINE.liveTs = Date.now();
   const { data, error } = await sb.rpc('admin_online');
   ONLINE.live = error ? {err: error.message} : data;
-  if(tab === 'akte' && LASTSUB.akte === 'admin') render();
+  if(tab === 'akte' && LASTSUB.akte === 'mehr') render();
 }
-setInterval(() => { if(ONLINE.admin && tab === 'akte' && LASTSUB.akte === 'admin' && !document.hidden) loadLive(); }, 30000);
+setInterval(() => { if(ONLINE.admin && tab === 'akte' && LASTSUB.akte === 'mehr' && !document.hidden) loadLive(); }, 30000);
 function liveSeit(ts){ const m = Math.round((Date.now() - new Date(ts).getTime()) / 60000); return m < 2 ? 'jetzt' : 'vor ' + m + ' Min.'; }
 function renderLive(){
   const L = ONLINE.live;
@@ -6667,7 +6763,7 @@ async function loadFb(){
   const { data, error } = await sb.rpc('admin_feedback', {p_alle: ONLINE.fbAlle});
   ONLINE.fbLoading = false;
   ONLINE.fb = error ? {err: error.message} : (data || {offen:0, liste:[]});
-  if(tab === 'akte' && LASTSUB.akte === 'admin') render();
+  if(tab === 'akte' && LASTSUB.akte === 'mehr') render();
 }
 function renderFbAdmin(){
   const F = ONLINE.fb;
