@@ -332,6 +332,16 @@ ul.req .rw{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;p
 .dmini .dmo b{display:block;font-size:15px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dmini .dmo span{font-size:12px;color:var(--muted)}
 .dmini .dmgo{flex:none;border:0;border-left:1px solid var(--line);background:var(--olive);color:var(--olive-ink);font:700 14px Barlow,sans-serif;padding:0 16px;cursor:pointer}.dmini .dmgo:disabled{opacity:.4;cursor:default}
 .dpopen{grid-column:1/-1}
+.lkmap{position:relative;z-index:0;isolation:isolate;height:340px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#cfd6c4;margin-bottom:6px}.lkmapin{width:100%;height:100%}
+.lkic{display:flex!important;align-items:center;justify-content:center;font-size:18px;border-radius:50%;background:#F4F1E6;border:2px solid #3B4524;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.lkic.home{background:#B3261E;border-color:#fff;font-size:17px;border-radius:8px}.lkic.offen{border-color:#E3B23C;animation:lkPuls 1.6s ease-in-out infinite}.lkic.zu{filter:grayscale(1);opacity:.6}
+.lkic.aktiv{background:#FFE08A;border-color:#B3261E}.lkic.frage{animation:lkPuls .8s ease-in-out infinite;border-color:#FF5252}
+.lkic.fz{background:transparent;border:0;box-shadow:none;font-size:24px}.lkfz{position:relative;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}.lkfz b{position:absolute;right:-8px;top:-6px;background:#B3261E;color:#fff;font:700 10px Barlow,sans-serif;border-radius:8px;padding:0 4px}
+@keyframes lkPuls{50%{transform:scale(1.15)}}@media (prefers-reduced-motion: reduce){.lkic.offen,.lkic.frage{animation:none}}
+.lkrow{cursor:pointer}.lkrow.zu{opacity:.55}.lkrow.frage{box-shadow:inset 4px 0 0 #FF5252}.lkbig{font-size:22px;flex:none;width:30px;text-align:center}.lkgo{font-size:24px;color:var(--muted);padding-left:6px}
+.lkhead{display:flex;gap:12px;align-items:center;margin-bottom:6px}
+.lkpick{display:grid;gap:6px;margin-bottom:10px}.lkfzb{display:flex;gap:10px;align-items:center;text-align:left;padding:8px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface2);color:var(--ink);cursor:pointer;font:inherit}.lkfzb.on{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal);background:rgba(227,178,60,.12)}.lkfzb.np{opacity:.5}
+.lkfp{display:grid;gap:8px}.lkfp>div{display:flex;gap:10px;align-items:center}
 .strip.idle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
 .strip .sh{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:600}
 .strip .prog{margin-top:4px;height:6px}
@@ -1670,6 +1680,7 @@ const SUBS = {
   ],
   dienst: [
     {id:'plan', label:'Dienstplan', src:'dienst', rest:true, match:['Dienstplan']},
+    {id:'lage', label:'Lagekarte', src:'lage', match:['Lagekarte','Laufende Aufträge','Offene Aufträge','Fuhrpark']},
     {id:'einsatz', label:'Auslandseinsatz', src:'laufbahn', match:['Auslandseinsatz']},
   ],
   ausb: [
@@ -1707,13 +1718,13 @@ const SUBS = {
 // Abschnitte, die der Laufend-Streifen oben ersetzt
 const SUB_DROP = ['Im Dienst', 'Feierabend'];
 const SUB = {}, LASTSUB = {};
-const ALIAS = {stube:['stube','uebersicht'], raum:['stube','stube'], laufbahn:['akte','laufbahn'], akte:['akte','personalien'], dv:['akte','dv'], orden:['akte','orden'], einst:['akte','einst'], vorsorge:['stube','vorsorge'], fahrschule:['ausb','fahrschule'], uebungsplatz:['ausb','uebung'], lehrgaenge:['ausb','lehrgaenge'], dienst:['dienst','plan'], ausb:['ausb','ausbildung'], feier:['feier',null], truppe:['truppe',null]};
+const ALIAS = {stube:['stube','uebersicht'], raum:['stube','stube'], laufbahn:['akte','laufbahn'], akte:['akte','personalien'], dv:['akte','dv'], orden:['akte','orden'], einst:['akte','einst'], vorsorge:['stube','vorsorge'], fahrschule:['ausb','fahrschule'], lage:['dienst','lage'], uebungsplatz:['ausb','uebung'], lehrgaenge:['ausb','lehrgaenge'], dienst:['dienst','plan'], ausb:['ausb','ausbildung'], feier:['feier',null], truppe:['truppe',null]};
 function pageOf(id){ return ALIAS[id] || [id, null]; }
 function goPage(id){ const a = pageOf(id); tab = a[0]; if(a[1]) SUB[tab] = a[1]; }
 function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LASTSUB[tab] === a[1]); }
 function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === a[0]), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
-  const f = {stube:renderStube, mini:renderMini, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
+  const f = {stube:renderStube, lage:renderLage, mini:renderMini, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
     truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null}[src];
   return f ? f() : '';
 }
@@ -1731,6 +1742,7 @@ function runStrip(){
   if(S.lg) it.push(['lg', L[S.lg.id].name + (S.lg.exam ? ', Prüfung wartet' : '')]);
   if(S.fa) it.push(['fa', S.fa.type === 'pfand' ? 'Leergut sammeln' : 'Schrauben']);
   if(S.fs) it.push(['fs', 'Fahrschule: ' + FS_I[S.fs.id].name + (S.fs.stage === 'theorie' ? ', Theorie wartet' : S.fs.exam ? ', Praxis wartet' : '')]);
+  lkStrip(it);
   if(!it.length){ const l = stripLeer(); if(l) return l; }
   if(!it.length) return '<div class="strip idle"><span>Gerade nichts zu tun. Das fällt auf.</span><button class="btn mini" data-act="tab" data-id="dienst">Dienst antreten</button></div>';
   return '<div class="strip" aria-label="Läuft gerade">' + it.map(([k, n]) => '<div><div class="sh"><span>' + esc(n) + '</span><span class="num" data-left="' + k + '"></span></div><div class="prog"><i data-prog="' + k + '"></i></div></div>').join('') + '</div>';
@@ -4002,6 +4014,13 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:14, d:'20.11.2026', t:'Neu: die Lagekarte', p:[
+    'Unter Dienst gibt es jetzt die Lagekarte: Aufträge in echten Orten rund um deinen Standort',
+    'Amtshilfe bei Hochwasser, Waldbrand oder Schneechaos, Weltkriegsbomben, Vermisstensuche, Transporte und Übungen auf echten Truppenübungsplätzen',
+    'Du teilst Fahrzeuge ein und siehst sie live über die Karte fahren. Vor Ort triffst du eine Entscheidung: sicher oder mit Wagnis',
+    'Deine Scheine bringen neue Fahrzeuge: vom Unimog über Lkw, Pionierpanzer und Boxer bis zu Hubschrauber, Eurofighter und Fregatte',
+    'Dein Dienstgrad bestimmt, wie viel du führst: als Mannschaft ein Fahrzeug, als Unteroffizier einen Trupp, als Feldwebel einen Zug, als Offizier eine Kompanie',
+    'Aufträge zählen wie Dienste, auch für Wochenaufträge'] },
   {v:13, d:'20.11.2026', t:'Eure Rückmeldungen umgesetzt', p:[
     'Dienstplan: neue Ansicht „Kompakt“. Jeder Dienst als kleines Feld mit Dauer, Verdienst und Antreten-Knopf, antippen klappt die Kachel auf',
     'Basis-Fitness-Test: Der Sprint hat jetzt 8 statt 10 Schritte pro Bahn und wird fairer bewertet. Auch 30 bis 40 Sekunden bringen Punkte',
@@ -4624,6 +4643,299 @@ EVENTS.push(
   ]}
 );
 
+/* =========================================================
+   LAGEKARTE: Aufträge mit Ort. Fahrzeuge kommen aus den Scheinen,
+   der Dienstgrad bestimmt, wie viele Fahrzeuge und Aufträge du führst.
+   Ein Auftrag zählt wie ein Dienst.
+   ========================================================= */
+const TRUEBPL = [
+  ['Truppenübungsplatz Putlos', 54.30, 10.90], ['Truppenübungsplatz Munster', 53.03, 10.10], ['Truppenübungsplatz Bergen', 52.81, 9.96],
+  ['Truppenübungsplatz Klietz', 52.66, 12.06], ['Gefechtsübungszentrum Altmark', 52.45, 11.40], ['Truppenübungsplatz Lehnin', 52.30, 12.68],
+  ['Truppenübungsplatz Jägerbrück', 53.62, 13.93], ['Truppenübungsplatz Oberlausitz', 51.40, 14.62], ['Truppenübungsplatz Senne', 51.83, 8.73],
+  ['Truppenübungsplatz Wildflecken', 50.38, 9.92], ['Truppenübungsplatz Baumholder', 49.62, 7.33], ['Truppenübungsplatz Grafenwöhr', 49.70, 11.94],
+  ['Truppenübungsplatz Hohenfels', 49.20, 11.84], ['Truppenübungsplatz Heuberg', 48.12, 9.03],
+];
+const KUESTE = ['Kiel','Eckernförde','Laboe','Fehmarn','Flensburg','Glücksburg','Neustadt in Holstein','Oldenburg in Holstein','Panker','Kronshagen','Husum','Heide','Rostock','Kramerhof','Sanitz','Bremerhaven','Wilhelmshaven','Cuxhaven','Emden','Aurich','Leer (Ostfriesland)','Nordholz','Seedorf','Varel','Wittmund','Jever','Schortens','Wangerland','Bad Sülze'];
+// Fahrzeuge: aus welchem Schein, Tempo in km/h, Fähigkeiten
+const LK_FZ = [
+  {id:'unimog', fs:null, name:'Unimog der Fahrbereitschaft', ic:'🚚', v:55, cap:['last','pers']},
+  {id:'wolf', fs:'b', name:'Geländewagen Wolf', ic:'🚙', v:80, cap:['pers','erkund']},
+  {id:'lkw', fs:'c', name:'Lkw 5 t', ic:'🚛', v:65, cap:['last','pers']},
+  {id:'mulde', fs:'ce', name:'Schwerlasttransporter', ic:'🚛', v:50, cap:['last','schwer']},
+  {id:'dachs', fs:'kette', name:'Pionierpanzer Dachs', ic:'🚜', v:35, cap:['pionier','bergen']},
+  {id:'boxer', fs:'boxer', name:'Boxer Sanitätsversion', ic:'🛡️', v:70, cap:['pers','schutz','san']},
+  {id:'puma', fs:'puma', name:'Schützenpanzer Puma', ic:'🛡️', v:45, cap:['schutz','pers']},
+  {id:'leo', fs:'leo', name:'Kampfpanzer Leopard 2', ic:'🛡️', v:40, cap:['schutz']},
+  {id:'nh90', fs:'nh90', name:'Hubschrauber NH90', ic:'🚁', v:220, cap:['luft','pers','san']},
+  {id:'tankw', fs:'tankw', name:'Flugfeldtankwagen', ic:'⛽', v:55, cap:['tank','last']},
+  {id:'schlepper', fs:'schlepp', name:'Flugzeugschlepper', ic:'🛞', v:25, cap:['vorfeld','bergen']},
+  {id:'chinook', fs:'chinook', name:'CH-47 Chinook', ic:'🚁', v:240, cap:['luft','last','schwer']},
+  {id:'a400m', fs:'a400m', name:'Transportflugzeug A400M', ic:'✈️', v:450, cap:['luft','last','schwer']},
+  {id:'ef', fs:'ef', name:'Eurofighter', ic:'✈️', v:900, cap:['jet']},
+  {id:'mzb', fs:'sbs', name:'Mehrzweckboot', ic:'🚤', v:30, cap:['boot','pers']},
+  {id:'hafenboot', fs:'boot', name:'Hafenboot', ic:'⛴️', v:25, cap:['boot','last']},
+  {id:'frsb', fs:'speed', name:'Festrumpfschlauchboot', ic:'🚤', v:60, cap:['boot','pers','schnell']},
+  {id:'fregatte', fs:'wo', name:'Fregatte', ic:'🚢', v:28, cap:['schiff','san']},
+  {id:'p8', fs:'p8', name:'P-8A Poseidon', ic:'✈️', v:650, cap:['luft','aufkl']},
+];
+const LK_CAP = {last:'Transport', pers:'Personal', erkund:'Erkundung', schwer:'Schwerlast', pionier:'Pionier', bergen:'Bergung', schutz:'Panzerschutz', san:'Sanität', luft:'Luftfahrzeug', tank:'Betankung', vorfeld:'Vorfeld', jet:'Kampfjet', boot:'Boot', schiff:'Schiff', schnell:'schnelles Boot', aufkl:'Aufklärung'};
+// Auftragsarten: Varianten nach Größe (Anzahl Fahrzeuge)
+const LK_TYP = [
+  {id:'transport', name:'Materialtransport', ic:'📦', work:20, f:1.0, ziel:'nah', v:[['last'], ['last','last'], ['schwer','last','last']], txt:'Material und Ersatzteile zum Standort {ort} bringen.'},
+  {id:'verlegen', name:'Personal verlegen', ic:'🪖', work:15, f:.9, ziel:'nah', v:[['pers'], ['pers','pers']], txt:'Eine Gruppe Soldaten nach {ort} bringen. Pünktlich, versteht sich.'},
+  {id:'hochwasser', name:'Amtshilfe Hochwasser', ic:'🌊', work:60, f:1.45, ziel:'nah', v:[['last','pers'], ['last','last','pionier','pers'], ['last','last','pionier','luft','san','pers']], txt:'Pegel steigen bei {ort}. Sandsäcke füllen, Deich sichern, Anwohner unterstützen.'},
+  {id:'waldbrand', name:'Amtshilfe Waldbrand', ic:'🔥', work:50, f:1.45, ziel:'nah', saison:['sommer'], v:[['last','pionier'], ['last','last','pionier','luft']], txt:'Waldbrand bei {ort}. Wasser heranschaffen, mit dem Pionierpanzer eine Schneise ziehen.'},
+  {id:'bombe', name:'Weltkriegsbombe', ic:'💣', work:45, f:1.35, ziel:'nah', v:[['erkund','pers'], ['erkund','pers','pers','san']], txt:'Bei Bauarbeiten in {ort} wurde eine Fliegerbombe gefunden. Absperren, evakuieren, Kampfmittelräumdienst unterstützen.'},
+  {id:'schnee', name:'Schneechaos', ic:'❄️', work:40, f:1.35, ziel:'nah', saison:['winter'], v:[['last','bergen'], ['last','last','bergen','pers']], txt:'Schneechaos rund um {ort}. Liegengebliebene Fahrzeuge bergen, abgeschnittene Höfe versorgen.'},
+  {id:'suche', name:'Vermisste Person', ic:'🔦', work:40, f:1.25, ziel:'nah', v:[['pers'], ['pers','pers','luft']], txt:'Ein Wanderer wird bei {ort} vermisst. Die Polizei bittet um Unterstützung bei der Suche.'},
+  {id:'konvoi', name:'Liegengebliebener Konvoi', ic:'🛠️', work:30, f:1.2, ziel:'nah', v:[['bergen'], ['bergen','last']], txt:'Eine Marschkolonne steht mit Achsbruch bei {ort}. Bergen und weiterbringen.'},
+  {id:'uebung', name:'Übung', ic:'🎯', work:90, f:1.5, ziel:'uebpl', v:[['pers','last'], ['schutz','schutz','last'], ['schutz','schutz','schutz','last','san']], txt:'Übung auf dem {ort}. Verlegen, üben, sauber zurückkommen.'},
+  {id:'alarm', name:'Alarmrotte', ic:'🚨', work:25, f:1.6, ziel:'weit', tsk:'lw', v:[['jet'], ['jet','jet']], txt:'Ein Flugzeug über {ort} antwortet nicht auf Funk. Die Alarmrotte steigt auf.'},
+  {id:'lufttransport', name:'Lufttransport', ic:'🛬', work:30, f:1.3, ziel:'weit', tsk:'lw', v:[['luft','last']], txt:'Dringend benötigtes Material per Luft nach {ort}.'},
+  {id:'betankung', name:'Betankung Fliegerhorst', ic:'🛢️', work:20, f:1.0, ziel:'nah', tsk:'lw', v:[['tank']], txt:'Kerosin zu einem Fliegerhorst bei {ort} bringen.'},
+  {id:'seenot', name:'Seenotfall', ic:'⛑️', work:40, f:1.45, ziel:'kueste', v:[['boot'], ['boot','luft'], ['schiff','boot','luft']], txt:'Ein Segler ist vor {ort} in Seenot. Die Seenotretter bitten um Unterstützung.'},
+];
+// Entscheidung vor Ort: [Text, Option A (sicher), Option B (Wagnis: Wert, Grundchance)]
+const LK_LAGE = {
+  transport:['Die Zufahrt in {ort} ist wegen einer Baustelle gesperrt.', 'Umleitung fahren', 'Mit Einweiser durch die Baustelle', 'fachwissen'],
+  verlegen:['Zwei Soldaten fehlen beim Abmarsch. Sie stehen noch in der Kantinenschlange.', 'Warten, bis alle da sind', 'Sofort los, die beiden kommen nach', 'fuehrung'],
+  hochwasser:['Der Deich bei {ort} weicht an einer zweiten Stelle auf.', 'Kräfte zusammenhalten, eine Stelle richtig sichern', 'Aufteilen und beide Stellen gleichzeitig halten', 'fuehrung'],
+  waldbrand:['Der Wind dreht. Das Feuer läuft auf ein Dorf bei {ort} zu.', 'Zurückziehen und neu ansetzen', 'Schneise direkt vor dem Dorf ziehen', 'fitness'],
+  bombe:['Ein Anwohner in {ort} weigert sich, sein Haus zu verlassen.', 'Polizei hinzuziehen und abwarten', 'Selbst ruhig mit ihm reden', 'vitaminb'],
+  schnee:['Auf der Zufahrt nach {ort} steckt ein Linienbus fest.', 'Erst den Bus bergen', 'Bus stehen lassen und zuerst die Höfe versorgen', 'fuehrung'],
+  suche:['Ein Hund der Suchstaffel schlägt im Wald bei {ort} an, aber in einer anderen Richtung als geplant.', 'Nach Plan weitersuchen', 'Dem Hund folgen', 'fitness'],
+  konvoi:['Der Bergehaken passt nicht an das Fahrzeug.', 'Ersatzteil anfordern', 'Improvisieren mit Kette und Schäkel', 'fachwissen'],
+  uebung:['Die Gegenseite greift früher an als im Drehbuch.', 'Nach Lehrbuch verteidigen', 'Selbst den Gegenstoß führen', 'fuehrung'],
+  alarm:['Das Flugzeug reagiert endlich auf Funk, will aber nicht abdrehen.', 'Nach Verfahren begleiten', 'Mit Flugzeugbewegungen deutlich zum Abdrehen auffordern', 'fachwissen'],
+  lufttransport:['Am Zielflugplatz in {ort} zieht Nebel auf.', 'Ausweichflugplatz anfliegen', 'Instrumentenanflug wagen', 'fachwissen'],
+  betankung:['Am Tor des Fliegerhorsts fehlt dein Name auf der Liste.', 'Geduldig warten, bis es geklärt ist', 'Den Wachhabenden von früher kennen', 'vitaminb'],
+  seenot:['Die Wellen werden höher. Der Segler treibt auf die Steine vor {ort} zu.', 'Abstand halten und auf den Seenotkreuzer warten', 'Längsseits gehen und übernehmen', 'fitness'],
+};
+const LK_CREW = ['Kalle', 'Dennis', 'Lena', 'Gefreiter Weber', 'Obergefreiter Yilmaz', 'Hauptgefreiter Nowak', 'Gefreite Schulz', 'Stabsgefreiter Krämer'];
+
+function lkKoord(){ if(!S || !S.standort || typeof STANDORT_KOORD === 'undefined') return null; return STANDORT_KOORD[S.standort.bl + '/' + S.standort.ort] || null; }
+function lkKm(a, b){ const R6 = 6371, r = x => x * Math.PI / 180, dl = r(b[0] - a[0]), dn = r(b[1] - a[1]); const h = Math.sin(dl/2)**2 + Math.cos(r(a[0])) * Math.cos(r(b[0])) * Math.sin(dn/2)**2; return 2 * R6 * Math.asin(Math.sqrt(h)); }
+function lkBefehl(){ const g = G.rank().g; return {M:{fz:1, auf:1, name:'Kraftfahrer'}, U:{fz:2, auf:1, name:'Truppführer'}, A:{fz:3, auf:1, name:'Zugführer in Ausbildung'}, F:{fz:4, auf:2, name:'Zugführer'}, O:{fz:6, auf:3, name:'Kompaniechef'}, G:{fz:8, auf:4, name:'Kommandeur'}}[g] || {fz:1, auf:1, name:'Kraftfahrer'}; }
+function lkState(){ if(!S.lk) S.lk = {offen:[], aktiv:[], next:0, n:0}; return S.lk; }
+// Fuhrpark: jedes Fahrzeug aus den Scheinen, ab Feldwebel doppelt, ab Offizier dreifach
+function lkFuhrpark(){
+  const g = G.rank().g, n = g === 'F' || g === 'A' ? 2 : g === 'O' || g === 'G' ? 3 : 1, out = [];
+  for(const t of LK_FZ){ if(t.fs && !fsHas(t.fs)) continue; const k = t.fs ? n : Math.max(1, n); for(let i = 1; i <= k; i++) out.push({uid:t.id + i, t}); }
+  return out;
+}
+function lkBelegt(){ const b = new Set(); for(const a of lkState().aktiv) for(const u of a.fz) b.add(u); return b; }
+function lkMitAktiv(){ return !!(S && S.lk && S.lk.aktiv.some(a => a.mit)); }
+// Ziele in der Umgebung
+function lkOrte(art){
+  const me = lkKoord(); if(!me) return [];
+  if(art === 'uebpl') return TRUEBPL.map(([n, a, b]) => ({ort:n, ll:[a, b], km:lkKm(me, [a, b])})).sort((x, y) => x.km - y.km).slice(0, 4);
+  const all = Object.entries(STANDORT_KOORD).map(([k, ll]) => ({ort:k.split('/')[1], ll, km:lkKm(me, ll)})).filter(x => x.km > 3);
+  if(art === 'kueste') return all.filter(x => KUESTE.includes(x.ort)).sort((x, y) => x.km - y.km).slice(0, 5);
+  const max = art === 'weit' ? 250 : 70;
+  let l = all.filter(x => x.km <= max); if(l.length < 4) l = all.sort((x, y) => x.km - y.km).slice(0, 6);
+  return l;
+}
+function lkMatch(needs, fz){
+  // ordnet jeder Anforderung ein passendes Fahrzeug zu (kleine Suche mit Rücksprung)
+  const used = new Set(), res = [];
+  const go = i => { if(i >= needs.length) return true; for(const f of fz){ if(used.has(f.uid) || !f.t.cap.includes(needs[i])) continue; used.add(f.uid); res.push(f.uid); if(go(i + 1)) return true; used.delete(f.uid); res.pop(); } return false; };
+  return go(0) ? res.slice() : null;
+}
+function lkNeu(){
+  const st = lkState(), bef = lkBefehl(), sais = saisonHeute(), fz = lkFuhrpark();
+  const typen = LK_TYP.filter(t => (!t.tsk || t.tsk === S.tsk) && (!t.saison || t.saison.includes(sais)) && lkOrte(t.ziel).length);
+  if(!typen.length) return null;
+  // Aufträge bevorzugen, die mit dem eigenen Fuhrpark machbar sind; ab und zu einen größeren als Ausblick
+  for(let k = 0; k < 12; k++){
+    const t = typen[Math.floor(Math.random() * typen.length)];
+    const machbar = t.v.map((n, i) => i).filter(i => t.v[i].length <= bef.fz && lkMatch(t.v[i], fz));
+    let vi;
+    if(machbar.length && Math.random() < .8) vi = machbar[Math.floor(Math.random() * machbar.length)];
+    else vi = Math.floor(Math.random() * t.v.length);
+    if(!machbar.length && k < 8) continue;
+    const orte = lkOrte(t.ziel), o = orte[Math.floor(Math.random() * orte.length)];
+    if(st.offen.some(x => x.ort === o.ort && x.typ === t.id)) continue;
+    st.n++;
+    return {id:'a' + st.n + '_' + Date.now().toString(36), typ:t.id, vi, ort:o.ort, ll:o.ll, km:Math.round(o.km), bis:now() + 4 * 3600000 / S.speed};
+  }
+  return null;
+}
+function lkDauer(a, fzUids){
+  const t = LK_TYP.find(x => x.id === a.typ), fz = lkFuhrpark().filter(f => fzUids.includes(f.uid));
+  const v = Math.min(...fz.map(f => f.t.v)), weg = a.km * (fz.some(f => f.t.cap.includes('luft') || f.t.cap.includes('jet')) && fz.every(f => f.t.cap.includes('luft') || f.t.cap.includes('jet')) ? 1 : 1.3);
+  const fahrt = Math.min(120, 4 + weg / v * 60 * .6); // Minuten einfach, im Spiel etwas gerafft
+  return {fahrt, work:t.work, total:fahrt * 2 + t.work};
+}
+function lkLohn(a, total){
+  const t = LK_TYP.find(x => x.id === a.typ), n = t.v[a.vi].length;
+  const pay = Math.round(total * 2.9 * t.f * (1 + .15 * (n - 1)) * G.payMult());
+  const sprit = Math.round(a.km * 2 * .35 * n);
+  return {pay, sprit, bp:Math.round(total / 6 * t.f), st:Math.round((6 + total / 6) * (typeof rekrut === 'function' && rekrut() ? .7 : 1))};
+}
+function lkTick(events){
+  if(!S || !S.standort) return false;
+  const st = lkState(); let ch = false;
+  st.offen = st.offen.filter(a => a.bis > now());
+  if(!st.next) st.next = now();
+  while(st.offen.length < 5 && now() >= st.next){ const a = lkNeu(); st.next = now() + 40 * 60000 / S.speed; if(!a) break; st.offen.push(a); ch = true; if(st.offen.length < 4) st.next = now(); }
+  for(const a of st.aktiv.slice()){
+    if(a.phase === 'an' && now() >= a.tAn){ a.phase = 'vor'; ch = true; events.push(LK_TYP.find(x => x.id === a.typ).name + ' ' + a.ort + ': vor Ort eingetroffen. Lage beachten!'); }
+    if(a.phase === 'vor' && now() >= a.tWork){ if(a.wahl == null) a.wahl = 0; a.phase = 'rueck'; ch = true; }
+    if(a.phase === 'rueck' && now() >= a.tEnd){ lkFertig(a, events); ch = true; }
+  }
+  return ch;
+}
+function lkFertig(a, events){
+  const st = lkState(), t = LK_TYP.find(x => x.id === a.typ);
+  st.aktiv = st.aktiv.filter(x => x !== a);
+  const erg = a.erg || 1, pay = Math.max(0, Math.round(a.pay * erg) - a.sprit), bp = Math.round(a.bp * erg);
+  S.money += pay; G.addPoints(bp); S.dienstCount++; S.dc['lk_' + a.typ] = (S.dc['lk_' + a.typ] || 0) + 1; S.lkDone = (S.lkDone || 0) + 1;
+  if(typeof xmasQ === 'function') xmasQ();
+  waAdd('dienst', 1, 'lk'); waAdd('pay', pay);
+  if(Math.random() < .15){ S.pakete = Math.min(9, (S.pakete || 0) + 1); events.push('Feldpost ist da!'); }
+  events.push(t.name + ' ' + a.ort + ' abgeschlossen: +' + eur(pay) + ', ' + bp + ' Punkte');
+}
+function lkStart(id, uids){
+  const st = lkState(), a = st.offen.find(x => x.id === id); if(!a) return 'Auftrag nicht mehr offen.';
+  const t = LK_TYP.find(x => x.id === a.typ), needs = t.v[a.vi], bef = lkBefehl();
+  if(needs.length > bef.fz) return 'Dafür musst du mehr Fahrzeuge führen dürfen.';
+  if(st.aktiv.length >= bef.auf) return 'Alle deine Kräfte sind gebunden.';
+  const frei = lkFuhrpark().filter(f => !lkBelegt().has(f.uid) && uids.includes(f.uid));
+  if(!lkMatch(needs, frei) || frei.length !== needs.length) return 'Die Fahrzeuge passen nicht zum Auftrag.';
+  const mit = !lkMitAktiv() && !S.dienst && !S.einsatz;
+  if(!mit && !['F','O','G'].includes(G.rank().g)) return S.dienst ? 'Du bist gerade im Dienst.' : 'Du bist schon mit einem Auftrag unterwegs.';
+  if(G.dzOver()) return 'Dienstzeitende.';
+  const d = lkDauer(a, uids), l = lkLohn(a, d.total);
+  if(mit && S.stamina < l.st) return 'Zu wenig Ausdauer (' + l.st + ' nötig).';
+  if(mit){ S.stamina -= l.st; S.staminaTs = now(); }
+  const t0 = now(), ms = m => m * 60000 / S.speed;
+  st.offen = st.offen.filter(x => x !== a);
+  st.aktiv.push(Object.assign({}, a, {fz:uids, mit, start:t0, tAn:t0 + ms(d.fahrt), tWork:t0 + ms(d.fahrt + d.work), tEnd:t0 + ms(d.total), phase:'an', pay:l.pay, sprit:l.sprit, bp:l.bp, wahl:null, erg:1}));
+  return null;
+}
+function lkWahl(id, w){
+  const a = lkState().aktiv.find(x => x.id === id); if(!a || a.phase !== 'vor' || a.wahl != null) return;
+  const L0 = LK_LAGE[a.typ]; a.wahl = w;
+  let txt;
+  if(w === 1){ const ok = Math.random() * 100 < rollChance({stat:L0[3], base:50}); a.erg = ok ? 1.3 : .8; txt = ok ? 'Gewagt und gewonnen! Das gibt Extra-Lob.' : 'Ging schief. Der Auftrag wird erledigt, aber mit Abzügen.'; }
+  else { a.erg = 1.05; txt = 'Sicher und sauber. Niemand beschwert sich.'; }
+  save(); render(); toast(txt);
+}
+
+/* ---------- Ansicht ---------- */
+let LKMAP = null, LKWRAP = null, LKLAYER = null, LKFIT = '';
+const LK_MARK = {};
+function lkPos(a){
+  const me = lkKoord(), p = now() < a.tAn ? (now() - a.start) / (a.tAn - a.start) : now() < a.tWork ? 1 : 1 - (now() - a.tWork) / (a.tEnd - a.tWork);
+  const q = Math.max(0, Math.min(1, p)), mx = (me[0] + a.ll[0]) / 2 + (a.ll[1] - me[1]) * .12, my = (me[1] + a.ll[1]) / 2 - (a.ll[0] - me[0]) * .12;
+  return [(1-q)*(1-q)*me[0] + 2*(1-q)*q*mx + q*q*a.ll[0], (1-q)*(1-q)*me[1] + 2*(1-q)*q*my + q*q*a.ll[1]];
+}
+function lkKurve(a){ const me = lkKoord(), mx = (me[0] + a.ll[0]) / 2 + (a.ll[1] - me[1]) * .12, my = (me[1] + a.ll[1]) / 2 - (a.ll[0] - me[0]) * .12, pts = []; for(let i = 0; i <= 20; i++){ const q = i / 20; pts.push([(1-q)*(1-q)*me[0] + 2*(1-q)*q*mx + q*q*a.ll[0], (1-q)*(1-q)*me[1] + 2*(1-q)*q*my + q*q*a.ll[1]]); } return pts; }
+function lkIcon(html, cls){ return window.L.divIcon({html, className:'lkic ' + (cls || ''), iconSize:[34, 34], iconAnchor:[17, 17]}); }
+function lkDraw(){
+  if(!LKMAP || !window.L) return;
+  const me = lkKoord(); if(!me) return;
+  if(LKLAYER) LKLAYER.clearLayers(); else LKLAYER = window.L.layerGroup().addTo(LKMAP);
+  for(const k in LK_MARK) delete LK_MARK[k];
+  const st = lkState(), bef = lkBefehl(), fz = lkFuhrpark(), belegt = lkBelegt();
+  window.L.marker(me, {icon:lkIcon('🏠', 'home'), zIndexOffset:1000}).bindTooltip('Kaserne ' + S.standort.ort, {direction:'top', offset:[0, -14]}).addTo(LKLAYER);
+  for(const a of st.offen){
+    const t = LK_TYP.find(x => x.id === a.typ), needs = t.v[a.vi];
+    const geht = needs.length <= bef.fz && lkMatch(needs, fz.filter(f => !belegt.has(f.uid)));
+    window.L.marker(a.ll, {icon:lkIcon(t.ic, geht ? 'offen' : 'zu')}).bindTooltip(t.name + ' · ' + a.ort, {direction:'top', offset:[0, -14]}).on('click', () => lkOpen(a.id)).addTo(LKLAYER);
+  }
+  for(const a of st.aktiv){
+    const t = LK_TYP.find(x => x.id === a.typ);
+    window.L.polyline(lkKurve(a), {color:'#E3B23C', weight:3, dashArray:'6 6', opacity:.85}).addTo(LKLAYER);
+    window.L.marker(a.ll, {icon:lkIcon(t.ic, 'aktiv' + (a.phase === 'vor' && a.wahl == null ? ' frage' : ''))}).on('click', () => lkOpen(a.id)).addTo(LKLAYER);
+    const ic = LK_FZ.find(x => a.fz[0].startsWith(x.id)).ic;
+    LK_MARK[a.id] = window.L.marker(lkPos(a), {icon:lkIcon('<span class="lkfz">' + ic + (a.fz.length > 1 ? '<b>' + a.fz.length + '</b>' : '') + '</span>', 'fz'), zIndexOffset:900}).addTo(LKLAYER);
+  }
+  const key = st.offen.map(a => a.id).join() + st.aktiv.map(a => a.id).join();
+  if(key !== LKFIT){ LKFIT = key; const pts = [me].concat(st.offen.map(a => a.ll), st.aktiv.map(a => a.ll)); if(pts.length > 1) LKMAP.fitBounds(pts, {padding:[30, 30], maxZoom:11}); else LKMAP.setView(me, 10); }
+}
+function lkMove(){ if(!S || !S.lk) return; for(const a of S.lk.aktiv){ if(LK_MARK[a.id] && LKMAP) LK_MARK[a.id].setLatLng(lkPos(a)); document.querySelectorAll('[data-left="lk:' + a.id + '"]').forEach(e => e.textContent = fmtLeft(a.tEnd - now())); document.querySelectorAll('[data-prog="lk:' + a.id + '"]').forEach(e => e.style.width = Math.min(100, (now() - a.start) / (a.tEnd - a.start) * 100) + '%'); } document.querySelectorAll('[data-lkp]').forEach(e => { const a = S.lk.aktiv.find(x => x.id === e.dataset.lkp); if(a) e.style.width = Math.min(100, (now() - a.start) / (a.tEnd - a.start) * 100) + '%'; }); document.querySelectorAll('[data-lkl]').forEach(e => { const a = S.lk.aktiv.find(x => x.id === e.dataset.lkl); if(a) e.textContent = fmtLeft(a.tEnd - now()); }); }
+setInterval(lkMove, 1000);
+function lkAttach(){
+  const slot = document.getElementById('lkslot'); if(!slot) return;
+  if(!window.L){ slot.innerHTML = '<p class="small muted" style="padding:12px">Die Karte konnte nicht geladen werden. Die Aufträge stehen darunter.</p>'; return; }
+  if(!LKMAP){ LKWRAP = document.createElement('div'); LKWRAP.className = 'lkmapin'; LKMAP = window.L.map(LKWRAP, {zoomControl:true, attributionControl:true}); window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:14, attribution:'&copy; OpenStreetMap-Mitwirkende'}).addTo(LKMAP); LKFIT = ''; }
+  const neu = !LKWRAP.parentNode || !LKWRAP.isConnected || LKWRAP.parentNode.id !== 'lkslot' || !document.body.contains(LKWRAP);
+  const vorher = LKWRAP.parentNode;
+  if(vorher !== slot) slot.appendChild(LKWRAP);
+  if(!vorher || !vorher.isConnected) LKFIT = '';
+  setTimeout(() => { LKMAP.invalidateSize(); lkDraw(); }, 0);
+}
+function lkPhase(a){ return a.phase === 'an' ? 'Anfahrt' : a.phase === 'vor' ? (a.wahl == null ? 'Vor Ort: Entscheidung!' : 'Vor Ort im Einsatz') : 'Rückfahrt'; }
+function renderLage(){
+  let h = '<h2>Lagekarte</h2>';
+  if(!S.standort) return h + '<div class="panel pad"><p>Leg zuerst deinen Heimatstandort fest. Von dort aus fahren deine Fahrzeuge zu den Aufträgen.</p><button class="btn" data-act="tab" data-id="dv">Standort wählen</button></div>';
+  if(!lkKoord()) return h + '<div class="panel pad"><p class="small muted">Für deinen Standort fehlen Koordinaten.</p></div>';
+  const st = lkState(), bef = lkBefehl(), fz = lkFuhrpark(), belegt = lkBelegt();
+  h += '<p class="small muted" style="margin-top:-4px">Als <b>' + esc(bef.name) + '</b> führst du bis zu ' + bef.fz + (bef.fz === 1 ? ' Fahrzeug' : ' Fahrzeuge') + ' und ' + bef.auf + (bef.auf === 1 ? ' Auftrag' : ' Aufträge gleichzeitig') + '. Neue Fahrzeuge bringen deine Scheine aus der Fahrschule, mehr Befehlsgewalt bringt die Beförderung.</p>'
+    + '<div id="lkslot" class="lkmap"></div>';
+  if(st.aktiv.length){
+    h += '<h2>Laufende Aufträge</h2><div class="panel">' + st.aktiv.map(a => { const t = LK_TYP.find(x => x.id === a.typ);
+      return '<div class="active lkrow' + (a.phase === 'vor' && a.wahl == null ? ' frage' : '') + '" data-act="lk_open" data-id="' + a.id + '"><div class="head"><span>' + t.ic + ' ' + esc(t.name) + ' · ' + esc(a.ort) + '</span><span class="num" data-lkl="' + a.id + '">' + fmtLeft(a.tEnd - now()) + '</span></div>'
+        + '<div class="prog"><i data-lkp="' + a.id + '" style="width:' + Math.min(100, (now() - a.start) / (a.tEnd - a.start) * 100) + '%"></i></div><div class="small muted" style="margin-top:4px">' + lkPhase(a) + ' · ' + a.fz.length + (a.fz.length === 1 ? ' Fahrzeug' : ' Fahrzeuge') + (a.mit ? ' · du bist dabei' : '') + '</div></div>'; }).join('') + '</div>';
+  }
+  h += '<h2>Offene Aufträge</h2>' + (st.offen.length ? '<div class="panel">' + st.offen.map(a => { const t = LK_TYP.find(x => x.id === a.typ), needs = t.v[a.vi];
+      const zuGross = needs.length > bef.fz, geht = !zuGross && lkMatch(needs, fz.filter(f => !belegt.has(f.uid)));
+      return '<div class="row lkrow' + (geht ? '' : ' zu') + '" data-act="lk_open" data-id="' + a.id + '"><div style="display:flex;gap:10px;align-items:center;min-width:0;flex:1"><span class="lkbig">' + t.ic + '</span><div class="info"><div class="title">' + esc(t.name) + ' · ' + esc(a.ort) + '</div><div class="meta">' + a.km + ' km · ' + needs.map(n => LK_CAP[n]).join(', ') + (zuGross ? ' · ab ' + ({2:'Unteroffizier', 3:'Feldwebel', 4:'Feldwebel', 5:'Offizier', 6:'Offizier'}[needs.length] || 'Offizier') : !geht ? ' · Fahrzeug fehlt' : '') + '</div></div></div><span class="lkgo">›</span></div>'; }).join('') + '</div>'
+    : '<div class="panel pad"><p class="small muted" style="margin:0">Gerade ruhig. Neue Aufträge kommen etwa alle 40 Minuten.</p></div>');
+  const grp = {}; for(const f of fz){ grp[f.t.id] = grp[f.t.id] || {t:f.t, n:0, b:0}; grp[f.t.id].n++; if(belegt.has(f.uid)) grp[f.t.id].b++; }
+  h += '<h2>Fuhrpark</h2><div class="panel pad"><div class="lkfp">' + Object.values(grp).map(g => '<div><span class="lkbig">' + g.t.ic + '</span><span><b>' + esc(g.t.name) + '</b><br><span class="small muted">' + (g.n - g.b) + ' von ' + g.n + ' frei · ' + g.t.cap.map(c => LK_CAP[c]).join(', ') + '</span></span></div>').join('') + '</div>'
+    + '<p class="small muted" style="margin:10px 0 0">Mehr Fahrzeuge bekommst du über neue Scheine in der Fahrschule. Ab Feldwebel stehen dir von jedem Typ zwei zur Verfügung, ab Offizier drei.</p></div>';
+  return h;
+}
+let LK_SEL = null;
+function lkOpen(id){
+  const st = lkState(), host = document.getElementById('modalHost');
+  const akt = st.aktiv.find(x => x.id === id);
+  if(akt){
+    const t = LK_TYP.find(x => x.id === akt.typ), L0 = LK_LAGE[akt.typ];
+    let h = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="lkt"><div class="sheet ev" style="text-align:left"><div class="lkhead"><span class="lkbig">' + t.ic + '</span><div><div class="evname" id="lkt">' + esc(t.name) + '</div><div class="small muted">' + esc(akt.ort) + ' · ' + akt.km + ' km · ' + lkPhase(akt) + '</div></div></div>';
+    if(akt.phase === 'vor' && akt.wahl == null)
+      h += '<p class="evtext">' + esc(L0[0].replace('{ort}', akt.ort)) + '</p><div class="choices"><button class="btn ghost choice" data-act="lk_wahl" data-id="' + akt.id + ':0"><span>' + esc(L0[1]) + '<br><small class="muted">sicher, kleiner Bonus</small></span></button><button class="btn ghost choice" data-act="lk_wahl" data-id="' + akt.id + ':1"><span>' + esc(L0[2]) + '<br><small class="muted">Wagnis: großer Bonus oder Abzug</small></span></button></div>';
+    else h += '<p class="small">' + (akt.wahl == null ? 'Die Fahrzeuge sind unterwegs. Vor Ort wartet eine Entscheidung auf dich.' : akt.erg > 1.1 ? 'Vor Ort lief es hervorragend.' : akt.erg < 1 ? 'Vor Ort gab es Probleme.' : 'Vor Ort lief alles nach Plan.') + '</p>';
+    h += facts([['Verdienst', eur(Math.round(akt.pay * (akt.erg || 1)))], ['Sprit', '−' + eur(akt.sprit)], ['Punkte', Math.round(akt.bp * (akt.erg || 1))], ['Fertig in', fmtLeft(akt.tEnd - now())]])
+      + '<p class="small muted" style="margin:8px 0 0">' + akt.fz.map((u, i) => { const f = LK_FZ.find(x => u.startsWith(x.id)); return f.ic + ' ' + esc(f.name) + ' · ' + (i === 0 && akt.mit ? 'du' : LK_CREW[(i + (akt.mit ? -1 : 0) + LK_CREW.length) % LK_CREW.length]); }).join('<br>') + '</p>'
+      + '<button class="btn wide" data-act="close" style="margin-top:14px">Schließen</button></div></div>';
+    host.innerHTML = h; return;
+  }
+  const a = st.offen.find(x => x.id === id); if(!a){ host.innerHTML = ''; return; }
+  const t = LK_TYP.find(x => x.id === a.typ), needs = t.v[a.vi], bef = lkBefehl();
+  const frei = lkFuhrpark().filter(f => !lkBelegt().has(f.uid) && f.t.cap.some(c => needs.includes(c))).sort((x, y) => y.t.v - x.t.v);
+  if(!LK_SEL || LK_SEL.id !== id) LK_SEL = {id, uids:lkMatch(needs, frei) || []};
+  const ok = LK_SEL.uids.length === needs.length && lkMatch(needs, frei.filter(f => LK_SEL.uids.includes(f.uid)));
+  const d = ok ? lkDauer(a, LK_SEL.uids) : null, l = d ? lkLohn(a, d.total) : null;
+  const zuGross = needs.length > bef.fz;
+  let h = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="lkt"><div class="sheet ev" style="text-align:left;max-height:88vh;overflow:auto"><div class="lkhead"><span class="lkbig">' + t.ic + '</span><div><div class="evname" id="lkt">' + esc(t.name) + '</div><div class="small muted">' + esc(a.ort) + ' · ' + a.km + ' km · offen noch ' + fmtLeft(a.bis - now()) + '</div></div></div>'
+    + '<p class="evtext">' + esc(t.txt.replace('{ort}', a.ort)) + '</p>'
+    + '<p class="small" style="margin:0 0 6px"><b>Benötigt:</b> ' + needs.map(n => '<span class="tag" style="margin:0 4px 4px 0">' + LK_CAP[n] + '</span>').join('') + '</p>';
+  if(zuGross) h += '<div class="lock">Dieser Auftrag braucht ' + needs.length + ' Fahrzeuge. Als ' + esc(bef.name) + ' führst du höchstens ' + bef.fz + '.</div>';
+  else {
+    h += '<p class="small" style="margin:10px 0 4px"><b>Fahrzeuge einteilen</b> (' + LK_SEL.uids.length + ' / ' + needs.length + ')</p><div class="lkpick">'
+      + frei.map(f => { const on = LK_SEL.uids.includes(f.uid), passt = f.t.cap.some(c => needs.includes(c));
+          return '<button class="lkfzb' + (on ? ' on' : '') + (passt ? '' : ' np') + '" data-act="lk_pick" data-id="' + f.uid + '"><span class="lkbig">' + f.t.ic + '</span><span><b>' + esc(f.t.name) + '</b><br><span class="small muted">' + f.t.cap.map(c => LK_CAP[c]).join(', ') + ' · ' + f.t.v + ' km/h</span></span></button>'; }).join('')
+      + '</div>';
+    if(!frei.length) h += '<p class="small muted">Alle Fahrzeuge sind unterwegs.</p>';
+    if(ok) h += facts([['Dauer', fmtMin(d.total / S.speed) + ' (Fahrt ' + fmtMin(d.fahrt / S.speed) + ' je Richtung)'], ['Verdienst', eur(l.pay)], ['Sprit', '−' + eur(l.sprit)], ['Punkte', l.bp], ['Ausdauer', lkMitAktiv() || S.dienst ? 'du bleibst in der Kaserne' : l.st]]);
+    else h += '<p class="small muted">Wähle passende Fahrzeuge aus. Jede Anforderung braucht ein Fahrzeug mit dieser Fähigkeit.</p>';
+  }
+  h += '<div style="display:flex;gap:8px;margin-top:14px"><button class="btn ghost" data-act="close" style="flex:1">Schließen</button>' + (zuGross ? '' : '<button class="btn gold" data-act="lk_go" data-id="' + a.id + '" style="flex:2" ' + (ok ? '' : 'disabled') + '>Ausrücken!</button>') + '</div></div></div>';
+  host.innerHTML = h;
+}
+const LK_ACT = {
+  lk_open(id){ LK_SEL = null; lkOpen(id); },
+  lk_pick(uid){ if(!LK_SEL) return; const a = lkState().offen.find(x => x.id === LK_SEL.id); if(!a) return; const n = LK_TYP.find(x => x.id === a.typ).v[a.vi].length;
+    if(LK_SEL.uids.includes(uid)) LK_SEL.uids = LK_SEL.uids.filter(x => x !== uid); else if(LK_SEL.uids.length < n) LK_SEL.uids.push(uid); else { LK_SEL.uids.shift(); LK_SEL.uids.push(uid); }
+    lkOpen(LK_SEL.id); },
+  lk_go(id){ const e = lkStart(id, LK_SEL ? LK_SEL.uids : []); if(e){ toast(e); return; } LK_SEL = null; save(); document.getElementById('modalHost').innerHTML = ''; render(); toast('Ausgerückt!'); },
+  lk_wahl(v){ const [id, w] = String(v).split(':'); lkWahl(id, Number(w)); document.getElementById('modalHost').innerHTML = ''; },
+};
+function lkStrip(it){ if(S && S.lk) for(const a of S.lk.aktiv) if(a.mit) it.push(['lk:' + a.id, LK_TYP.find(x => x.id === a.typ).name + ' ' + a.ort + ' · ' + lkPhase(a)]); }
+
 const EV = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
 const LG_EV = {ual:['lg_ual1','lg_ual2','lg_ual3'], fwl:['lg_fwl1','lg_fwl2','lg_fwl3'], ofl:['lg_ofl1','lg_ofl2','lg_ofl3'], stu:['lg_stu1','lg_stu2','lg_stu3']};
 function lgCost(l){ let c = (S.lgRetry && S.lgRetry[l.id]) ? l.cost/2 : l.cost; if(hasGear('tablet')) c *= .8; return Math.round(c); }
@@ -4808,6 +5120,7 @@ const G = {
   note(){ const p = G.points(); for(let n=1;n<=4;n++) if(p >= noteMin(n)) return n; return 5; },
   dienstLock(d){
     const r = G.rank();
+    if(!d.einsatz && lkMitAktiv()) return 'du bist mit einem Auftrag unterwegs';
     if(d.xmas && !xmasDienstOk(d)) return 'nur an den Feiertagen';
     if(S.einsatz && !d.einsatz) return 'im Auslandseinsatz';
     if(d.einsatz && !S.einsatz) return 'nur im Auslandseinsatz';
@@ -4841,6 +5154,7 @@ const G = {
     const d = D[id];
     if(S.dienst) return 'Du bist schon im Dienst.';
     if(S.fa) return 'Du bist gerade im Feierabend beschäftigt.';
+    if(lkMitAktiv()) return 'Du bist mit einem Auftrag der Lagekarte unterwegs.';
     if(G.dienstLock(d)) return 'Dieser Dienst ist noch gesperrt.';
     G.normStamina();
     if(S.stamina < G.dienstSt(d)) return 'Zu wenig Ausdauer.';
@@ -4969,6 +5283,7 @@ const G = {
     if(fsTick(events)) changed = true;
     if(dgTick(events)) changed = true;
     if(gaCheck(events)) changed = true;
+    if(lkTick(events)) changed = true;
     if(ordenCheck(events)) changed = true;
     if(changed) save();
     if(events.length) notifyEvents(events);
@@ -5375,7 +5690,7 @@ function render(){
     main.innerHTML = renderPage();
   }
   if(S && tutOn() && main.insertAdjacentHTML) main.insertAdjacentHTML('afterbegin', tutBox());
-  renderNav(); renderRes(); live(); subnavHint(); seasonApply(); clAuto(); appellAuto(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
+  renderNav(); renderRes(); live(); subnavHint(); seasonApply(); lkAttach(); clAuto(); appellAuto(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
   if(typeof afterRender === "function") afterRender();
 }
 
@@ -5830,7 +6145,7 @@ const ACT = {
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
   if(!b || b.disabled) return;
-  const fn = ACT[b.dataset.act] || (typeof MG_ACT !== 'undefined' && MG_ACT[b.dataset.act]);
+  const fn = ACT[b.dataset.act] || (typeof MG_ACT !== 'undefined' && MG_ACT[b.dataset.act]) || (typeof LK_ACT !== 'undefined' && LK_ACT[b.dataset.act]);
   if(fn) fn(b.dataset.id);
 });
 document.addEventListener('change', e => {
