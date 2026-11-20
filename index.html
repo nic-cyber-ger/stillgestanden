@@ -333,11 +333,13 @@ ul.req .rw{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;p
 .dmini .dmgo{flex:none;border:0;border-left:1px solid var(--line);background:var(--olive);color:var(--olive-ink);font:700 14px Barlow,sans-serif;padding:0 16px;cursor:pointer}.dmini .dmgo:disabled{opacity:.4;cursor:default}
 .dpopen{grid-column:1/-1}
 .lkmap{position:relative;z-index:0;isolation:isolate;height:340px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#cfd6c4;margin-bottom:6px}.lkmapin{width:100%;height:100%}
-.lkic{display:flex!important;align-items:center;justify-content:center;font-size:18px;border-radius:50%;background:#F4F1E6;border:2px solid #3B4524;box-shadow:0 2px 6px rgba(0,0,0,.35)}
-.lkic.home{background:#B3261E;border-color:#fff;font-size:17px;border-radius:8px}.lkic.offen{border-color:#E3B23C;animation:lkPuls 1.6s ease-in-out infinite}.lkic.zu{filter:grayscale(1);opacity:.6}
-.lkic.aktiv{background:#FFE08A;border-color:#B3261E}.lkic.frage{animation:lkPuls .8s ease-in-out infinite;border-color:#FF5252}
-.lkic.fz{background:transparent;border:0;box-shadow:none;font-size:24px}.lkfz{position:relative;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}.lkfz b{position:absolute;right:-8px;top:-6px;background:#B3261E;color:#fff;font:700 10px Barlow,sans-serif;border-radius:8px;padding:0 4px}
-@keyframes lkPuls{50%{transform:scale(1.15)}}@media (prefers-reduced-motion: reduce){.lkic.offen,.lkic.frage{animation:none}}
+/* Leaflet setzt die Position per transform auf .lkic, deshalb alles Sichtbare und die Animation auf das innere .lki */
+.lkic{background:none;border:0}
+.lki{display:flex;width:34px;height:34px;box-sizing:border-box;align-items:center;justify-content:center;font-size:18px;border-radius:50%;background:#F4F1E6;border:2px solid #3B4524;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.lki.home{background:#B3261E;border-color:#fff;font-size:17px;border-radius:8px}.lki.offen{border-color:#E3B23C;animation:lkPuls 1.6s ease-in-out infinite}.lki.zu{filter:grayscale(1);opacity:.6}
+.lki.aktiv{background:#FFE08A;border-color:#B3261E}.lki.frage{animation:lkPuls .8s ease-in-out infinite;border-color:#FF5252}
+.lki.fz{background:transparent;border:0;box-shadow:none;font-size:24px}.lkfz{position:relative;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}.lkfz b{position:absolute;right:-8px;top:-6px;background:#B3261E;color:#fff;font:700 10px Barlow,sans-serif;border-radius:8px;padding:0 4px}
+@keyframes lkPuls{50%{transform:scale(1.15)}}@media (prefers-reduced-motion: reduce){.lki.offen,.lki.frage{animation:none}}
 .lkrow{cursor:pointer}.lkrow.zu{opacity:.55}.lkrow.frage{box-shadow:inset 4px 0 0 #FF5252}.lkbig{font-size:22px;flex:none;width:30px;text-align:center}.lkgo{font-size:24px;color:var(--muted);padding-left:6px}
 .lkhead{display:flex;gap:12px;align-items:center;margin-bottom:6px}
 .lkpick{display:grid;gap:6px;margin-bottom:10px}.lkfzb{display:flex;gap:10px;align-items:center;text-align:left;padding:8px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface2);color:var(--ink);cursor:pointer;font:inherit}.lkfzb.on{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal);background:rgba(227,178,60,.12)}.lkfzb.np{opacity:.5}
@@ -4831,7 +4833,7 @@ function lkPos(a){
   return [(1-q)*(1-q)*me[0] + 2*(1-q)*q*mx + q*q*a.ll[0], (1-q)*(1-q)*me[1] + 2*(1-q)*q*my + q*q*a.ll[1]];
 }
 function lkKurve(a){ const me = lkKoord(), mx = (me[0] + a.ll[0]) / 2 + (a.ll[1] - me[1]) * .12, my = (me[1] + a.ll[1]) / 2 - (a.ll[0] - me[0]) * .12, pts = []; for(let i = 0; i <= 20; i++){ const q = i / 20; pts.push([(1-q)*(1-q)*me[0] + 2*(1-q)*q*mx + q*q*a.ll[0], (1-q)*(1-q)*me[1] + 2*(1-q)*q*my + q*q*a.ll[1]]); } return pts; }
-function lkIcon(html, cls){ return window.L.divIcon({html, className:'lkic ' + (cls || ''), iconSize:[34, 34], iconAnchor:[17, 17]}); }
+function lkIcon(html, cls){ return window.L.divIcon({html:'<span class="lki ' + (cls || '') + '">' + html + '</span>', className:'lkic', iconSize:[34, 34], iconAnchor:[17, 17]}); }
 function lkDraw(){
   if(!LKMAP || !window.L) return;
   const me = lkKoord(); if(!me) return;
