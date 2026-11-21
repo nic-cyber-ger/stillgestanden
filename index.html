@@ -556,6 +556,19 @@ body.landing{padding-bottom:0}
 .kpvpick{display:flex;gap:6px;flex-wrap:wrap}.kpvpick button{border:2px solid var(--line);background:var(--surface2);border-radius:8px;padding:4px;cursor:pointer;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center}.kpvpick button[aria-pressed="true"]{border-color:var(--signal);background:rgba(227,178,60,.15)}.kpvpick i{display:block;width:26px;height:26px;border-radius:50%}
 .kpvvorschau{display:flex;justify-content:center;margin:4px 0}
 .kpvb{white-space:nowrap}
+.fpsum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:8px 0 10px}.fpsum div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 4px;text-align:center;display:flex;flex-direction:column}.fpsum b{font-size:18px}.fpsum span{font-size:11.5px;color:var(--muted)}
+.fpakt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:12px}.fpakt .btn{display:flex;flex-direction:column;align-items:center;gap:1px;min-height:54px;padding:6px 8px;line-height:1.15}.fpakt .btn span,.fpakt small{white-space:normal;text-align:center}.fpakt small{font-size:12px;font-weight:500;opacity:.8}
+.fplist{display:flex;flex-direction:column;gap:6px}
+.fprow{display:flex;gap:10px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:8px;padding:9px 10px;color:var(--ink);font:inherit;cursor:pointer;width:100%;min-width:0}
+.fprow.weg{border-left-color:var(--signal)}.fprow.ws,.fprow.liefer{border-left-color:var(--muted)}.fprow.kaputt{border-left-color:var(--bad)}.fprow.liefer{opacity:.8}
+.fpi{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.fpn{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}.fpn b{overflow-wrap:anywhere}
+.fpkz{font:600 12px 'Barlow Condensed',sans-serif;letter-spacing:.5px;background:#F2F0E6;color:#1E2416;border:1px solid #1E2416;border-radius:3px;padding:0 5px;white-space:nowrap}
+.fprow.kaputt .fps{color:var(--bad)}.fprow.bereit .fps{color:var(--ok)}
+.fpz{display:flex;gap:8px;align-items:center}.fpbar{flex:1;height:7px;border-radius:4px;background:var(--surface2);overflow:hidden;max-width:220px}.fpbar i{display:block;height:100%;border-radius:4px}
+.fpbau{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}.fpb.laeuft{border-color:var(--signal)}.fpbh{display:flex;gap:10px;align-items:center}.fpdesc{margin:8px 0 0;font-style:italic}
+.fpkat{display:flex;flex-direction:column;gap:6px}.fpk{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}.fpk.zu{opacity:.6}.fpk .btn{flex:none}
+.lkfpl{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:8px 0 0}
+.lkfzb .fpkz{margin-left:4px}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1719,6 +1732,7 @@ const SUBS = {
   dienst: [
     {id:'plan', label:'Dienstplan', src:'dienst', rest:true, match:['Dienstplan']},
     {id:'lage', label:'Lagekarte', src:'lage', match:['Lagekarte','Laufende Aufträge','Offene Aufträge','Fuhrpark']},
+    {id:'fuhrpark', label:'Fuhrpark', src:'fuhrpark', match:['Fuhrpark','Liegenschaft','Beschaffung']},
     {id:'einsatz', label:'Einsatz', src:'laufbahn', match:['Auslandseinsatz']},
   ],
   ausb: [
@@ -1796,7 +1810,7 @@ function goPage(id){ const a = pageOf(id); tab = a[0]; if(a[1]) SUB[tab] = a[1];
 function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LASTSUB[tab] === a[1]); }
 function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === navOf(a[0])), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
-  const f = {stube:renderStube, kaserne:renderKaserne, lage:renderLage, mini:renderMini, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
+  const f = {stube:renderStube, kaserne:renderKaserne, lage:renderLage, fuhrpark:renderFuhrpark, mini:renderMini, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
     truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null, kpliste: typeof renderKpListe === 'function' && USER ? renderKpListe : null}[src];
   return f ? f() : '';
 }
@@ -4120,6 +4134,14 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:18, d:'21.11.2026', t:'Eigener Fuhrpark und Liegenschaft', p:[
+    'Neu unter Dienst: Fuhrpark. Deine Fahrzeuge gehören jetzt dir, mit Kennzeichen, Kilometerstand und Zustand',
+    'Jeder Einsatz nutzt die Fahrzeuge ab. Technischer Dienst einmal am Tag, sonst ab in die Werkstatt',
+    'Neue Fahrzeuge beim Beschaffungsamt beantragen: Eigenanteil zahlen, Lieferzeit abwarten. Dafür brauchst du den passenden Schein',
+    'Liegenschaft ausbauen: Fahrzeughalle, Kfz-Werkstatt, Betriebsstofflager, Funkzentrale und Bereitschaftsraum',
+    'Die Funkzentrale vergrößert den Einsatzradius auf der Lagekarte, der Bereitschaftsraum erlaubt mehr Aufträge gleichzeitig',
+    'Deine bisherigen Fahrzeuge wurden automatisch übernommen'
+  ]},
   {v:17, d:'21.11.2026', o:1, t:'Kompanieverzeichnis und Bewerbungen', p:[
     'Neue Kachel Kompanien in der Kaserne: alle Kompanien ansehen, suchen und sortieren',
     'Jede Kompanie hat ein Profil mit Wappen, Farbe, Beschreibung, Heimatstandort und Mitgliedern',
@@ -4854,21 +4876,15 @@ function lkState(){
   const me = lkKoord(); if(me && S.lk.offen.some(a => lkKm(me, a.ll) > 300)){ S.lk.offen = S.lk.offen.filter(a => lkKm(me, a.ll) <= 300); S.lk.next = 0; }
   return S.lk;
 }
-// Fuhrpark: jedes Fahrzeug aus den Scheinen, ab Feldwebel doppelt, ab Offizier dreifach
-function lkFuhrpark(){
-  const g = G.rank().g, n = g === 'F' || g === 'A' ? 2 : g === 'O' || g === 'G' ? 3 : 1, out = [];
-  for(const t of LK_FZ){ if(t.fs && !fsHas(t.fs)) continue; const k = t.fs ? n : Math.max(1, n); for(let i = 1; i <= k; i++) out.push({uid:t.id + i, t}); }
-  return out;
-}
 function lkBelegt(){ const b = new Set(); for(const a of lkState().aktiv) for(const u of a.fz) b.add(u); return b; }
 function lkMitAktiv(){ return !!(S && S.lk && S.lk.aktiv.some(a => a.mit)); }
 // Ziele in der Umgebung
 function lkOrte(art){
   const me = lkKoord(); if(!me) return [];
-  if(art === 'uebpl') return [{ort:'Standortübungsplatz ' + S.standort.ort, ll:lkVersatz(me, 120, 5), km:5}].concat(TRUEBPL.map(([n, a, b]) => ({ort:n, ll:[a, b], km:lkKm(me, [a, b])})).sort((x, y) => x.km - y.km).slice(0, 3));
+  if(art === 'uebpl') return [{ort:'Standortübungsplatz ' + S.standort.ort, ll:lkVersatz(me, 120, 5), km:5}].concat(TRUEBPL.map(([n, a, b]) => ({ort:n, ll:[a, b], km:lkKm(me, [a, b])})).sort((x, y) => x.km - y.km).slice(0, 3 + fpBau('funk')));
   const all = Object.entries(STANDORT_KOORD).map(([k, ll]) => ({ort:k.split('/')[1], ll, km:lkKm(me, ll)})).filter(x => x.km > 3);
-  if(art === 'kueste') return all.filter(x => KUESTE.includes(x.ort)).sort((x, y) => x.km - y.km).slice(0, 5);
-  const max = art === 'weit' ? 250 : 70;
+  if(art === 'kueste') return all.filter(x => KUESTE.includes(x.ort)).sort((x, y) => x.km - y.km).slice(0, 5 + fpBau('funk'));
+  const max = art === 'weit' ? 250 + 50 * fpBau('funk') : lkRadius();
   let l = all.filter(x => x.km <= max); if(l.length < 4) l = l.concat(all.filter(x => x.km > max).sort((x, y) => x.km - y.km).slice(0, 4 - l.length));
   if(art !== 'weit') l = l.concat(LK_NAH.map(([t, g, k]) => ({ort:S.standort.ort.replace(/ \(.*\)$/, '') + t, ll:lkVersatz(me, g, k), km:k})));
   return l;
@@ -4880,7 +4896,7 @@ function lkMatch(needs, fz){
   return go(0) ? res.slice() : null;
 }
 function lkNeu(){
-  const st = lkState(), bef = lkBefehl(), sais = saisonHeute(), fz = lkFuhrpark();
+  const st = lkState(), bef = lkBefehl(), sais = saisonHeute(), fz = lkFuhrpark(true);
   const typen = LK_TYP.filter(t => (!t.tsk || t.tsk === S.tsk) && (!t.saison || t.saison.includes(sais)) && lkOrte(t.ziel).length);
   if(!typen.length) return null;
   // Aufträge bevorzugen, die mit dem eigenen Fuhrpark machbar sind; ab und zu einen größeren als Ausblick
@@ -4901,7 +4917,7 @@ function lkNeu(){
 }
 function lkDauer(a, fzUids){
   const t = LK_TYP.find(x => x.id === a.typ), fz = lkFuhrpark().filter(f => fzUids.includes(f.uid));
-  const v = Math.min(...fz.map(f => f.t.v)), weg = a.km * (fz.some(f => f.t.cap.includes('luft') || f.t.cap.includes('jet')) && fz.every(f => f.t.cap.includes('luft') || f.t.cap.includes('jet')) ? 1 : 1.3);
+  const v = Math.min(...fz.map(f => f.t.v * (f.f && f.f.zust < 50 ? .85 : 1))), weg = a.km * (fz.some(f => f.t.cap.includes('luft') || f.t.cap.includes('jet')) && fz.every(f => f.t.cap.includes('luft') || f.t.cap.includes('jet')) ? 1 : 1.3);
   const fahrt = Math.min(120, 4 + weg / v * 60 * .6); // Minuten einfach, im Spiel etwas gerafft
   const m = lkMod(a), work = t.work * (m ? m.zeit : 1);
   return {fahrt, work, total:fahrt * 2 + work};
@@ -4909,15 +4925,15 @@ function lkDauer(a, fzUids){
 function lkLohn(a, total){
   const t = LK_TYP.find(x => x.id === a.typ), n = t.v[a.vi].length;
   const m = lkMod(a), pay = Math.round(total * 2.9 * t.f * (1 + .15 * (n - 1)) * G.payMult() * (m ? m.pay : 1));
-  const sprit = Math.round(a.km * 2 * .35 * n);
+  const sprit = Math.round(a.km * 2 * .35 * n * (1 - .15 * fpBau('tank')));
   return {pay, sprit, bp:Math.round(total / 6 * t.f * (m ? m.bp : 1)), st:Math.round((6 + total / 6) * (typeof rekrut === 'function' && rekrut() ? .7 : 1))};
 }
 function lkTick(events){
   if(!S || !S.standort) return false;
-  const st = lkState(); let ch = false;
+  const st = lkState(); let ch = fpTick(events);
   st.offen = st.offen.filter(a => a.bis > now());
   if(!st.next) st.next = now();
-  while(st.offen.length < 5 && now() >= st.next){ const a = lkNeu(); st.next = now() + 40 * 60000 / S.speed; if(!a) break; st.offen.push(a); ch = true; if(st.offen.length < 4) st.next = now(); }
+  while(st.offen.length < 5 + fpBau('funk') && now() >= st.next){ const a = lkNeu(); st.next = now() + 40 * (1 - .1 * fpBau('funk')) * 60000 / S.speed; if(!a) break; st.offen.push(a); ch = true; if(st.offen.length < 4) st.next = now(); }
   for(const a of st.aktiv.slice()){
     if(a.phase === 'an' && now() >= a.tAn){ a.phase = 'vor'; ch = true; events.push(LK_TYP.find(x => x.id === a.typ).name + ' ' + a.ort + ': vor Ort eingetroffen. Lage beachten!'); }
     if(a.phase === 'vor' && now() >= a.tWork){ if(a.wahl == null) a.wahl = 0; a.phase = 'rueck'; ch = true; }
@@ -4929,7 +4945,7 @@ function lkFertig(a, events){
   const st = lkState(), t = LK_TYP.find(x => x.id === a.typ);
   st.aktiv = st.aktiv.filter(x => x !== a);
   const erg = a.erg || 1, pay = Math.max(0, Math.round(a.pay * erg) - a.sprit), bp = Math.round(a.bp * erg);
-  S.money += pay; G.addPoints(bp); S.dienstCount++; S.dc['lk_' + a.typ] = (S.dc['lk_' + a.typ] || 0) + 1; S.lkDone = (S.lkDone || 0) + 1;
+  S.money += pay; G.addPoints(bp); S.dienstCount++; S.dc['lk_' + a.typ] = (S.dc['lk_' + a.typ] || 0) + 1; S.lkDone = (S.lkDone || 0) + 1; fpNachEinsatz(a, events);
   if(typeof xmasQ === 'function') xmasQ();
   waAdd('dienst', 1, 'lk'); waAdd('pay', pay);
   if(Math.random() < .15){ S.pakete = Math.min(9, (S.pakete || 0) + 1); events.push('Feldpost ist da!'); }
@@ -4939,11 +4955,11 @@ function lkStart(id, uids){
   const st = lkState(), a = st.offen.find(x => x.id === id); if(!a) return 'Auftrag nicht mehr offen.';
   const t = LK_TYP.find(x => x.id === a.typ), needs = t.v[a.vi], bef = lkBefehl();
   if(needs.length > bef.fz) return 'Dafür musst du mehr Fahrzeuge führen dürfen.';
-  if(st.aktiv.length >= bef.auf) return 'Alle deine Kräfte sind gebunden.';
+  if(st.aktiv.length >= lkAufMax()) return 'Alle deine Kräfte sind gebunden.';
   const frei = lkFuhrpark().filter(f => !lkBelegt().has(f.uid) && uids.includes(f.uid));
   if(!lkMatch(needs, frei) || frei.length !== needs.length) return 'Die Fahrzeuge passen nicht zum Auftrag.';
   const mit = !lkMitAktiv() && !S.dienst && !S.einsatz;
-  if(!mit && !['F','O','G'].includes(G.rank().g)) return S.dienst ? 'Du bist gerade im Dienst.' : 'Du bist schon mit einem Auftrag unterwegs.';
+  if(!mit && !['F','O','G'].includes(G.rank().g) && !fpBau('bereit')) return S.dienst ? 'Du bist gerade im Dienst.' : 'Du bist schon mit einem Auftrag unterwegs.';
   if(G.dzOver()) return 'Dienstzeitende.';
   const d = lkDauer(a, uids), l = lkLohn(a, d.total);
   if(mit && S.stamina < l.st) return 'Zu wenig Ausdauer (' + l.st + ' nötig).';
@@ -4978,7 +4994,8 @@ function lkDraw(){
   if(LKLAYER) LKLAYER.clearLayers(); else LKLAYER = window.L.layerGroup().addTo(LKMAP);
   for(const k in LK_MARK) delete LK_MARK[k];
   const st = lkState(), bef = lkBefehl(), fz = lkFuhrpark(), belegt = lkBelegt();
-  window.L.marker(me, {icon:lkIcon('🏠', 'home'), zIndexOffset:1000}).bindTooltip('Kaserne ' + S.standort.ort, {direction:'top', offset:[0, -14]}).addTo(LKLAYER);
+  window.L.circle(me, {radius:lkRadius() * 1000, color:'#E3B23C', weight:1.5, opacity:.55, fillOpacity:.04, dashArray:'4 7', interactive:false}).addTo(LKLAYER);
+  window.L.marker(me, {icon:lkIcon('🏠', 'home'), zIndexOffset:1000}).bindTooltip('Liegenschaft ' + S.standort.ort + ' · Einsatzradius ' + lkRadius() + ' km', {direction:'top', offset:[0, -14]}).addTo(LKLAYER);
   for(const a of st.offen){
     const t = LK_TYP.find(x => x.id === a.typ), needs = t.v[a.vi];
     const geht = needs.length <= bef.fz && lkMatch(needs, fz.filter(f => !belegt.has(f.uid)));
@@ -4988,7 +5005,7 @@ function lkDraw(){
     const t = LK_TYP.find(x => x.id === a.typ);
     window.L.polyline(lkKurve(a), {color:'#E3B23C', weight:3, dashArray:'6 6', opacity:.85}).addTo(LKLAYER);
     window.L.marker(a.ll, {icon:lkIcon(t.ic, 'aktiv' + (a.phase === 'vor' && a.wahl == null ? ' frage' : ''))}).on('click', () => lkOpen(a.id)).addTo(LKLAYER);
-    const ic = LK_FZ.find(x => a.fz[0].startsWith(x.id)).ic;
+    const ic = lkFzT(a.fz[0]).ic;
     LK_MARK[a.id] = window.L.marker(lkPos(a), {icon:lkIcon('<span class="lkfz">' + ic + (a.fz.length > 1 ? '<b>' + a.fz.length + '</b>' : '') + '</span>', 'fz'), zIndexOffset:900}).addTo(LKLAYER);
   }
   const key = st.offen.map(a => a.id).join() + st.aktiv.map(a => a.id).join();
@@ -5012,7 +5029,7 @@ function renderLage(){
   if(!S.standort) return h + '<div class="panel pad"><p>Leg zuerst deinen Heimatstandort fest. Von dort aus fahren deine Fahrzeuge zu den Aufträgen.</p><button class="btn" data-act="tab" data-id="dv">Standort wählen</button></div>';
   if(!lkKoord()) return h + '<div class="panel pad"><p class="small muted">Für deinen Standort fehlen Koordinaten.</p></div>';
   const st = lkState(), bef = lkBefehl(), fz = lkFuhrpark(), belegt = lkBelegt();
-  h += '<p class="small muted" style="margin-top:-4px">Als <b>' + esc(bef.name) + '</b> führst du bis zu ' + bef.fz + (bef.fz === 1 ? ' Fahrzeug' : ' Fahrzeuge') + ' und ' + bef.auf + (bef.auf === 1 ? ' Auftrag' : ' Aufträge gleichzeitig') + '. Neue Fahrzeuge bringen deine Scheine aus der Fahrschule, mehr Befehlsgewalt bringt die Beförderung.</p>'
+  h += '<p class="small muted" style="margin-top:-4px">Als <b>' + esc(bef.name) + '</b> führst du bis zu ' + bef.fz + (bef.fz === 1 ? ' Fahrzeug' : ' Fahrzeuge') + ' je Auftrag und ' + lkAufMax() + (lkAufMax() === 1 ? ' Auftrag' : ' Aufträge gleichzeitig') + '. Mehr Befehlsgewalt bringt die Beförderung, mehr Reichweite die Funkzentrale.</p>'
     + '<div id="lkslot" class="lkmap"></div>';
   if(st.aktiv.length){
     h += '<h2>Laufende Aufträge</h2><div class="panel">' + st.aktiv.map(a => { const t = LK_TYP.find(x => x.id === a.typ);
@@ -5023,9 +5040,8 @@ function renderLage(){
       const zuGross = needs.length > bef.fz, geht = !zuGross && lkMatch(needs, fz.filter(f => !belegt.has(f.uid)));
       return '<div class="row lkrow' + (geht ? '' : ' zu') + '" data-act="lk_open" data-id="' + a.id + '"><div style="display:flex;gap:10px;align-items:center;min-width:0;flex:1"><span class="lkbig">' + t.ic + '</span><div class="info"><div class="title">' + esc(t.name) + ' · ' + esc(a.ort) + (lkMod(a) ? ' <span class="lkmod">' + esc(lkMod(a).name) + '</span>' : '') + '</div><div class="meta">' + a.km + ' km · ' + needs.map(n => LK_CAP[n]).join(', ') + (zuGross ? ' · ab ' + ({2:'Unteroffizier', 3:'Feldwebel', 4:'Feldwebel', 5:'Offizier', 6:'Offizier'}[needs.length] || 'Offizier') : !geht ? ' · Fahrzeug fehlt' : '') + '</div></div></div><span class="lkgo">›</span></div>'; }).join('') + '</div>'
     : '<div class="panel pad"><p class="small muted" style="margin:0">Gerade ruhig. Neue Aufträge kommen etwa alle 40 Minuten.</p></div>');
-  const grp = {}; for(const f of fz){ grp[f.t.id] = grp[f.t.id] || {t:f.t, n:0, b:0}; grp[f.t.id].n++; if(belegt.has(f.uid)) grp[f.t.id].b++; }
-  h += '<h2>Fuhrpark</h2><div class="panel pad"><div class="lkfp">' + Object.values(grp).map(g => '<div><span class="lkbig">' + g.t.ic + '</span><span><b>' + esc(g.t.name) + '</b><br><span class="small muted">' + (g.n - g.b) + ' von ' + g.n + ' frei · ' + g.t.cap.map(c => LK_CAP[c]).join(', ') + '</span></span></div>').join('') + '</div>'
-    + '<p class="small muted" style="margin:10px 0 0">Mehr Fahrzeuge bekommst du über neue Scheine in der Fahrschule. Ab Feldwebel stehen dir von jedem Typ zwei zur Verfügung, ab Offizier drei.</p></div>';
+  { const fp = fpState(), bel = lkBelegt(), ber = fp.liste.filter(f => !f.liefer && !f.ws && f.zust >= 25 && !bel.has(f.uid)).length, ws = fp.liste.filter(f => !f.liefer && (f.ws || f.zust < 25)).length;
+    h += '<h2>Fuhrpark</h2><div class="panel pad"><div class="lkfpl"><span>' + ber + ' von ' + fp.liste.length + ' Fahrzeugen einsatzbereit' + (ws ? ', ' + ws + ' in der Werkstatt' : '') + (fp.baut ? '<br><span class="small muted">Im Bau: ' + esc(FP_BAU_I[fp.baut.id].name) + '</span>' : '') + '</span><button class="btn" data-act="fp_go">Fuhrpark ›</button></div></div>'; }
   return h;
 }
 let LK_SEL = null;
@@ -5039,13 +5055,13 @@ function lkOpen(id){
       h += '<p class="evtext">' + esc(L0[0].replace('{ort}', akt.ort)) + '</p><div class="choices"><button class="btn ghost choice" data-act="lk_wahl" data-id="' + akt.id + ':0"><span>' + esc(L0[1]) + '<br><small class="muted">sicher, kleiner Bonus</small></span></button><button class="btn ghost choice" data-act="lk_wahl" data-id="' + akt.id + ':1"><span>' + esc(L0[2]) + '<br><small class="muted">Wagnis: großer Bonus oder Abzug</small></span></button></div>';
     else h += '<p class="small">' + (akt.wahl == null ? 'Die Fahrzeuge sind unterwegs. Vor Ort wartet eine Entscheidung auf dich.' : akt.etxt ? esc(akt.etxt) : akt.erg > 1.1 ? 'Vor Ort lief es hervorragend.' : akt.erg < 1 ? 'Vor Ort gab es Probleme.' : 'Vor Ort lief alles nach Plan.') + '</p>';
     h += facts([['Verdienst', eur(Math.round(akt.pay * (akt.erg || 1)))], ['Sprit', '−' + eur(akt.sprit)], ['Punkte', Math.round(akt.bp * (akt.erg || 1))], ['Fertig in', fmtLeft(akt.tEnd - now())]])
-      + '<p class="small muted" style="margin:8px 0 0">' + akt.fz.map((u, i) => { const f = LK_FZ.find(x => u.startsWith(x.id)); return f.ic + ' ' + esc(f.name) + ' · ' + (i === 0 && akt.mit ? 'du' : LK_CREW[(i + (akt.mit ? -1 : 0) + LK_CREW.length) % LK_CREW.length]); }).join('<br>') + '</p>'
+      + '<p class="small muted" style="margin:8px 0 0">' + akt.fz.map((u, i) => { const f = lkFzT(u), fe = S.lk.fp && S.lk.fp.liste.find(x => x.uid === u); return f.ic + ' ' + esc(f.name) + (fe ? ' <span class="fpkz">' + esc(fe.kz) + '</span>' : '') + ' · ' + (i === 0 && akt.mit ? 'du' : LK_CREW[(i + (akt.mit ? -1 : 0) + LK_CREW.length) % LK_CREW.length]); }).join('<br>') + '</p>'
       + '<button class="btn wide" data-act="close" style="margin-top:14px">Schließen</button></div></div>';
     host.innerHTML = h; return;
   }
   const a = st.offen.find(x => x.id === id); if(!a){ host.innerHTML = ''; return; }
   const t = LK_TYP.find(x => x.id === a.typ), needs = t.v[a.vi], bef = lkBefehl();
-  const frei = lkFuhrpark().filter(f => !lkBelegt().has(f.uid) && f.t.cap.some(c => needs.includes(c))).sort((x, y) => y.t.v - x.t.v);
+  const frei = lkFuhrpark().filter(f => !lkBelegt().has(f.uid) && f.t.cap.some(c => needs.includes(c))).sort((x, y) => y.t.v - x.t.v || y.f.zust - x.f.zust);
   if(!LK_SEL || LK_SEL.id !== id) LK_SEL = {id, uids:lkMatch(needs, frei) || []};
   const ok = LK_SEL.uids.length === needs.length && lkMatch(needs, frei.filter(f => LK_SEL.uids.includes(f.uid)));
   const d = ok ? lkDauer(a, LK_SEL.uids) : null, l = d ? lkLohn(a, d.total) : null;
@@ -5057,9 +5073,10 @@ function lkOpen(id){
   else {
     h += '<p class="small" style="margin:10px 0 4px"><b>Fahrzeuge einteilen</b> (' + LK_SEL.uids.length + ' / ' + needs.length + ')</p><div class="lkpick">'
       + frei.map(f => { const on = LK_SEL.uids.includes(f.uid), passt = f.t.cap.some(c => needs.includes(c));
-          return '<button class="lkfzb' + (on ? ' on' : '') + (passt ? '' : ' np') + '" data-act="lk_pick" data-id="' + f.uid + '"><span class="lkbig">' + f.t.ic + '</span><span><b>' + esc(f.t.name) + '</b><br><span class="small muted">' + f.t.cap.map(c => LK_CAP[c]).join(', ') + ' · ' + f.t.v + ' km/h</span></span></button>'; }).join('')
+          return '<button class="lkfzb' + (on ? ' on' : '') + (passt ? '' : ' np') + '" data-act="lk_pick" data-id="' + f.uid + '"><span class="lkbig">' + f.t.ic + '</span><span><b>' + esc(f.t.name) + '</b><br><span class="small muted">' + f.t.cap.map(c => LK_CAP[c]).join(', ') + ' · ' + Math.round(f.t.v * (f.f.zust < 50 ? .85 : 1)) + ' km/h · <span class="fpkz">' + esc(f.f.kz) + '</span> ' + f.f.zust + ' %</span></span></button>'; }).join('')
       + '</div>';
-    if(!frei.length) h += '<p class="small muted">Alle Fahrzeuge sind unterwegs.</p>';
+    if(!frei.length) h += '<p class="small muted">Alle passenden Fahrzeuge sind unterwegs oder in der Werkstatt.</p>';
+    { const ws = fpState().liste.filter(f => (f.ws || f.zust < 25) && !f.liefer && LK_FZ.find(t => t.id === f.typ).cap.some(c => needs.includes(c))).length; if(ws) h += '<p class="small muted" style="margin:4px 0 0">' + ws + ' passende' + (ws > 1 ? ' Fahrzeuge stehen' : 's Fahrzeug steht') + ' in der Werkstatt oder ist nicht einsatzbereit.</p>'; }
     if(ok) h += facts([['Dauer', fmtMin(d.total / S.speed) + ' (Fahrt ' + fmtMin(d.fahrt / S.speed) + ' je Richtung)'], ['Verdienst', eur(l.pay)], ['Sprit', '−' + eur(l.sprit)], ['Punkte', l.bp], ['Ausdauer', lkMitAktiv() || S.dienst ? 'du bleibst in der Kaserne' : l.st]]);
     else h += '<p class="small muted">Wähle passende Fahrzeuge aus. Jede Anforderung braucht ein Fahrzeug mit dieser Fähigkeit.</p>';
   }
@@ -5075,6 +5092,206 @@ const LK_ACT = {
   lk_wahl(v){ const [id, w] = String(v).split(':'); lkWahl(id, Number(w)); document.getElementById('modalHost').innerHTML = ''; },
 };
 function lkStrip(it){ if(S && S.lk) for(const a of S.lk.aktiv) if(a.mit) it.push(['lk:' + a.id, LK_TYP.find(x => x.id === a.typ).name + ' ' + a.ort + ' · ' + lkPhase(a)]); }
+/* ---------- Fuhrpark und Liegenschaft: eigene Fahrzeuge, Zustand, Werkstatt, Ausbau ---------- */
+// Eigenanteil bei der Beschaffung in Euro
+const FP_PREIS = {unimog:2500, wolf:1200, lkw:3500, mulde:7500, dachs:14000, boxer:12000, puma:20000, leo:28000, nh90:35000, tankw:4000, schlepper:2500, chinook:45000, a400m:70000, ef:80000, mzb:3000, hafenboot:5500, frsb:4500, fregatte:120000, p8:60000};
+const FP_PLAETZE = [0, 3, 5, 7, 9, 12, 15];
+// kosten[i] und zeit[i] (Spielminuten): Ausbau von Stufe i auf i+1
+const FP_BAU = [
+  {id:'halle', name:'Fahrzeughalle', ic:'🏭', max:6, start:1, kosten:[0, 2000, 6000, 15000, 30000, 60000], zeit:[0, 120, 240, 480, 720, 1440],
+   desc:'Dach dicht, Tor klemmt. Wie jede Halle.', fx:s => FP_PLAETZE[s] + ' Stellplätze'},
+  {id:'werkstatt', name:'Kfz-Werkstatt', ic:'🔧', max:4, kosten:[3000, 9000, 20000, 40000], zeit:[120, 240, 480, 720],
+   desc:'Mit eigener Werkstatt wartest du nicht mehr drei Wochen auf einen Termin beim Vertragspartner.', fx:s => s ? 'Instandsetzung ' + (15 * s) + ' % günstiger und ' + (18 * s) + ' % schneller' : 'Instandsetzung nur bei der zivilen Vertragswerkstatt: teuer und langsam'},
+  {id:'tank', name:'Betriebsstofflager', ic:'⛽', max:3, kosten:[2500, 8000, 20000], zeit:[90, 240, 480],
+   desc:'Eigene Zapfsäule. Die Tankkarte bleibt endlich im Spind.', fx:s => s ? 'Sprit ' + (15 * s) + ' % billiger' : 'Sprit zum vollen Preis an der zivilen Tankstelle'},
+  {id:'funk', name:'Funkzentrale', ic:'📡', max:3, kosten:[4000, 12000, 30000], zeit:[120, 360, 720],
+   desc:'Mehr Antennen, mehr Reichweite, mehr Leute, die anrufen.', fx:s => 'Einsatzradius ' + (70 + 25 * s) + ' km, bis zu ' + (5 + s) + ' offene Aufträge'},
+  {id:'bereit', name:'Bereitschaftsraum', ic:'☕', max:2, kosten:[10000, 35000], zeit:[360, 960],
+   desc:'Feldbetten, Kaffeemaschine, Bereitschaft rund um die Uhr.', fx:s => s ? s + (s === 1 ? ' Auftrag' : ' Aufträge') + ' mehr gleichzeitig, Besatzungen rücken auch ohne dich aus' : 'Unterhalb Feldwebel fährst du jeden Auftrag selbst mit'},
+];
+const FP_BAU_I = Object.fromEntries(FP_BAU.map(b => [b.id, b]));
+
+function fpMs(min){ return min * 60000 / S.speed; }
+function fpKz(){ const z = () => Math.floor(Math.random() * 10); return 'Y-' + z() + z() + z() + ' ' + z() + z() + z(); }
+function fpState(){
+  if(!S.lk) S.lk = {offen:[], aktiv:[], next:0, n:0};
+  const lk = S.lk;
+  if(!lk.fp){
+    // Bestandsübernahme: die Fahrzeuge, die man bisher über Scheine und Dienstgrad hatte, gehören jetzt fest zum Fuhrpark
+    const g = G.rank().g, n = g === 'F' || g === 'A' ? 2 : g === 'O' || g === 'G' ? 3 : 1, liste = [];
+    for(const t of LK_FZ){ if(t.fs && !fsHas(t.fs)) continue; for(let i = 1; i <= n; i++) liste.push({uid:t.id + i, typ:t.id, kz:fpKz(), zust:100, km:0}); }
+    let halle = 1; while(halle < 6 && FP_PLAETZE[halle] < liste.length) halle++;
+    lk.fp = {liste, bau:{halle, werkstatt:0, tank:0, funk:0, bereit:0}, baut:null, td:'', seq:0};
+  }
+  return lk.fp;
+}
+function fpBau(id){ return (fpState().bau[id]) || 0; }
+function fpPlaetze(){ return FP_PLAETZE[fpBau('halle')] || 3; }
+function lkRadius(){ return 70 + 25 * fpBau('funk'); }
+function lkAufMax(){ return lkBefehl().auf + fpBau('bereit'); }
+function lkFzT(uid){
+  const f = S && S.lk && S.lk.fp ? S.lk.fp.liste.find(x => x.uid === uid) : null;
+  if(f) return LK_FZ.find(t => t.id === f.typ);
+  return LK_FZ.filter(t => String(uid).startsWith(t.id)).sort((a, b) => b.id.length - a.id.length)[0] || LK_FZ[0];
+}
+// Fahrzeuge, die ausrücken können (alle = auch Werkstatt und kaputte, ohne Lieferungen)
+function lkFuhrpark(alle){
+  return fpState().liste.filter(f => !f.liefer && (alle || (!f.ws && f.zust >= 25))).map(f => ({uid:f.uid, t:LK_FZ.find(t => t.id === f.typ), f})).filter(x => x.t);
+}
+function fpStatus(f, belegt){
+  if(f.liefer) return {k:'liefer', txt:'In Lieferung', end:f.liefer};
+  if(f.ws) return {k:'ws', txt:'In der Werkstatt', end:f.ws};
+  if(belegt.has(f.uid)) return {k:'weg', txt:'Im Einsatz'};
+  if(f.zust < 25) return {k:'kaputt', txt:'Nicht einsatzbereit'};
+  return {k:'bereit', txt:'Einsatzbereit'};
+}
+function fpWert(f){ return Math.round((FP_PREIS[f.typ] || 1000) * .35 * f.zust / 100); }
+function fpRepKosten(f){ const w = fpBau('werkstatt'); return Math.max(20, Math.round((FP_PREIS[f.typ] || 1000) * .0012 * (100 - f.zust) * (w ? 1 - .15 * w : 1.3))); }
+function fpRepZeit(f){ const w = fpBau('werkstatt'); return Math.max(10, (100 - f.zust) * 3 * (w ? 1 - .18 * w : 1.5)); }
+function fpLiefer(typ){ return Math.min(1440, 60 + (FP_PREIS[typ] || 1000) / 100); }
+function fpVerschleiss(f, a){
+  const t = LK_FZ.find(x => x.id === f.typ), schwer = t.cap.includes('schutz') || t.cap.includes('pionier') ? 1.4 : t.cap.includes('luft') || t.cap.includes('jet') ? 1.2 : 1;
+  return Math.round((3 + a.km * 2 * .03) * schwer * ((a.erg || 1) < 1 ? 1.4 : 1) + Math.random() * 3);
+}
+// Lieferungen, Werkstatt und Bau abschließen
+function fpTick(events){
+  if(!S || !S.lk) return false;
+  const fp = fpState(); let ch = false;
+  for(const f of fp.liste){
+    if(f.liefer && now() >= f.liefer){ delete f.liefer; ch = true; events.push('Lieferung eingetroffen: ' + lkFzT(f.uid).name + ' ' + f.kz + '. Das Beschaffungsamt hat Wort gehalten!'); }
+    if(f.ws && now() >= f.ws){ delete f.ws; f.zust = 100; ch = true; events.push(lkFzT(f.uid).name + ' ' + f.kz + ' ist aus der Werkstatt zurück. Wie neu.'); }
+  }
+  if(fp.baut && now() >= fp.baut.ende){ const b = FP_BAU_I[fp.baut.id]; fp.bau[b.id] = (fp.bau[b.id] || 0) + 1; events.push(b.name + ' fertig ausgebaut: Stufe ' + fp.bau[b.id] + '.'); fp.baut = null; ch = true; if(typeof LKFIT !== 'undefined') LKFIT = ''; }
+  return ch;
+}
+function fpNachEinsatz(a, events){
+  const fp = fpState();
+  for(const uid of a.fz){
+    const f = fp.liste.find(x => x.uid === uid); if(!f) continue;
+    f.km = (f.km || 0) + a.km * 2;
+    const vor = f.zust; f.zust = Math.max(5, f.zust - fpVerschleiss(f, a));
+    if(vor >= 25 && f.zust < 25) events.push(lkFzT(uid).name + ' ' + f.kz + ' ist nicht mehr einsatzbereit. Ab in die Werkstatt!');
+  }
+}
+
+function fpKaufen(typ){
+  const t = LK_FZ.find(x => x.id === typ), fp = fpState(), preis = FP_PREIS[typ];
+  if(!t || !preis) return 'Unbekanntes Fahrzeug.';
+  if(t.fs && !fsHas(t.fs)) return 'Dafür fehlt dir der Schein.';
+  if(fp.liste.length >= fpPlaetze()) return 'Kein Stellplatz frei. Baue die Fahrzeughalle aus.';
+  if(S.money < preis) return 'Dafür reicht dein Geld nicht.';
+  S.money -= preis; fp.seq = (fp.seq || 0) + 1;
+  fp.liste.push({uid:typ + '_' + fp.seq, typ, kz:fpKz(), zust:100, km:0, liefer:now() + fpMs(fpLiefer(typ))});
+  return null;
+}
+function fpBauen(id){
+  const b = FP_BAU_I[id], fp = fpState(), s = fpBau(id);
+  if(!b) return 'Unbekanntes Gebäude.';
+  if(fp.baut) return 'Es wird schon gebaut. Ein Bauvorhaben nach dem anderen.';
+  if(s >= b.max) return 'Schon voll ausgebaut.';
+  const k = b.kosten[s]; if(S.money < k) return 'Dafür reicht dein Geld nicht.';
+  S.money -= k; fp.baut = {id, start:now(), ende:now() + fpMs(b.zeit[s])};
+  return null;
+}
+function fpReparieren(uids){
+  const fp = fpState(), belegt = lkBelegt(), l = fp.liste.filter(f => uids.includes(f.uid) && !f.liefer && !f.ws && !belegt.has(f.uid) && f.zust < 100);
+  if(!l.length) return 'Nichts instand zu setzen.';
+  const k = l.reduce((s, f) => s + fpRepKosten(f), 0);
+  if(S.money < k) return 'Dafür reicht dein Geld nicht (' + eur(k) + ').';
+  S.money -= k; for(const f of l) f.ws = now() + fpMs(fpRepZeit(f));
+  return null;
+}
+function fpTD(){
+  const fp = fpState(), heute = dateStr(), belegt = lkBelegt();
+  if(fp.td === heute) return 'Technischer Dienst ist heute schon erledigt.';
+  const l = fp.liste.filter(f => !f.liefer && !f.ws && !belegt.has(f.uid) && f.zust < 100);
+  if(!l.length) return 'Alle Fahrzeuge in der Halle sind top in Schuss.';
+  if(S.stamina < 10) return 'Zu wenig Ausdauer (10 nötig).';
+  S.stamina -= 10; S.staminaTs = now(); fp.td = heute;
+  for(const f of l) f.zust = Math.min(100, f.zust + 12);
+  G.addPoints(5);
+  return null;
+}
+function fpAusmustern(uid){
+  const fp = fpState(), f = fp.liste.find(x => x.uid === uid);
+  if(!f) return 'Fahrzeug nicht gefunden.';
+  if(f.liefer || f.ws || lkBelegt().has(uid)) return 'Das Fahrzeug ist gerade nicht in der Halle.';
+  if(fp.liste.length <= 1) return 'Ohne Fahrzeug geht es nicht. Eins bleibt.';
+  S.money += fpWert(f); fp.liste = fp.liste.filter(x => x !== f);
+  return null;
+}
+
+/* ---------- Ansicht ---------- */
+function fpBalken(z){ const c = z >= 60 ? 'var(--ok)' : z >= 25 ? 'var(--signal)' : 'var(--bad)'; return '<span class="fpbar" aria-label="Zustand ' + z + ' Prozent"><i style="width:' + z + '%;background:' + c + '"></i></span>'; }
+function renderFuhrpark(){
+  if(!S.standort) return '<h2>Fuhrpark</h2><div class="panel pad"><p>Leg zuerst deinen Heimatstandort fest.</p><button class="btn" data-act="tab" data-id="dv">Standort wählen</button></div>';
+  const fp = fpState(), belegt = lkBelegt(), heute = dateStr();
+  const st = fp.liste.map(f => fpStatus(f, belegt)), cnt = k => st.filter(s => s.k === k).length;
+  const halle = fp.liste.filter(f => !f.liefer && !f.ws && !belegt.has(f.uid));
+  const rep = halle.filter(f => f.zust < 100), repK = rep.reduce((s, f) => s + fpRepKosten(f), 0);
+  const tdOk = fp.td !== heute && rep.length;
+  let h = '<h2>Fuhrpark</h2><p class="small muted" style="margin-top:-4px">Deine Fahrzeuge in der Liegenschaft ' + esc(S.standort.ort) + '. Jeder Einsatz kostet Zustand. Unter 25 % bleibt ein Fahrzeug in der Halle.</p>'
+    + '<div class="fpsum"><div><b>' + fp.liste.length + '/' + fpPlaetze() + '</b><span>Stellplätze</span></div><div><b>' + cnt('bereit') + '</b><span>einsatzbereit</span></div><div><b>' + cnt('weg') + '</b><span>im Einsatz</span></div><div><b>' + (cnt('ws') + cnt('kaputt')) + '</b><span>Werkstatt</span></div></div>'
+    + '<div class="fpakt"><button class="btn" data-act="fp_td" ' + (tdOk ? '' : 'disabled') + '><span>Technischer Dienst</span><small>' + (fp.td === heute ? 'heute erledigt' : rep.length ? '+12 % für alle in der Halle · 10 Ausdauer' : 'alles in Ordnung') + '</small></button>'
+    + '<button class="btn ghost" data-act="fp_repall" ' + (rep.length && S.money >= repK ? '' : 'disabled') + '><span>Alle instandsetzen</span><small>' + (rep.length ? rep.length + ' Fahrzeug' + (rep.length > 1 ? 'e' : '') + ' · ' + eur(repK) : 'nichts zu tun') + '</small></button></div>'
+    + '<div class="fplist">' + fp.liste.map((f, i) => {
+      const t = LK_FZ.find(x => x.id === f.typ), s = st[i];
+      return '<button class="fprow ' + s.k + '" data-act="fp_open" data-id="' + esc(f.uid) + '"><span class="lkbig">' + t.ic + '</span><span class="fpi"><span class="fpn"><b>' + esc(t.name) + '</b><span class="fpkz">' + esc(f.kz) + '</span></span>'
+        + '<span class="small fps">' + s.txt + (s.end ? ' · <span data-fpend="' + s.end + '">' + fmtLeft(s.end - now()) + '</span>' : '') + '</span>'
+        + (f.liefer ? '' : '<span class="fpz">' + fpBalken(f.zust) + '<span class="small muted">' + f.zust + ' %</span></span>') + '</span><span class="lkgo">›</span></button>';
+    }).join('') + '</div>';
+  // Liegenschaft
+  h += '<h2>Liegenschaft</h2><p class="small muted" style="margin-top:-4px">Bau deine Liegenschaft aus. Es läuft immer nur ein Bauvorhaben.</p><div class="fpbau">' + FP_BAU.map(b => {
+    const s = fpBau(b.id), max = s >= b.max, laeuft = fp.baut && fp.baut.id === b.id, k = max ? 0 : b.kosten[s];
+    let inner = '<div class="fpbh"><span class="lkbig">' + b.ic + '</span><span><b>' + esc(b.name) + '</b><br><span class="small muted">Stufe ' + s + ' / ' + b.max + '</span></span></div>'
+      + '<p class="small" style="margin:6px 0 2px">' + esc(b.fx(s)) + '</p>';
+    if(laeuft) inner += '<p class="small" style="margin:4px 0"><b>Im Bau:</b> fertig in <span data-fpend="' + fp.baut.ende + '">' + fmtLeft(fp.baut.ende - now()) + '</span></p><div class="prog"><i data-fpprog="' + fp.baut.start + ':' + fp.baut.ende + '" style="width:' + Math.min(100, (now() - fp.baut.start) / (fp.baut.ende - fp.baut.start) * 100) + '%"></i></div>';
+    else if(max) inner += '<p class="small muted" style="margin:4px 0 0">Voll ausgebaut.</p>';
+    else inner += '<p class="small muted" style="margin:2px 0 8px">Nächste Stufe: ' + esc(b.fx(s + 1)) + '</p><button class="btn wide" data-act="fp_bau" data-id="' + b.id + '" ' + (fp.baut || S.money < k ? 'disabled' : '') + '>' + eur(k) + ' · ' + fmtMin(b.zeit[s] / S.speed) + '</button>';
+    return '<div class="panel pad fpb' + (laeuft ? ' laeuft' : '') + '">' + inner + '<p class="small muted fpdesc">' + esc(b.desc) + '</p></div>';
+  }).join('') + '</div>';
+  // Beschaffung
+  const voll = fp.liste.length >= fpPlaetze();
+  const zuTsk = t => { const fs = t.fs && typeof FS_I !== 'undefined' ? FS_I[t.fs] : null; return !fs || !fs.tsk || fs.tsk === (S.tsk || 'heer'); };
+  const typen = LK_FZ.filter(t => FP_PREIS[t.id] && zuTsk(t));
+  const kann = typen.filter(t => !t.fs || fsHas(t.fs)), zu = typen.filter(t => t.fs && !fsHas(t.fs));
+  h += '<h2>Beschaffung</h2><p class="small muted" style="margin-top:-4px">Anträge gehen an das Beschaffungsamt. Du zahlst den Eigenanteil, die Lieferzeit ist verbindlich. Sagen sie.' + (voll ? ' <b>Kein Stellplatz frei:</b> erst die Fahrzeughalle ausbauen.' : '') + '</p>'
+    + '<div class="fpkat">' + kann.map(t => '<div class="fpk"><span class="lkbig">' + t.ic + '</span><span class="fpi"><b>' + esc(t.name) + '</b><span class="small muted">' + t.cap.map(c => LK_CAP[c]).join(', ') + ' · ' + t.v + ' km/h · Lieferung ' + fmtMin(fpLiefer(t.id) / S.speed) + '</span></span>'
+      + '<button class="btn mini" data-act="fp_kauf" data-id="' + t.id + '" ' + (voll || S.money < FP_PREIS[t.id] ? 'disabled' : '') + '>' + eur(FP_PREIS[t.id]) + '</button></div>').join('')
+    + zu.map(t => { const fs = FS_I[t.fs]; return '<div class="fpk zu"><span class="lkbig">' + t.ic + '</span><span class="fpi"><b>' + esc(t.name) + '</b><span class="small muted">' + (fs && fs.off ? 'Kommt später ins Spiel' : 'Benötigt den Schein ' + esc(fs ? fs.name : t.fs)) + '</span></span><span class="small muted">' + eur(FP_PREIS[t.id]) + '</span></div>'; }).join('') + '</div>';
+  return h;
+}
+function fpOpen(uid){
+  const fp = fpState(), f = fp.liste.find(x => x.uid === uid), host = document.getElementById('modalHost'); if(!f || !host) return;
+  const t = LK_FZ.find(x => x.id === f.typ), s = fpStatus(f, lkBelegt());
+  let akt = '';
+  if(s.k === 'bereit' || s.k === 'kaputt'){
+    if(f.zust < 100) akt += '<button class="btn wide" data-act="fp_rep" data-id="' + esc(uid) + '" ' + (S.money < fpRepKosten(f) ? 'disabled' : '') + '>Instandsetzen · ' + eur(fpRepKosten(f)) + ' · ' + fmtMin(fpRepZeit(f) / S.speed) + '</button>'
+      + '<p class="small muted" style="margin:4px 0 10px">' + (fpBau('werkstatt') ? 'In deiner eigenen Kfz-Werkstatt, Stufe ' + fpBau('werkstatt') + '.' : 'Bei der zivilen Vertragswerkstatt. Mit eigener Kfz-Werkstatt geht es günstiger und schneller.') + '</p>';
+    akt += '<button class="btn ghost danger wide" data-act="fp_weg" data-id="' + esc(uid) + '">Ausmustern · +' + eur(fpWert(f)) + '</button>';
+  } else akt = '<p class="small muted">' + s.txt + (s.end ? ', noch ' + fmtLeft(s.end - now()) : '') + '.</p>';
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="fpt"><div class="sheet ev" style="text-align:left"><div class="lkhead"><span class="lkbig">' + t.ic + '</span><div><div class="evname" id="fpt">' + esc(t.name) + '</div><div class="small muted"><span class="fpkz">' + esc(f.kz) + '</span> ' + s.txt + '</div></div></div>'
+    + (f.liefer ? '' : '<div class="fpz" style="margin:12px 0 4px">' + fpBalken(f.zust) + '<b>' + f.zust + ' %</b></div>')
+    + facts([['Fähigkeiten', t.cap.map(c => LK_CAP[c]).join(', ')], ['Tempo', t.v + ' km/h' + (f.zust < 50 ? ' (−15 % wegen Zustand)' : '')], ['Kilometer', Math.round(f.km || 0).toLocaleString('de-DE') + ' km'], ['Restwert', eur(fpWert(f))]])
+    + '<div style="margin-top:12px">' + akt + '</div><button class="btn ghost wide" data-act="close" style="margin-top:8px">Schließen</button></div></div>';
+}
+function fpUpdate(){
+  document.querySelectorAll('[data-fpend]').forEach(e => { e.textContent = fmtLeft(Number(e.dataset.fpend) - now()); });
+  document.querySelectorAll('[data-fpprog]').forEach(e => { const [a, b] = e.dataset.fpprog.split(':').map(Number); e.style.width = Math.min(100, (now() - a) / (b - a) * 100) + '%'; });
+}
+setInterval(fpUpdate, 1000);
+function fpErg(e, ok){ if(e){ toast(e); return; } save(); if(ok) toast(ok); document.getElementById('modalHost').innerHTML = ''; render(); }
+Object.assign(LK_ACT, {
+  fp_go(){ SUB.dienst = 'fuhrpark'; render(); window.scrollTo(0, 0); },
+  fp_open(uid){ fpOpen(uid); },
+  fp_td(){ fpErg(fpTD(), 'Technischer Dienst erledigt. Öl geprüft, Reifen getreten, Fahrtenbuch nachgetragen.'); },
+  fp_rep(uid){ fpErg(fpReparieren([uid]), 'Ab in die Werkstatt.'); },
+  fp_repall(){ fpErg(fpReparieren(fpState().liste.map(f => f.uid)), 'Alles in die Werkstatt.'); },
+  fp_bau(id){ const b = FP_BAU_I[id]; fpErg(fpBauen(id), b ? 'Baubeginn: ' + b.name + '. Die Baufirma kommt. Irgendwann.' : ''); },
+  fp_kauf(typ){ const t = LK_FZ.find(x => x.id === typ); ask((t ? t.name : 'Fahrzeug') + ' für ' + eur(FP_PREIS[typ]) + ' beantragen? Lieferzeit ' + fmtMin(fpLiefer(typ) / S.speed) + '.', () => fpErg(fpKaufen(typ), 'Antrag genehmigt. Die Lieferung ist unterwegs.'), 'Beantragen'); },
+  fp_weg(uid){ const f = fpState().liste.find(x => x.uid === uid); if(!f) return; ask(lkFzT(uid).name + ' ' + f.kz + ' ausmustern? Du bekommst ' + eur(fpWert(f)) + '.', () => fpErg(fpAusmustern(uid), 'Ausgemustert.'), 'Ausmustern'); },
+});
+
 /* ---------- Lagekarte: Vielfalt bei Aufträgen, Lagen und Umständen ---------- */
 // Weitere Auftragsarten (echte Amtshilfe- und Truppenaufgaben)
 LK_TYP.push(
