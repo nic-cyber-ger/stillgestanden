@@ -574,6 +574,29 @@ body.landing{padding-bottom:0}
 .lkbig .vic,.vic.big{width:46px;height:29px;vertical-align:middle}
 .lki .vic{width:28px;height:18px}
 .lki.fz .vic{width:40px;height:25px;background:#F4F1E6;border:2px solid #3B4524;border-radius:7px;padding:1px 2px;box-sizing:border-box}
+.xcd{position:relative;overflow:hidden;border-radius:12px;border:2px solid #E3B23C;background:radial-gradient(120% 90% at 50% 0%,#3F5A2C 0%,#22301A 55%,#161E10 100%);color:#F4F1E6;text-align:center;padding:30px 14px 18px;box-shadow:0 8px 22px rgba(0,0,0,.35),inset 0 0 0 4px rgba(227,178,60,.12)}
+.xcd.lp{margin:20px 16px 4px}
+.xcdl{position:absolute;left:0;right:0;top:0;height:22px;display:flex;justify-content:space-around;align-items:flex-start;background:radial-gradient(60% 14px at 50% -4px,transparent 90%,#2A3318 92%,transparent 100%)}
+.xcdl::before{content:'';position:absolute;left:-5%;right:-5%;top:-14px;height:24px;border-bottom:2px solid #1A1F12;border-radius:0 0 50% 50%/0 0 100% 100%}
+.xcdl i{position:relative;top:6px;width:8px;height:12px;border-radius:50% 50% 45% 45%;background:var(--c);box-shadow:0 0 8px 2px var(--c);animation:xcdBlink 1.4s var(--d) ease-in-out infinite}
+.xcdl i:nth-child(even){top:9px}
+.xcds i{position:absolute;top:-8px;width:4px;height:4px;border-radius:50%;background:#fff;opacity:.75;animation:xcdSnow var(--t) var(--d) linear infinite}
+.xcdst{display:inline-block;font:700 11px Barlow,sans-serif;letter-spacing:3px;text-transform:uppercase;color:#E2584C;border:2px solid #E2584C;border-radius:4px;padding:2px 9px;transform:rotate(-3deg);margin-bottom:6px;position:relative}
+.xcdt{font:400 clamp(26px,8vw,36px)/1.05 'Black Ops One',Impact,sans-serif;color:#E3B23C;text-shadow:0 3px 0 rgba(0,0,0,.45);position:relative}
+.xcdu{font:600 15px Barlow,sans-serif;color:#DDE3CC;margin:4px 0 12px;position:relative}
+.xcdg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-width:360px;margin:0 auto;position:relative}
+.xcdb{background:linear-gradient(#1A2112 0 50%,#141A0E 50%);border:1.5px solid #4B582C;border-radius:8px;padding:8px 2px 6px;box-shadow:inset 0 -2px 0 rgba(0,0,0,.4),0 3px 0 #0E120A;position:relative}
+.xcdb::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.6)}
+.xcdb b{display:block;font:400 clamp(24px,8vw,34px)/1 'Black Ops One',Impact,sans-serif;color:#F4F1E6;font-variant-numeric:tabular-nums}
+.xcdb b.tick{animation:xcdTick .35s ease-out}
+.xcdb span{display:block;font:600 11.5px Barlow,sans-serif;color:#AEB59C;margin-top:5px;letter-spacing:.5px;text-transform:uppercase}
+.xcdi{list-style:none;margin:14px auto 4px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:400px;text-align:left;position:relative}
+.xcdi li{font:600 13px/1.25 Barlow,sans-serif;background:rgba(244,241,230,.07);border:1px solid rgba(227,178,60,.25);border-radius:6px;padding:6px 8px}
+.xcdf{font:italic 500 13px Barlow,sans-serif;color:#C9CFBC;margin:8px 0 0;position:relative}
+@keyframes xcdBlink{50%{opacity:.35;box-shadow:none}}
+@keyframes xcdSnow{to{transform:translateY(420px) translateX(14px)}}
+@keyframes xcdTick{from{transform:translateY(-6px);opacity:.3}}
+@media (prefers-reduced-motion:reduce){.xcdl i,.xcds i,.xcdb b.tick{animation:none}}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1731,8 +1754,8 @@ function notifyEvents(ev){
 const SUBS = {
   stube: [
     {id:'uebersicht', label:'Heute', src:'stube', rest:true, fold:true,
-     open:['Meldungen','Zu erledigen','Grundausbildung','Prüfungen','Adventskalender','Weihnachtsfeier','Auslandseinsatz','Tageslage','Dienstzeitende'],
-     match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Zu erledigen','Adventskalender','Weihnachtsfeier','Tageslage']},
+     open:['Meldungen','Zu erledigen','Grundausbildung','Prüfungen','Weihnachtsevent','Adventskalender','Weihnachtsfeier','Auslandseinsatz','Tageslage','Dienstzeitende'],
+     match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Zu erledigen','Weihnachtsevent','Adventskalender','Weihnachtsfeier','Tageslage']},
   ],
   dienst: [
     {id:'plan', label:'Dienstplan', src:'dienst', rest:true, match:['Dienstplan']},
@@ -4710,6 +4733,32 @@ function xmasTag(){ const t = xmasTestTag(); if(t) return t; const d = new Date(
 function xmasLook(){ if(xmasTestTag()) return true; const d = new Date(); return d.getMonth() === 11 || (d.getMonth() === 0 && d.getDate() <= 6); }
 function xmasJahr(){ return new Date().getFullYear(); }
 function seasonApply(){ const el = document.documentElement; if(xmasLook()) el.dataset.season = 'xmas'; else delete el.dataset.season; }
+/* ---------- Countdown bis zum Weihnachtsevent (ab November bis zum 1. Dezember) ---------- */
+function xcdZiel(){ const d = new Date(); return new Date(d.getFullYear(), 11, 1, 0, 0, 0).getTime(); }
+function xcdAktiv(){ const d = new Date(); if(typeof xmasTestTag === 'function' && xmasTestTag()) return false; return d.getMonth() === 10 && xcdZiel() > Date.now(); }
+function xcdTeile(){ let s = Math.max(0, Math.floor((xcdZiel() - Date.now()) / 1000)); const t = Math.floor(s / 86400); s %= 86400; return [t, Math.floor(s / 3600), Math.floor(s % 3600 / 60), s % 60]; }
+function xcdHtml(lp){
+  if(!xcdAktiv()) return '';
+  const [t, h, m, s] = xcdTeile(), z = n => String(n).padStart(2, '0'), online = typeof renderChat === 'function';
+  const box = (v, l, k) => '<div class="xcdb"><b data-xcd="' + k + '">' + v + '</b><span>' + l + '</span></div>';
+  const items = ['🗓️ Adventskalender mit 24 Türchen', '🎄 Weihnachtswache und Silvesterdienst', online ? '🎁 Weihnachtsfeier mit deiner Kompanie' : '🎁 Weihnachtsorden zum Sammeln', '❄️ Kaserne im Winterlook'];
+  return '<div class="xcd' + (lp ? ' lp' : '') + '" role="timer" aria-label="Countdown bis zum Weihnachtsevent">'
+    + '<div class="xcdl" aria-hidden="true">' + Array.from({length:13}, (_, i) => '<i style="--d:' + (i % 4) * .35 + 's;--c:' + ['#E2584C', '#E3B23C', '#7FC97F', '#7FB4E3'][i % 4] + '"></i>').join('') + '</div>'
+    + '<div class="xcds" aria-hidden="true">' + Array.from({length:18}, (_, i) => '<i style="left:' + (i * 5.7 + 2) % 100 + '%;--d:' + (i % 6) * .9 + 's;--t:' + (5 + i % 5) + 's"></i>').join('') + '</div>'
+    + '<div class="xcdst">Tagesbefehl</div>'
+    + '<div class="xcdt">Weihnachtsevent</div><div class="xcdu">beginnt am 1. Dezember in</div>'
+    + '<div class="xcdg">' + box(t, t === 1 ? 'Tag' : 'Tage', 't') + box(z(h), 'Std.', 'h') + box(z(m), 'Min.', 'm') + box(z(s), 'Sek.', 's') + '</div>'
+    + '<ul class="xcdi">' + items.map(x => '<li>' + x + '</li>').join('') + '</ul>'
+    + (lp ? '<button class="btn gold" data-act="lmode" data-id="signup" style="margin-top:6px">Jetzt anmelden und dabei sein</button>' : '<p class="xcdf">Antreten um 00:00 Uhr. Stiefel geputzt, Mütze auf.</p>')
+    + '</div>';
+}
+function xcdCard(){ const h = xcdHtml(false); return h ? '<h2>Weihnachtsevent</h2>' + h : ''; }
+setInterval(() => {
+  const el = document.querySelectorAll('[data-xcd]'); if(!el.length) return;
+  if(!xcdAktiv()){ if(typeof render === 'function') render(); return; }
+  const [t, h, m, s] = xcdTeile(), z = n => String(n).padStart(2, '0'), v = {t:String(t), h:z(h), m:z(m), s:z(s)};
+  el.forEach(e => { const n = v[e.dataset.xcd]; if(e.textContent !== n){ e.textContent = n; e.classList.remove('tick'); void e.offsetWidth; e.classList.add('tick'); } });
+}, 1000);
 
 const ADVENT = [
   {t:'Lebkuchen vom Spieß. Er sagt, sie seien „übrig“.', r:{money:1}},
@@ -6026,7 +6075,7 @@ function renderStube(){
       + reqList(req) + (S.dgOk ? '' : '<button class="btn ghost wide" data-act="dgtest" style="margin-bottom:8px">Dienstgradtest ablegen</button>') + '<button class="btn wide" data-act="geloebnis" '+(ok?'':'disabled')+'>Gelöbnis ablegen</button></div>';
   }
   h += todoList();
-  h += adventCard() + (typeof feierCard === 'function' ? feierCard() : '');
+  h += xcdCard() + adventCard() + (typeof feierCard === 'function' ? feierCard() : '');
   h += appellCard() + rekrutCard();
   h += renderWA();
   h += storyCard();
@@ -7793,7 +7842,7 @@ function renderLogin(){
     + '<h1>Stillgestanden!</h1>'
     + '<p>Vom Schulterglatzer zum General. Die Bundeswehr-Karriere als Browserspiel, mit Kameraden, Kasernen und reichlich Formularen.</p>'
     + '<div class="lp-cta"><button class="btn gold" data-act="lmode" data-id="signup">Jetzt Dienst antreten</button><button class="btn line" data-act="lmode" data-id="login">Ich bin schon dabei</button></div>'
-    + '</section>'
+    + '</section>' + xcdHtml(true)
     + '<section class="lp-feat" aria-label="Was dich erwartet">'
     + '<div>'+LP_ICON.karriere+'<b>Karriere</b><span>Dienste, Lehrgänge und Beförderungen bis zum General, bei Heer, Luftwaffe oder Marine.</span></div>'
     + '<div>'+LP_ICON.truppe+'<b>Kompanie</b><span>Gemeinsame Kasse, Ränge und Rohstoffe für den Ausbau mit deinen Kameraden.</span></div>'
