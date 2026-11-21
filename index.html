@@ -569,6 +569,11 @@ body.landing{padding-bottom:0}
 .fpkat{display:flex;flex-direction:column;gap:6px}.fpk{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}.fpk.zu{opacity:.6}.fpk .btn{flex:none}
 .lkfpl{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:8px 0 0}
 .lkfzb .fpkz{margin-left:4px}
+.vic{display:inline-block;width:1.6em;height:1em;vertical-align:-.15em;flex:none}
+.lkbig:has(.vic){width:54px;height:38px;display:inline-flex;justify-content:center;align-items:center;background:#DCE1CB;border-radius:8px}
+.lkbig .vic,.vic.big{width:46px;height:29px;vertical-align:middle}
+.lki .vic{width:28px;height:18px}
+.lki.fz .vic{width:40px;height:25px;background:#F4F1E6;border:2px solid #3B4524;border-radius:7px;padding:1px 2px;box-sizing:border-box}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4140,7 +4145,8 @@ const CHANGELOG = [
     'Neue Fahrzeuge beim Beschaffungsamt beantragen: Eigenanteil zahlen, Lieferzeit abwarten. Dafür brauchst du den passenden Schein',
     'Liegenschaft ausbauen: Fahrzeughalle, Kfz-Werkstatt, Betriebsstofflager, Funkzentrale und Bereitschaftsraum',
     'Die Funkzentrale vergrößert den Einsatzradius auf der Lagekarte, der Bereitschaftsraum erlaubt mehr Aufträge gleichzeitig',
-    'Deine bisherigen Fahrzeuge wurden automatisch übernommen'
+    'Deine bisherigen Fahrzeuge wurden automatisch übernommen',
+    'Alle Fahrzeuge haben eigene Symbole in Bronzegrün und Grau statt Emojis'
   ]},
   {v:17, d:'21.11.2026', o:1, t:'Kompanieverzeichnis und Bewerbungen', p:[
     'Neue Kachel Kompanien in der Kaserne: alle Kompanien ansehen, suchen und sortieren',
@@ -4830,6 +4836,39 @@ const LK_FZ = [
   {id:'p8', fs:'p8', name:'P-8A Poseidon', ic:'✈️', v:650, cap:['luft','aufkl']},
 ];
 const LK_CAP = {last:'Transport', pers:'Personal', erkund:'Erkundung', schwer:'Schwerlast', pionier:'Pionier', bergen:'Bergung', schutz:'Panzerschutz', san:'Sanität', luft:'Luftfahrzeug', tank:'Betankung', vorfeld:'Vorfeld', jet:'Kampfjet', boot:'Boot', schiff:'Schiff', schnell:'schnelles Boot', aufkl:'Aufklärung'};
+// Fahrzeug-Icons: eigene Silhouetten in Bronzegrün (Heer), Grau (Luftwaffe und Marine)
+const FZIC = (() => {
+  const G = '#4F5E3C', GD = '#34402A', GL = '#6E7D55', BR = '#5E4A33', SW = '#1F211A', GLAS = '#9DB2BE', R = '#1C1D18', NABE = '#77796A';
+  const LG = '#8A949C', LGD = '#5F6870', LGL = '#B4BCC2', MG = '#9AA3A8', MGD = '#6B747A';
+  const rad = (x, y, r) => '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + R + '"/><circle cx="' + x + '" cy="' + y + '" r="' + (r * .42).toFixed(1) + '" fill="' + NABE + '"/>';
+  const kette = (x1, x2, y) => '<rect x="' + x1 + '" y="' + (y - 5) + '" width="' + (x2 - x1) + '" height="10" rx="5" fill="' + R + '"/>' + [0, 1, 2, 3, 4, 5].map(i => '<circle cx="' + (x1 + 6 + i * (x2 - x1 - 12) / 5).toFixed(1) + '" cy="' + y + '" r="3" fill="' + NABE + '"/>').join('');
+  const flecken = '<path d="M14 19c3-2 7-1 8 1s-2 4-5 4-5-3-3-5zM34 18c2-1 6 0 6 2s-3 3-6 2-2-3 0-4z" fill="' + BR + '"/><path d="M24 22c2-1 5 0 5 1.5S26 25 24 24.5s-2-1.5 0-2.5zM45 20c1.5-1 4 0 4 1.5s-2.5 2-4 1.5-1.5-2 0-3z" fill="' + SW + '"/>';
+  const s = {
+    unimog: '<path d="M3 20h6v-9h14v19H3z" fill="' + G + '"/><rect x="11" y="13" width="9" height="7" rx="1" fill="' + GLAS + '"/><path d="M24 11q0-3 3-3h30q3 0 3 3v17H24z" fill="' + GL + '"/><path d="M30 9v19M38 9v19M46 9v19M54 9v19" stroke="' + G + '" stroke-width="1"/><rect x="2" y="27" width="59" height="4" fill="' + GD + '"/>' + rad(13, 32, 6) + rad(49, 32, 6),
+    wolf: '<path d="M4 18h7l3-10h35l1 10h9v13H4z" fill="' + G + '"/><path d="M16 10h13v8H13.6zM31 10h16l.6 8H31z" fill="' + GLAS + '"/><rect x="10" y="6" width="40" height="2" fill="' + GD + '"/><rect x="58" y="16" width="4" height="12" rx="2" fill="' + R + '"/><rect x="4" y="22" width="56" height="2" fill="' + GD + '"/>' + rad(15, 31, 6) + rad(48, 31, 6),
+    lkw: '<path d="M3 28V12q0-4 4-4h13v20z" fill="' + G + '"/><rect x="6" y="11" width="11" height="8" rx="1" fill="' + GLAS + '"/><path d="M22 8h38q2 0 2 2v18H22z" fill="' + GL + '"/><path d="M30 8v20M38 8v20M46 8v20M54 8v20" stroke="' + G + '" stroke-width="1"/><rect x="2" y="27" width="60" height="4" fill="' + GD + '"/>' + rad(11, 32, 5.5) + rad(42, 32, 5.5) + rad(54, 32, 5.5),
+    mulde: '<path d="M2 28V13q0-3 3-3h11v18z" fill="' + G + '"/><rect x="4" y="13" width="9" height="7" rx="1" fill="' + GLAS + '"/><path d="M17 24h46v4H17z" fill="' + GD + '"/><path d="M24 24v-6l4-4h20l4 4h8v6z" fill="' + GL + '"/><path d="M30 14v-3h14v3" fill="' + GL + '"/><path d="M44 12h10" stroke="' + GL + '" stroke-width="2"/>' + rad(9, 32, 4.5) + rad(21, 32, 4.5) + rad(43, 32, 4) + rad(52, 32, 4) + rad(61, 32, 3.5),
+    dachs: kette(6, 58, 31) + '<path d="M8 25l4-8h40l6 8z" fill="' + G + '"/>' + flecken + '<path d="M1 18h6v15H3z" fill="' + GD + '"/><path d="M42 17L34 5l-12 3" stroke="' + GD + '" stroke-width="3.5" fill="none" stroke-linejoin="round"/><path d="M19 6l5 0 1 6-6 1z" fill="' + GD + '"/>',
+    boxer: '<path d="M3 21l7-11h44l8 8v11H4z" fill="' + G + '"/><path d="M10 10h44l2 2H11z" fill="' + GD + '"/>' + flecken + '<rect x="40" y="6" width="8" height="4" fill="' + GD + '"/><rect x="12" y="12" width="6" height="4" rx="1" fill="' + GLAS + '"/><path d="M28 15h10v8H28z" fill="#E9E9E2"/><path d="M33 16v6M30 19h6" stroke="#B3261E" stroke-width="2"/>' + rad(12, 31, 5) + rad(24, 31, 5) + rad(40, 31, 5) + rad(52, 31, 5),
+    puma: kette(6, 58, 31) + '<path d="M4 25l9-10h42l7 7v4z" fill="' + G + '"/>' + flecken + '<path d="M22 15l2-5h17l4 5z" fill="' + GD + '"/><path d="M42 12h20" stroke="' + GD + '" stroke-width="2.4"/><rect x="28" y="6" width="5" height="4" fill="' + GD + '"/>',
+    leo: kette(6, 58, 31) + '<path d="M4 25l7-8h44l7 5v4z" fill="' + G + '"/>' + flecken + '<path d="M18 17l3-7h22l8 4 -2 3z" fill="' + GD + '"/><path d="M46 12.5h18" stroke="' + GD + '" stroke-width="2.4"/><rect x="54" y="11" width="4" height="3" fill="' + GD + '"/><rect x="26" y="7" width="6" height="3" fill="' + GD + '"/>',
+    nh90: '<path d="M8 21q0-9 10-10h16q8 0 11 6l17-1v3l-17 4q-3 6-13 6H17q-9 0-9-8z" fill="' + G + '"/><path d="M11 18q1-5 7-6h5v7H11z" fill="' + GLAS + '"/><path d="M58 13v9" stroke="' + GD + '" stroke-width="3"/><circle cx="58" cy="14" r="5" fill="none" stroke="' + GD + '" stroke-width="1" stroke-dasharray="2 2"/><rect x="24" y="7" width="12" height="4" rx="1" fill="' + GD + '"/><path d="M2 6h56" stroke="' + SW + '" stroke-width="2"/><path d="M30 6v2" stroke="' + SW + '" stroke-width="2"/>' + rad(16, 33, 2.5) + rad(38, 33, 2.5),
+    tankw: '<path d="M3 28V12q0-4 4-4h12v20z" fill="' + G + '"/><rect x="6" y="11" width="10" height="8" rx="1" fill="' + GLAS + '"/><rect x="21" y="10" width="41" height="17" rx="8" fill="' + GL + '"/><path d="M26 18h31" stroke="' + G + '" stroke-width="1"/><rect x="40" y="6" width="6" height="4" fill="' + GD + '"/><rect x="2" y="26" width="60" height="4" fill="' + GD + '"/>' + rad(11, 31, 5) + rad(42, 31, 5) + rad(53, 31, 5),
+    schlepper: '<path d="M4 30V20h56v10z" fill="' + G + '"/><path d="M8 20V9h14v11z" fill="' + GD + '"/><rect x="10" y="11" width="10" height="7" fill="' + GLAS + '"/><path d="M60 26h4" stroke="' + SW + '" stroke-width="3"/><rect x="4" y="22" width="56" height="2" fill="' + '#D9B23C' + '"/>' + rad(17, 31, 5.5) + rad(47, 31, 5.5),
+    chinook: '<path d="M6 22q0-8 8-8h38q6 0 8 4l2 8q-1 4-6 4H12q-6 0-6-8z" fill="' + G + '"/><path d="M8 19q1-4 5-4h4v5H8z" fill="' + GLAS + '"/><path d="M48 14l4-6h6l2 10z" fill="' + GD + '"/><rect x="10" y="10" width="8" height="5" fill="' + GD + '"/><path d="M0 7h28M36 5h28" stroke="' + SW + '" stroke-width="2"/><path d="M14 7v3M55 5v3" stroke="' + SW + '" stroke-width="2"/>' + rad(16, 32, 2.5) + rad(48, 32, 2.5),
+    // Flugzeuge von oben
+    a400m: '<path d="M30 2h4l1 10v26h-6V12z" fill="' + LG + '"/><path d="M2 14h60l-1 4H3z" fill="' + LGD + '"/><path d="M22 34h20v3H22z" fill="' + LGD + '"/>' + [10, 21, 43, 54].map(x => '<rect x="' + (x - 1.5) + '" y="10" width="3" height="7" rx="1" fill="' + LG + '"/><path d="M' + (x - 4) + ' 10h8" stroke="' + SW + '" stroke-width="1.2"/>').join('') + '<path d="M31 4h2v3h-2z" fill="' + GLAS + '"/>',
+    ef: '<path d="M32 1l2 10 13 15 1 4H36l-1 3h4v3h-14v-3h4l-1-3H16l1-4 13-15z" fill="' + LG + '"/><path d="M27 10h-5l-1 2h6zM37 10h5l1 2h-6z" fill="' + LGD + '"/><path d="M31 6h2v6h-2z" fill="' + '#5B6A78' + '"/><path d="M30 33h4" stroke="' + SW + '" stroke-width="1.5"/>',
+    p8: '<path d="M30 2q2-1 4 0l1 6v28h-6V8z" fill="' + LG + '"/><path d="M4 22l26-6v-2l-26 5zM60 22l-26-6v-2l26 5z" fill="' + LGD + '"/><path d="M4 22l26-6M60 22l-26-6" stroke="' + LGD + '" stroke-width="3"/><rect x="16" y="15" width="4" height="7" rx="1.5" fill="' + LGL + '"/><rect x="44" y="15" width="4" height="7" rx="1.5" fill="' + LGL + '"/><path d="M22 36l9-3h2l9 3v2H22z" fill="' + LGD + '"/><path d="M31 3h2v3h-2z" fill="' + GLAS + '"/>',
+    // Boote und Schiffe
+    mzb: '<path d="M2 26h58l-4 8H8z" fill="' + MGD + '"/><path d="M18 26v-9h20l4 9z" fill="' + MG + '"/><rect x="21" y="19" width="12" height="4" fill="' + GLAS + '"/><path d="M28 17v-6" stroke="' + SW + '" stroke-width="1.5"/><path d="M0 35q8-3 16 0t16 0 16 0 16 0" stroke="#5E87A8" stroke-width="2" fill="none"/>',
+    hafenboot: '<path d="M2 24h60l-6 10H10z" fill="' + MGD + '"/><path d="M8 24v-6h30v6z" fill="' + MG + '"/><path d="M14 18v-8h16v8z" fill="' + MG + '"/><rect x="16" y="12" width="12" height="4" fill="' + GLAS + '"/><rect x="34" y="12" width="4" height="6" fill="' + SW + '"/><path d="M0 35q8-3 16 0t16 0 16 0 16 0" stroke="#5E87A8" stroke-width="2" fill="none"/>',
+    frsb: '<path d="M4 26h50q8 0 8 4-2 4-8 4H8q-6 0-4-8z" fill="' + SW + '"/><path d="M8 26l4-4h40l4 4z" fill="' + MGD + '"/><path d="M26 22v-7h10v7z" fill="' + MG + '"/><path d="M26 15l-2-4h14l-2 4z" fill="' + GLAS + '"/><rect x="2" y="20" width="4" height="10" fill="' + SW + '"/><path d="M0 35q8-3 16 0t16 0 16 0 16 0" stroke="#5E87A8" stroke-width="2" fill="none"/>',
+    fregatte: '<path d="M1 24h62l-3 9H6z" fill="' + MGD + '"/><path d="M12 24v-5h40v5z" fill="' + MG + '"/><path d="M20 19v-6h20v6zM42 19v-4h8v4z" fill="' + MG + '"/><path d="M26 13h5l-1.5-8h-2z" fill="' + MGD + '"/><circle cx="28.5" cy="4" r="2.2" fill="' + MG + '"/><rect x="25" y="14" width="10" height="2" fill="' + GLAS + '"/><path d="M52 21h3l1-1h6" stroke="' + MGD + '" stroke-width="2"/><rect x="53" y="20" width="4" height="4" fill="' + MG + '"/><path d="M0 35q8-3 16 0t16 0 16 0 16 0" stroke="#5E87A8" stroke-width="2" fill="none"/>',
+  };
+  return Object.fromEntries(Object.entries(s).map(([k, v]) => [k, '<svg class="vic" viewBox="0 0 64 40" aria-hidden="true">' + v + '</svg>']));
+})();
+for(const t of LK_FZ) if(FZIC[t.id]) t.ic = FZIC[t.id];
 // Auftragsarten: Varianten nach Größe (Anzahl Fahrzeuge)
 const LK_TYP = [
   {id:'transport', name:'Materialtransport', ic:'📦', work:20, f:1.0, ziel:'nah', v:[['last'], ['last','last'], ['schwer','last','last']], txt:'Material und Ersatzteile zum Standort {ort} bringen.'},
