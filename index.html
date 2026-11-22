@@ -606,6 +606,25 @@ body.landing{padding-bottom:0}
 .frsheet{text-align:left}.frsheet .stamp{display:block;width:max-content;margin:0 auto}
 .frit{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}.frit:first-of-type{border-top:0}
 .fric{flex:none;width:44px;height:44px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:24px}
+.spd{position:relative;overflow:hidden;border-radius:12px;border:2px solid #E3B23C;background:radial-gradient(120% 90% at 50% 0%,#5A2A22 0%,#2C1E16 55%,#18120E 100%);color:#F4F1E6;text-align:center;padding:20px 14px 16px;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+.spd.lp{margin:16px 16px 4px}
+.spt{font:400 clamp(22px,7vw,30px)/1.1 'Black Ops One',Impact,sans-serif;color:#E3B23C;text-shadow:0 3px 0 rgba(0,0,0,.45);margin-top:4px}
+.spu{font:600 14px Barlow,sans-serif;color:#E9D9C6;margin:4px 0 12px}
+.spe{display:flex;flex-direction:column;align-items:center;margin:0 0 12px}.spe b{font:400 clamp(40px,13vw,56px)/1 'Black Ops One',Impact,sans-serif;color:#fff}.spe span{font:600 13px Barlow,sans-serif;color:#E9D9C6;margin-top:4px}
+.sph{color:#E2584C;font-size:26px;line-height:1;animation:spPuls 1.4s ease-in-out infinite}
+.spl{max-width:330px;margin:0 auto;text-align:left;display:flex;flex-direction:column;gap:4px}
+.spl div{display:flex;gap:8px;align-items:center;padding:6px 9px;border-radius:6px;background:rgba(244,241,230,.06);border:1px solid rgba(227,178,60,.2);font:600 14px Barlow,sans-serif;color:#C9BBA8}
+.spl div b{margin-left:auto;font-size:16px}.spl div.ok{color:#F4F1E6;border-color:#E3B23C;background:rgba(227,178,60,.14)}
+.spk{width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(227,178,60,.5);display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none}.spl div.ok .spk{background:#E3B23C;color:#2C1E16;border-color:#E3B23C}
+.spbar{max-width:330px;height:8px;margin:12px auto 4px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden}.spbar i{display:block;height:100%;background:linear-gradient(90deg,#E2584C,#E3B23C);border-radius:4px}
+.spn{font:500 14px Barlow,sans-serif;color:#E9D9C6;margin:6px 0 0}
+.spz{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:360px;margin:12px auto 0}.spz div{background:rgba(0,0,0,.3);border-radius:6px;padding:6px 2px;display:flex;flex-direction:column}.spz b{font-size:15px;overflow-wrap:anywhere}.spz span{font-size:11px;color:#C9BBA8}
+.spbtn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:360px;margin:8px auto 0}.spbtn .btn{color:#F4F1E6;border-color:rgba(227,178,60,.6)}
+.sptop{max-width:330px;margin:14px auto 0;text-align:left;font-size:13.5px}.sptop b{display:block;font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:#C9BBA8;margin-bottom:4px}.sptop div{display:flex;gap:8px;padding:3px 0;border-bottom:1px solid rgba(244,241,230,.08)}.sptop div span:nth-child(2){flex:1;overflow-wrap:anywhere}
+.spnw{margin:12px auto 0;max-width:360px;background:rgba(46,125,50,.25);border:1px solid #6FBF73;border-radius:6px;padding:8px 10px;font-size:14px}.spnw a{color:#F2D27A}
+.spf{font:italic 500 12px Barlow,sans-serif;color:#B9AC99;margin:12px 0 0}
+@keyframes spPuls{50%{transform:scale(1.18)}}
+@media (prefers-reduced-motion:reduce){.sph{animation:none}}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1781,8 +1800,8 @@ function notifyEvents(ev){
 const SUBS = {
   stube: [
     {id:'uebersicht', label:'Heute', src:'stube', rest:true, fold:true,
-     open:['Meldungen','Zu erledigen','Grundausbildung','Prüfungen','Weihnachtsevent','Adventskalender','Weihnachtsfeier','Auslandseinsatz','Tageslage','Dienstzeitende'],
-     match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Zu erledigen','Weihnachtsevent','Adventskalender','Weihnachtsfeier','Tageslage']},
+     open:['Meldungen','Zu erledigen','Grundausbildung','Prüfungen','Weihnachtsevent','Weihnachtsspende','Adventskalender','Weihnachtsfeier','Auslandseinsatz','Tageslage','Dienstzeitende'],
+     match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Zu erledigen','Weihnachtsevent','Weihnachtsspende','Adventskalender','Weihnachtsfeier','Tageslage']},
   ],
   dienst: [
     {id:'plan', label:'Dienstplan', src:'dienst', rest:true, match:['Dienstplan']},
@@ -4236,6 +4255,12 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:21, d:'22.11.2026', o:1, t:'Weihnachtsspende der Truppe', p:[
+    'Vom 1. bis 24. Dezember sammeln alle Spieler gemeinsam Spielgeld für das Soldatenhilfswerk der Bundeswehr',
+    'Je mehr Spieler mitmachen, desto mehr echtes Geld spendet die Spielleitung: 10 € auf jeden Fall, bis zu 50 € bei 50 Spendern',
+    'Mitspenden kann jeder ab Gefreiter. Wer mitmacht, bekommt den Orden „Wohltäter der Truppe“',
+    'Nach Weihnachten steht der Nachweis der Überweisung direkt im Spiel'
+  ]},
   {v:20, d:'22.11.2026', t:'Mehr Übersicht', p:[
     'Neue Spieler sehen am Anfang nur das Nötigste. Fahrschule, Lagekarte, Kompanie und Spielothek werden mit dem Fortschritt freigeschaltet',
     'Was du schon hattest, bleibt natürlich frei',
@@ -4831,7 +4856,7 @@ function xcdHtml(lp){
   if(!xcdAktiv()) return '';
   const [t, h, m, s] = xcdTeile(), z = n => String(n).padStart(2, '0'), online = typeof renderChat === 'function';
   const box = (v, l, k) => '<div class="xcdb"><b data-xcd="' + k + '">' + v + '</b><span>' + l + '</span></div>';
-  const items = ['🗓️ Adventskalender mit 24 Türchen', '🎄 Weihnachtswache und Silvesterdienst', online ? '🎁 Weihnachtsfeier mit deiner Kompanie' : '🎁 Weihnachtsorden zum Sammeln', '❄️ Kaserne im Winterlook'];
+  const items = ['🗓️ Adventskalender mit 24 Türchen', '🎄 Weihnachtswache und Silvesterdienst', online ? '🎁 Weihnachtsfeier mit deiner Kompanie' : '🎁 Weihnachtsorden zum Sammeln', online ? '❤️ Spendenaktion für das Soldatenhilfswerk' : '❄️ Kaserne im Winterlook'];
   return '<div class="xcd' + (lp ? ' lp' : '') + '" role="timer" aria-label="Countdown bis zum Weihnachtsevent">'
     + '<div class="xcdl" aria-hidden="true">' + Array.from({length:13}, (_, i) => '<i style="--d:' + (i % 4) * .35 + 's;--c:' + ['#E2584C', '#E3B23C', '#7FC97F', '#7FB4E3'][i % 4] + '"></i>').join('') + '</div>'
     + '<div class="xcds" aria-hidden="true">' + Array.from({length:18}, (_, i) => '<i style="left:' + (i * 5.7 + 2) % 100 + '%;--d:' + (i % 6) * .9 + 's;--t:' + (5 + i % 5) + 's"></i>').join('') + '</div>'
@@ -4914,7 +4939,8 @@ function xmasDienstOk(d){ const t = xmasTag(); return t >= d.xmas[0] && t <= d.x
 // Auszeichnungen
 ORDEN.splice(ORDEN.findIndex(o => o.id === 'bandit'), 0,
   {id:'advent', grp:'xm', tier:1, name:'Adventsspange (inoffiziell)', req:'Im Dezember mindestens 20 Türchen des Adventskalenders öffnen', cond:() => advCount() >= 20},
-  {id:'xfeier', grp:'xm', tier:2, name:'Weihnachtsfeier der Kompanie (inoffiziell)', req:'Mit deiner Kompanie das Ziel der Weihnachtsfeier erreichen', cond:() => !!S.xfeier}
+  {id:'xfeier', grp:'xm', tier:2, name:'Weihnachtsfeier der Kompanie (inoffiziell)', req:'Mit deiner Kompanie das Ziel der Weihnachtsfeier erreichen', cond:() => !!S.xfeier},
+  {id:'wohltaeter', grp:'xm', tier:1, name:'Wohltäter der Truppe (inoffiziell)', req:'Bei der Weihnachtsspende mitmachen', cond:() => (S.spendeGes || 0) >= 200}
 );
 // Weitere Meldungen im Dezember
 EVENTS.push(
@@ -6171,7 +6197,7 @@ function renderStube(){
       + reqList(req) + (S.dgOk ? '' : '<button class="btn ghost wide" data-act="dgtest" style="margin-bottom:8px">Dienstgradtest ablegen</button>') + '<button class="btn wide" data-act="geloebnis" '+(ok?'':'disabled')+'>Gelöbnis ablegen</button></div>';
   }
   h += todoList();
-  h += xcdCard() + adventCard() + (typeof feierCard === 'function' ? feierCard() : '');
+  h += xcdCard() + spendeHeute() + adventCard() + (typeof feierCard === 'function' ? feierCard() : '');
   h += appellCard() + rekrutCard();
   h += renderWA();
   h += storyCard();
@@ -7446,9 +7472,27 @@ function renderAdmin(){
   h += '<label for="admLotto" style="display:block;margin-top:12px">Jackpots setzen (leer = unverändert)</label><div class="admrow"><input id="admLotto" type="number" inputmode="numeric" placeholder="Lotto"><input id="admAuto" type="number" inputmode="numeric" placeholder="Automat">' + btn('adm_jp', 'Setzen') + '</div>'
     + '<label for="admAnsage" style="display:block;margin-top:12px">Mitteilung an alle Spieler</label><textarea id="admAnsage" rows="2" maxlength="300" placeholder="z. B. Heute Abend kurze Wartung">' + esc(ONLINE.ansage ? ONLINE.ansage.text : '') + '</textarea>'
     + '<div class="admbtns">' + btn('adm_ansage', 'Veröffentlichen') + btn('adm_ansage_weg', 'Mitteilung löschen') + '</div></div>';
+  { const sp = ONLINE.spende;
+    h += '<div class="panel pad adm"><h3>Weihnachtsspende</h3>' + (sp ? '<p class="small">Stand: <b>' + sp.spender + ' Spender</b>, ' + eur(Number(sp.summe)) + ' Spielgeld, aktuell <b>' + sp.euro + ' € echte Spende</b> (' + sp.phase + ').</p>' : '<p class="small muted">Noch nicht geladen oder SQL fehlt.</p>')
+      + '<p class="small muted">Stufen bitte nur erhöhen, nie senken, das wäre unfair gegenüber den Spielern.</p>'
+      + '<label for="admSpSockel" style="display:block;margin-top:8px">Sockel in € (auf jeden Fall)</label><input id="admSpSockel" type="number" min="0" value="' + (sp ? sp.sockel : 10) + '">'
+      + '<label for="admSpStufen" style="display:block;margin-top:8px">Stufen (Spender:Euro, mit Komma getrennt)</label><input id="admSpStufen" value="' + (sp ? (sp.stufen || []).map(x => x[0] + ':' + x[1]).join(', ') : '10:20, 25:35, 50:50') + '">'
+      + '<label for="admSpNw" style="display:block;margin-top:8px">Nachweis (nach der Überweisung)</label><input id="admSpNw" maxlength="300" placeholder="z. B. 50 € überwiesen am 27.12.2026" value="' + esc(sp && sp.nachweis || '') + '">'
+      + '<label for="admSpUrl" style="display:block;margin-top:8px">Link zum Beleg (https://…, optional)</label><input id="admSpUrl" maxlength="300" value="' + esc(sp && sp.nachweis_url || '') + '">'
+      + '<div class="admbtns">' + btn('adm_spende', 'Speichern') + btn('adm_spende_laden', 'Stand laden') + '</div></div>'; }
   return h;
 }
 const ADM = {
+  adm_spende_laden(){ loadSpende().then(() => render()); },
+  async adm_spende(){
+    const v = id => (document.getElementById(id) || {}).value || '';
+    const stufen = v('admSpStufen').split(',').map(x => x.trim()).filter(Boolean).map(x => x.split(':').map(Number));
+    if(stufen.some(x => x.length !== 2 || x.some(n => !Number.isFinite(n) || n < 0))){ toast('Stufen bitte als Spender:Euro, z. B. 10:20, 25:35'); return; }
+    stufen.sort((a, b) => a[0] - b[0]);
+    const { data, error } = await sb.rpc('admin_spende_setzen', {p_sockel:Number(v('admSpSockel')) || 0, p_stufen:stufen, p_nachweis:v('admSpNw'), p_url:v('admSpUrl')});
+    if(error){ toast(error.message); return; }
+    ONLINE.spende = data; toast('Spendenaktion gespeichert.'); render();
+  },
   adm_xmas(){ const v = Number((document.getElementById('admXmas')||{}).value || 0); if(v < 1 || v > 31){ toast('Tag 1 bis 31 eingeben'); return; } try{ localStorage.setItem('sg_xmas', String(v)); }catch(e){} ONLINE.xmasTs = 0; ONLINE.xmas = null; render(); toast('Weihnachten: Testtag ' + v + '. Dezember'); },
   adm_xmas_aus(){ try{ localStorage.removeItem('sg_xmas'); }catch(e){} render(); toast('Weihnachts-Test aus'); },
   adm_live(){ loadLive(); },
@@ -7685,6 +7729,60 @@ const PS_ACT = { profil(name){ profilZeigen(name); } };
 
 for(const k in PS_ACT) ACT[k] = PS_ACT[k];
 for(const k in FB_ACT) ACT[k] = FB_ACT[k];
+
+/* ---------- Weihnachtsspende der Truppe: Spielgeld rein, echte Spende von der Spielleitung ---------- */
+ONLINE.spende = null;
+async function loadSpende(){
+  if(!sb) return;
+  try{ const { data, error } = await sb.rpc('spende_status'); if(!error){ const alt = JSON.stringify(ONLINE.spende); ONLINE.spende = data; if(alt !== JSON.stringify(data) && (!USER || tab === 'stube')) { const ae = document.activeElement; if(!(ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)) && !document.querySelector('#modalHost .overlay')) render(); } } }catch(e){}
+}
+setTimeout(loadSpende, 1200);
+setInterval(() => { if(!document.hidden) loadSpende(); }, 300000);
+function spendeSichtbar(){
+  const s = ONLINE.spende; if(!s) return false;
+  if(s.phase === 'laeuft') return true;
+  if(s.phase === 'vorbei'){ const bis = new Date(s.ende); bis.setDate(bis.getDate() + 30); return new Date(s.heute) <= bis; }
+  return false;
+}
+function spendeLeiter(s){
+  const st = [[0, s.sockel]].concat(s.stufen || []);
+  return '<div class="spl">' + st.map(([n, e]) => { const ok = s.spender >= n;
+    return '<div class="' + (ok ? 'ok' : '') + '"><span class="spk">' + (ok ? '✓' : '') + '</span><span>' + (n ? n + ' Spender' : 'Auf jeden Fall') + '</span><b>' + e + ' €</b></div>'; }).join('') + '</div>';
+}
+function spendeKarte(lp){
+  if(!spendeSichtbar()) return '';
+  const s = ONLINE.spende, vorbei = s.phase === 'vorbei', ende = new Date(s.ende).toLocaleDateString('de-DE', {day:'numeric', month:'long'});
+  const naechste = (s.stufen || []).find(([n]) => s.spender < n), vor = [0].concat((s.stufen || []).map(x => x[0])).filter(n => n <= s.spender).pop() || 0;
+  let h = '<div class="spd' + (lp ? ' lp' : '') + '"><div class="xcdst">' + (vorbei ? 'Abgeschlossen' : 'Spendenaktion') + '</div>'
+    + '<div class="spt">' + (vorbei ? 'Danke, Truppe!' : 'Weihnachtsspende der Truppe') + '</div>'
+    + '<div class="spu">für das ' + esc(s.organisation) + '</div>'
+    + '<div class="spe"><span class="sph" aria-hidden="true">❤</span><b>' + s.euro + ' €</b><span>' + (vorbei ? 'echte Spende von der Spielleitung' : 'echte Spende, Stand jetzt') + '</span></div>'
+    + spendeLeiter(s);
+  if(!vorbei && naechste) h += '<div class="spbar"><i style="width:' + Math.min(100, (s.spender - vor) / Math.max(1, naechste[0] - vor) * 100) + '%"></i></div><p class="spn">Noch <b>' + (naechste[0] - s.spender) + ' Spender</b> bis ' + naechste[1] + ' €' + (lp ? '. Jeder neue Spieler zählt!' : '. Lade deine Kameraden ein!') + '</p>';
+  h += '<div class="spz"><div><b>' + s.spender + '</b><span>Spender</span></div><div><b>' + eur(Number(s.summe)) + '</b><span>Spielgeld gesammelt</span></div><div><b>' + (vorbei ? 'vorbei' : 'bis ' + ende) + '</b><span>Aktion</span></div></div>';
+  if(vorbei) h += s.nachweis ? '<div class="spnw"><b>Nachweis:</b> ' + esc(s.nachweis) + (s.nachweis_url ? ' <a href="' + esc(s.nachweis_url) + '" target="_blank" rel="noopener noreferrer">ansehen</a>' : '') + '</div>' : '<p class="spn">Die Spende wird überwiesen. Den Nachweis zeigen wir hier, sobald er da ist.</p>';
+  else if(lp) h += '<button class="btn gold" data-act="lmode" data-id="signup" style="margin-top:10px">Mitmachen: kostenlos anmelden</button>';
+  else if(S && G.rank().t < 1) h += '<p class="spn">Nach der Grundausbildung, ab Gefreiter, kannst du mitspenden.</p>';
+  else if(S && s.ich){
+    const rest = Math.max(0, s.ich.limit - s.ich.heute);
+    h += '<p class="spn" style="margin-top:12px">Dein Beitrag: <b>' + eur(Number(s.ich.gesamt)) + '</b>' + (Number(s.ich.gesamt) >= s.min_betrag ? ' · du zählst als Spender ✓' : ' · ab ' + eur(s.min_betrag) + ' zählst du als Spender') + '</p>'
+      + '<div class="spbtn">' + [5, 20, 50].map(m => { const b = Math.min(rest, Math.max(s.min_betrag, Math.round(G.rank().sold * m))); return '<button class="btn ghost" data-act="spende_ein" data-id="' + b + '" ' + (!b || S.money < b ? 'disabled' : '') + '>' + eur(b) + '</button>'; }).join('') + '</div>'
+      + '<p class="small" style="margin:6px 0 0;color:#C9CFBC">Heute noch bis ' + eur(rest) + ' möglich.</p>';
+  }
+  if(s.top && s.top.length) h += '<div class="sptop"><b>Größte Unterstützer</b>' + s.top.map((t, i) => '<div><span>' + (i + 1) + '.</span><span>' + esc(t.name) + '</span><span>' + eur(Number(t.betrag)) + '</span></div>').join('') + '</div>';
+  h += '<p class="spf">Spielgeld ist kein echtes Geld. Die echte Spende zahlt die Spielleitung aus eigener Tasche, höchstens ' + Math.max(s.sockel, ...(s.stufen || []).map(x => x[1])) + ' €. Kein Angebot der Bundeswehr oder des Soldatenhilfswerks.</p></div>';
+  return h;
+}
+function spendeHeute(){ const k = spendeKarte(false); return k ? '<h2>Weihnachtsspende</h2>' + k : ''; }
+async function spendeEin(v){
+  const b = Number(v); if(!b || S.money < b){ toast('Zu wenig Geld.'); return; }
+  const btns = document.querySelectorAll('[data-act="spende_ein"]'); btns.forEach(x => x.disabled = true);
+  const { data, error } = await sb.rpc('spende_einzahlen', {p_betrag:b});
+  if(error){ toast(error.message); render(); return; }
+  S.money -= b; S.spendeGes = (S.spendeGes || 0) + b; ONLINE.spende = data; save(); cloudPush(true);
+  toast(eur(b) + ' gespendet. Danke, Kamerad!'); render();
+}
+ACT.spende_ein = v => spendeEin(v);
 
 // ---------- Kompanieverzeichnis und Bewerbungen ----------
 const KPV_WAPPEN = {
@@ -7939,7 +8037,7 @@ function renderLogin(){
     + '<h1>Stillgestanden!</h1>'
     + '<p>Vom Schulterglatzer zum General. Die Bundeswehr-Karriere als Browserspiel, mit Kameraden, Kasernen und reichlich Formularen.</p>'
     + '<div class="lp-cta"><button class="btn gold" data-act="lmode" data-id="signup">Jetzt Dienst antreten</button><button class="btn line" data-act="lmode" data-id="login">Ich bin schon dabei</button></div>'
-    + '</section>' + xcdHtml(true)
+    + '</section>' + xcdHtml(true) + spendeKarte(true)
     + '<section class="lp-feat" aria-label="Was dich erwartet">'
     + '<div>'+LP_ICON.karriere+'<b>Karriere</b><span>Dienste, Lehrgänge und Beförderungen bis zum General, bei Heer, Luftwaffe oder Marine.</span></div>'
     + '<div>'+LP_ICON.truppe+'<b>Kompanie</b><span>Gemeinsame Kasse, Ränge und Rohstoffe für den Ausbau mit deinen Kameraden.</span></div>'
