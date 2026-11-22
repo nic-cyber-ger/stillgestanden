@@ -597,6 +597,15 @@ body.landing{padding-bottom:0}
 @keyframes xcdSnow{to{transform:translateY(420px) translateX(14px)}}
 @keyframes xcdTick{from{transform:translateY(-6px);opacity:.3}}
 @media (prefers-reduced-motion:reduce){.xcdl i,.xcds i,.xcdb b.tick{animation:none}}
+.mstl{text-align:left;margin:8px 0 6px;padding:8px 9px;border-radius:6px;background:var(--surface2);font-size:12.5px;line-height:1.3}
+.mstl b{display:block;font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.mstl div{display:flex;gap:7px;align-items:flex-start;color:var(--muted);margin:3px 0}
+.mstl div span{flex:none;min-width:22px;height:18px;border-radius:4px;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+.mstl div.ok{color:var(--ink)}.mstl div.ok span{background:var(--signal);border-color:var(--signal);color:#1E2416}
+.mststar{color:var(--signal);font-size:12px;letter-spacing:1px;margin-left:4px}
+.frsheet{text-align:left}.frsheet .stamp{display:block;width:max-content;margin:0 auto}
+.frit{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}.frit:first-of-type{border-top:0}
+.fric{flex:none;width:44px;height:44px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:24px}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -760,6 +769,22 @@ const STATS = [
 ];
 const STAT_NAME = Object.fromEntries(STATS.map(s=>[s.id,s.name]));
 const STAT_MAX = 60;
+
+// Meisterstufen: ab 40, 50 und 60 bringt jeder Ausbildungswert einen spürbaren Vorteil
+const MEISTER = {
+  fitness:   [[40, 'Ausdauer lädt 10 % schneller'], [50, 'Aufträge auf der Lagekarte kosten 25 % weniger Ausdauer'], [60, 'Technischer Dienst kostet keine Ausdauer']],
+  schiessen: [[40, 'Gewagte Entscheidungen auf der Lagekarte bringen mehr Bonus'], [50, 'Neuer Dienst: Scharfschützenausbildung'], [60, '10 % mehr Beurteilungspunkte']],
+  fachwissen:[[40, 'Instandsetzung 20 % günstiger'], [50, 'Fahrzeuge nutzen sich 25 % weniger ab'], [60, 'Technischer Dienst bringt +20 % statt +12 %']],
+  fuehrung:  [[40, '1 Fahrzeug mehr pro Auftrag auf der Lagekarte'], [50, '1 Auftrag mehr gleichzeitig'], [60, 'Aufträge auf der Lagekarte 10 % besser bezahlt']],
+  vitaminb:  [[40, 'Fahrzeuge beim Beschaffungsamt 15 % günstiger'], [50, 'Lieferzeit halbiert. Man kennt jemanden beim Amt'], [60, 'Bauzeit der Liegenschaft halbiert']],
+};
+function mst(id, lv){ return !!(S && S.stats && S.stats[id] >= lv); }
+function mstZahl(id){ return (MEISTER[id] || []).filter(([l]) => mst(id, l)).length; }
+function mstHtml(id){
+  const lv = S.stats[id];
+  if(lv < 30) return '<div class="mstl"><b>Meisterstufen ab 40</b>Bei Stufe 40, 50 und 60 gibt es besondere Vorteile.</div>';
+  return '<div class="mstl"><b>Meisterstufen</b>' + MEISTER[id].map(([l, t]) => '<div class="' + (lv >= l ? 'ok' : '') + '"><span>' + (lv >= l ? '★' : l) + '</span>' + esc(t) + '</div>').join('') + '</div>';
+}
 const MEDAL_LV = [5, 15, 30, 50];
 const MEDAL_NAME = ['Bronze', 'Silber', 'Gold', 'Platin'];
 const MEDAL_COL = ['#A0673A', '#A9B0B5', '#D4A72C', '#9CC3D3'];
@@ -792,6 +817,8 @@ const DIENSTE = [
    desc:'Formulare abheften, Kaffee kochen, beschäftigt aussehen.'},
   {id:'formal',   name:'Formaldienst',     min:15,  st:10, pay:34,  bp:2,  t:0,
    desc:'Stillgestanden, rührt euch, stillgestanden. Und das Ganze noch mal mit Gefühl.'},
+  {id:'sniper',   name:'Scharfschützenausbildung', min:120, st:25, pay:760, bp:20, t:0, q:2, statReq:{schiessen:50},
+   desc:'Stundenlang im Tarnanzug liegen, nicht bewegen, nicht niesen. Der Treffer auf 800 Meter ist dann der leichte Teil.'},
   {id:'wache',    name:'Wache',            min:30,  st:15, pay:70,  bp:4,  t:1,
    desc:'Stundenlang einen Zaun bewachen, der sich nicht bewegt.'},
   {id:'gelaende', name:'Geländedienst',    min:60,  st:25, pay:145, bp:7,  t:2,
@@ -1488,7 +1515,7 @@ function renderFeier(){
     }).join('') + '</div>';
 
   // Werkstatt
-  h += '<h2>Werkstatt</h2><div class="panel">' + Object.entries(GAR_UP).map(([k,u]) => {
+  h += '<h2>Garage</h2><div class="panel">' + Object.entries(GAR_UP).map(([k,u]) => {
     const l = S.garage.up[k], nx = l+1 < u.lv.length;
     return '<div class="row"><div class="info"><div class="title">'+esc(u.name)+': '+esc(u.lv[l])+'</div><div class="meta">'+esc(u.fx)+(nx ? '. Als Nächstes: '+esc(u.lv[l+1])+' für '+eur(u.cost[l+1]) : '')+'</div></div>'
       + (nx ? '<button class="btn" data-act="gar_up" data-id="'+k+'" '+(S.money < u.cost[l+1] ? 'disabled' : '')+'>Kaufen</button>' : '<span class="small muted">fertig</span>')+'</div>';
@@ -1604,10 +1631,10 @@ const TUT = [
   {tab:'ausb', t:'Ausbildung nebenher', x:'Während der Dienst läuft, bilden Sie sich weiter. Fitness und Schießen brauchen Sie für die Grundausbildung. Unter jeder Ausbildung hängen Leistungsabzeichen, die Sie sich verdienen können.', hint:'Starte eine Ausbildung, am besten Fitness oder Schießen.', done:() => !!S.ausb || Object.values(S.stats).some(v => v > 0)},
   {tab:'stube', t:'Grundausbildung', x:'In der Übersicht steht Ihre Checkliste für die Grundausbildung: etwa eine Stunde, sechs Schritte, und jeder bringt sofort eine Belohnung. Danach legen Sie das Gelöbnis ab und können zum Gefreiten befördert werden.'},
   {tab:'stube', t:'Feldpost', x:'Zu Hause denkt man an Sie. Da liegt ein Paket. Öffnen Sie es, der Inhalt wandert in Ihr Sammelalbum.', hint:'Tippe in der Übersicht auf „Paket öffnen“.', done:() => !S.pakete},
-  {tab:'raum', t:'Ihre Stube', x:'Hier bauen Sie Ihre Stube aus, schließen die Anwartschafts- und später die Pflegepflichtversicherung ab und kaufen Ausrüstung. Unten stehen Ihre Kameraden. Gutes Ansehen bei denen bringt Vorteile, schlechtes bringt Zahnpasta in die Stiefel.'},
-  {tab:'laufbahn', t:'Ihre Stammakte', x:'Unten rechts liegt Ihre Stammakte: Personalien, Beurteilung, Orden und Einstellungen. Unter Laufbahn stehen alle Dienstgrade, darunter, was Sie für die nächste Beförderung brauchen. Hier wählen Sie später Ihre Verwendung, verpflichten sich und melden sich für Lehrgänge und Auslandseinsätze.'},
-  {tab:'feier', t:'Feierabend', x:'Nach Dienstschluss können Sie Leergut sammeln, an Autos schrauben oder mit Kalle Karten spielen. Feierabend kostet keine Ausdauer. Aber kommen Sie mir morgens nicht zu spät.'},
-  {tab:'truppe', t:'Truppe', x:'Hier finden Sie Ihre Kompanie mit Gemeinschaftskasse, die Kaserne an Ihrem Standort und die Karte aller Standorte. Allein gewinnt hier keiner.'},
+  {tab:'raum', t:'Ihre Stube', x:'Hier bauen Sie Ihre Stube aus und kaufen Ausrüstung. Unten stehen Ihre Kameraden. Gutes Ansehen bei denen bringt Vorteile, schlechtes bringt Zahnpasta in die Stiefel.'},
+  {tab:'laufbahn', t:'Ihre Stammakte', x:'Unten rechts liegt Ihre Stammakte: Personalien, Beurteilung, Orden, Versicherungen und Einstellungen. Unter Laufbahn stehen alle Dienstgrade, darunter, was Sie für die nächste Beförderung brauchen. Hier wählen Sie später Ihre Verwendung, verpflichten sich und melden sich für Lehrgänge und Auslandseinsätze.'},
+  {tab:'feier', t:'Feierabend', x:'Nach Dienstschluss können Sie Leergut sammeln. Nach der Grundausbildung kommen die Schrauberecke und später die Spielothek dazu. Feierabend kostet keine Ausdauer. Aber kommen Sie mir morgens nicht zu spät.'},
+  {tab:'truppe', t:'Truppe', x:'Hier sehen Sie die Karte aller Standorte und bauen mit allen Spielern an Ihrem Standort die Kaserne aus. Als Gefreiter können Sie dann einer Kompanie beitreten. Allein gewinnt hier keiner.'},
   {tab:'stube', t:'Wegtreten!', x:'Das war die Einweisung. Als Startgeld gibt es 200 € und noch ein Paket von zu Hause. Und jetzt: Wegtreten!', final:true},
 ];
 function tutOn(){ return !!(S && S.tut && !S.tut.done); }
@@ -1759,15 +1786,15 @@ const SUBS = {
   ],
   dienst: [
     {id:'plan', label:'Dienstplan', src:'dienst', rest:true, match:['Dienstplan']},
-    {id:'lage', label:'Lagekarte', src:'lage', match:['Lagekarte','Laufende Aufträge','Offene Aufträge','Fuhrpark']},
-    {id:'fuhrpark', label:'Fuhrpark', src:'fuhrpark', match:['Fuhrpark','Liegenschaft','Beschaffung']},
+    {id:'lage', label:'Lagekarte', frei:'lage', src:'lage', match:['Lagekarte','Laufende Aufträge','Offene Aufträge','Fuhrpark']},
+    {id:'fuhrpark', label:'Fuhrpark', frei:'lage', src:'fuhrpark', match:['Fuhrpark','Liegenschaft','Beschaffung']},
     {id:'einsatz', label:'Einsatz', src:'laufbahn', match:['Auslandseinsatz']},
   ],
   ausb: [
     {id:'ausbildung', label:'Werte', src:'ausb', rest:true, match:['Ausbildung']},
-    {id:'lehrgaenge', label:'Lehrgänge', src:'ausb', match:['Lehrgänge']},
-    {id:'fahrschule', label:'Fahrschule', src:'ausb', match:['Fahrschule']},
-    {id:'uebung', label:'Übungsplatz', src:'mini', match:['Übungsplatz']},
+    {id:'lehrgaenge', label:'Lehrgänge', frei:'ausb2', src:'ausb', match:['Lehrgänge']},
+    {id:'fahrschule', label:'Fahrschule', frei:'ausb2', src:'ausb', match:['Fahrschule']},
+    {id:'uebung', label:'Übungsplatz', frei:'ausb2', src:'mini', match:['Übungsplatz']},
   ],
   kaserne: [
     {id:'hub', label:'Kaserne', src:'kaserne', rest:true, match:['Kaserne']},
@@ -1775,20 +1802,19 @@ const SUBS = {
   zuhause: [
     {id:'stube', label:'Stube', src:'raum', rest:true, match:['Deine Stube','Ausrüstung']},
     {id:'kameraden', label:'Kameraden und Album', src:'raum', match:['Kompanie','Sammelalbum']},
-    {id:'vorsorge', label:'Vorsorge', src:'raum', match:['Anwartschaftsversicherung','Pflegepflichtversicherung']},
   ],
   feier: [
     {id:'leergut', label:'Leergut', src:'feier', rest:true, match:['Leergut']},
-    {id:'schrauben', label:'Werkstatt', src:'feier', match:['Schrauben','Kleinanzeigen','Werkstatt']},
-    {id:'spiele', label:'Spielothek', src:'feier', match:['Spielothek','Stubenrunde']},
-    {id:'lotto', label:'Soldatenlotto', src:'lotto', match:['Soldatenlotto']},
+    {id:'schrauben', label:'Schrauberecke', frei:'schrauben', src:'feier', match:['Schrauben','Kleinanzeigen','Garage']},
+    {id:'spiele', label:'Spielothek', grp:'sp', frei:'spiele', src:'feier', match:['Spielothek','Stubenrunde']},
+    {id:'lotto', label:'Soldatenlotto', grp:'sp', frei:'spiele', src:'lotto', match:['Soldatenlotto']},
   ],
   truppe: [
-    {id:'kompanie', label:'Kompanie', grp:'kp', src:'truppe', rest:true, match:['Kompanie','Bewerbungen','Kompanieprofil','Mitglieder','Einladen']},
-    {id:'kasse', label:'Kasse', grp:'kp', src:'truppe', match:['Kompaniekasse','Kassenbuch']},
-    {id:'ausbau', label:'Ausbau', grp:'kp', src:'truppe', match:['Kompanie-Ausbau','Kompanielager']},
-    {id:'kaserne', label:'Standort', grp:'kp', src:'truppe', match:['Standortkarte','Kaserne']},
-    {id:'verzeichnis', label:'Verzeichnis', grp:'kp', src:'kpliste', match:['Kompanieverzeichnis']},
+    {id:'kompanie', label:'Kompanie', grp:'kp', frei:'kompanie', src:'truppe', rest:true, match:['Kompanie','Bewerbungen','Kompanieprofil','Mitglieder','Einladen']},
+    {id:'kasse', label:'Kasse', grp:'kp', frei:'kompanie', src:'truppe', match:['Kompaniekasse','Kassenbuch']},
+    {id:'ausbau', label:'Ausbau', grp:'kp', frei:'kompanie', src:'truppe', match:['Kompanie-Ausbau','Kompanielager']},
+    {id:'kaserne', label:'Standort', grp:'st', src:'truppe', match:['Standortkarte','Standortausbau']},
+    {id:'verzeichnis', label:'Verzeichnis', grp:'kp', frei:'kompanie', src:'kpliste', match:['Kompanieverzeichnis']},
     {id:'chat', get label(){ const n = typeof chatUnread === 'function' ? chatUnread() : 0; return 'Funkkreis' + (n ? ' (' + n + ')' : ''); }, src:'chat', match:['Funkkreis']},
     {id:'suche', label:'Personensuche', src:'suche', match:['Personensuche']},
     {id:'rang', label:'Rangliste', src:'truppe', match:['Ranglisten']},
@@ -1797,12 +1823,51 @@ const SUBS = {
     {id:'personalien', label:'Personalien', srcs:['akte','stube'], rest:'akte', fold:true, open:['Personalien'], match:['Personalien','Statistik','Qualifikationen','Beurteilung','Werte']},
     {id:'laufbahn', label:'Laufbahn', src:'laufbahn', rest:true, fold:true, open:['Dienstgrade','Nächste Beförderung'], match:['Dienstgrade','Nächste Beförderung','Werdegang','Teilstreitkraft','Dienstverhältnis','Verwendung','Standort']},
     {id:'orden', label:'Orden', src:'laufbahn', match:['Orden']},
-    {id:'mehr', label:'Mehr', srcs:['akte','stube','admin'], fold:true, open:[], match:['Steckbrief','Feedback','Einstellungen','Admin']},
+    {id:'mehr', label:'Mehr', srcs:['akte','raum','stube','admin'], fold:true, open:[], match:['Steckbrief','Anwartschaftsversicherung','Pflegepflichtversicherung','Feedback','Einstellungen','Admin']},
   ],
 };
-const GRP_NAME = {kp:'Kompanie'};
+const GRP_NAME = {kp:'Kompanie', st:'Standort', sp:'Spielothek'};
 // Seiten, die man über die Kacheln der Kaserne erreicht
 const KCHILD = ['zuhause', 'feier', 'truppe'];
+
+/* ---------- Freischaltung: neue Bereiche erscheinen mit dem Fortschritt ---------- */
+const FREI = [
+  {id:'ausb2', name:'Fahrschule, Lehrgänge und Übungsplatz', ic:'🎓', txt:'Nach der Grundausbildung stehen dir Führerscheine, Lehrgänge und die Minispiele auf dem Übungsplatz offen.', go:'fahrschule', ok:() => S.gaDone},
+  {id:'schrauben', name:'Schrauberecke', ic:'🔩', txt:'Am Feierabend gebrauchte Autos kaufen, reparieren und mit Gewinn verkaufen.', go:'feier:schrauben', ok:() => S.gaDone},
+  {id:'lage', name:'Lagekarte und Fuhrpark', ic:'🗺️', txt:'Echte Aufträge rund um deinen Standort. Du bekommst einen Unimog und baust deinen eigenen Fuhrpark auf.', go:'lage', ok:() => S.gaDone && G.rank().t >= 1},
+  {id:'kompanie', name:'Kompanie', ic:'👥', txt:'Bewirb dich bei einer Kompanie oder gründe deine eigene: gemeinsame Kasse, Ausbau und Rangliste.', go:'truppe:verzeichnis', online:true, ok:() => S.gaDone && G.rank().t >= 1},
+  {id:'spiele', name:'Spielothek', ic:'🃏', txt:'Karten mit Kalle und mehr. Nur Spielgeld, versteht sich.', go:'feier:spiele', ok:() => S.gaDone && G.rank().t >= 2},
+];
+const FREI_I = Object.fromEntries(FREI.map(f => [f.id, f]));
+function freiInUse(id){
+  if(id === 'ausb2') return !!(S.fs || S.lg || Object.keys(S.fsDone || {}).length || Object.keys(S.lehrgaenge || {}).length);
+  if(id === 'lage') return !!(S.lk && S.lk.aktiv && S.lk.aktiv.length);
+  if(id === 'kompanie') return !!(typeof ONLINE !== 'undefined' && ONLINE.kp);
+  return false;
+}
+function frei(id){
+  if(!S) return true;
+  const f = FREI_I[id]; if(!f) return true;
+  if(S.frei && S.frei[id]) return true;
+  try{ return !!(f.ok() || freiInUse(id)); }catch(e){ return true; }
+}
+let FREI_NEU = [];
+function freiAuto(){
+  if(!S) return;
+  const online = typeof renderTruppe === 'function';
+  const liste = FREI.filter(f => !f.online || online);
+  if(!S.frei){ S.frei = {}; for(const f of liste) if(frei(f.id)) S.frei[f.id] = 1; save(); return; }   // Bestand: still übernehmen
+  let neu = false;
+  for(const f of liste) if(!S.frei[f.id] && frei(f.id)){ S.frei[f.id] = 1; FREI_NEU.push(f.id); neu = true; }
+  if(neu) save();
+  if(!FREI_NEU.length || (typeof tutOn === 'function' && tutOn())) return;
+  const host = document.getElementById('modalHost'); if(!host || host.innerHTML.trim()) return;
+  const l = FREI_NEU.map(id => FREI_I[id]); FREI_NEU = [];
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="frt"><div class="sheet frsheet">'
+    + '<div class="stamp good" style="font-size:15px">FREIGESCHALTET</div><h2 id="frt" style="margin:8px 0 12px;text-align:center">' + (l.length > 1 ? 'Neue Bereiche' : 'Neuer Bereich') + '</h2>'
+    + l.map(f => '<div class="frit"><span class="fric" aria-hidden="true">' + f.ic + '</span><div><b>' + esc(f.name) + '</b><p class="small muted" style="margin:2px 0 8px">' + esc(f.txt) + '</p><button class="btn mini" data-act="frei_go" data-id="' + f.go + '">Ansehen</button></div></div>').join('')
+    + '<button class="btn ghost wide" data-act="close" style="margin-top:12px">Später</button></div></div>';
+}
 function navOf(t){ return KCHILD.includes(t) ? 'kaserne' : t; }
 function srcOf(x){ return x.srcs || [x.src]; }
 const FOLD_HINT = {
@@ -1816,6 +1881,8 @@ const FOLD_HINT = {
   'Dienstverhältnis': () => DZ[S.verpfl].short,
   'Verwendung': () => S.verw ? VERW[S.verw].name : 'noch offen',
   'Standort': () => S.standort ? S.standort.ort : 'noch offen',
+  'Pflegepflichtversicherung': () => S.pflege ? 'abgeschlossen' : pflegePflicht() ? 'Pflicht, fehlt noch!' : 'freiwillig',
+  'Anwartschaftsversicherung': () => S.spar ? S.spar.rate + ' % je Verdienst' : 'freiwillig',
   'Einstellungen': () => 'Darstellung, Konto',
 };
 function foldWrap(x, html){
@@ -1832,7 +1899,7 @@ document.addEventListener('toggle', e => { const d = e.target; if(d && d.dataset
 // Abschnitte, die der Laufend-Streifen oben ersetzt
 const SUB_DROP = ['Im Dienst', 'Feierabend'];
 const SUB = {}, LASTSUB = {};
-const ALIAS = {stube:['stube','uebersicht'], raum:['zuhause','stube'], kaserne:['kaserne','hub'], kameraden:['zuhause','kameraden'], feedback:['akte','mehr'], laufbahn:['akte','laufbahn'], akte:['akte','personalien'], dv:['akte','laufbahn'], orden:['akte','orden'], einst:['akte','mehr'], vorsorge:['zuhause','vorsorge'], fahrschule:['ausb','fahrschule'], lage:['dienst','lage'], uebungsplatz:['ausb','uebung'], lehrgaenge:['ausb','lehrgaenge'], dienst:['dienst','plan'], ausb:['ausb','ausbildung'], feier:['feier',null], truppe:['truppe',null]};
+const ALIAS = {stube:['stube','uebersicht'], raum:['zuhause','stube'], kaserne:['kaserne','hub'], kameraden:['zuhause','kameraden'], feedback:['akte','mehr'], laufbahn:['akte','laufbahn'], akte:['akte','personalien'], dv:['akte','laufbahn'], orden:['akte','orden'], einst:['akte','mehr'], vorsorge:['akte','mehr'], fahrschule:['ausb','fahrschule'], lage:['dienst','lage'], uebungsplatz:['ausb','uebung'], lehrgaenge:['ausb','lehrgaenge'], dienst:['dienst','plan'], ausb:['ausb','ausbildung'], feier:['feier',null], truppe:['truppe',null]};
 function pageOf(id){ return ALIAS[id] || [id, null]; }
 function goPage(id){ const a = pageOf(id); tab = a[0]; if(a[1]) SUB[tab] = a[1]; }
 function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LASTSUB[tab] === a[1]); }
@@ -1870,7 +1937,8 @@ function subnavHint(){
   upd(); n.onscroll = upd;
 }
 function renderPage(){
-  const subs = (SUBS[tab] || []).filter(x => (x.src !== 'truppe' && x.src !== 'kpliste') || typeof renderTruppe === 'function');
+  const subs0 = (SUBS[tab] || []).filter(x => (x.src !== 'truppe' && x.src !== 'kpliste') || typeof renderTruppe === 'function');
+  const subs = subs0.filter(x => !x.frei || frei(x.frei)), versteckt = subs0.filter(x => x.frei && !frei(x.frei));
   if(!subs.length) return runStrip();
   const parts = subs.map(x => ({x, html:''}));
   for(const src of [...new Set(subs.flatMap(srcOf))]){
@@ -1878,6 +1946,7 @@ function renderPage(){
       if(SUB_DROP.includes(sec.title)) continue;
       // Abschnitte, die ein anderer Bereich für sich beansprucht, hier überspringen
       const hit = x => srcOf(x).includes(src) && x.match.some(m => sec.title === m || sec.title.startsWith(m + ' '));
+      if(!subs.some(hit) && versteckt.some(hit)) continue;
       if(!subs.some(hit) && Object.entries(SUBS).some(([k, l]) => k !== tab && l.some(hit))) continue;
       let t = parts.find(p => hit(p.x));
       if(!t) t = parts.find(p => p.x.rest && (p.x.rest === true ? srcOf(p.x).includes(src) : p.x.rest === src));
@@ -1900,22 +1969,21 @@ function kTiles(){
   const sv = (f, d) => { try{ return f() || d; }catch(e){ return d; } };
   const on = typeof renderTruppe === 'function';
   return [
-    {grp:'Kameraden', go:'truppe:kompanie', label:'Kompanie', ok:on, ic:'<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M12 20c0-3.3 1.8-6 4-6s6 2.7 6 6"/>',
+    {grp:'Kameraden', go:'truppe:kompanie', label:'Kompanie', ok:on, frei:'kompanie', ic:'<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M12 20c0-3.3 1.8-6 4-6s6 2.7 6 6"/>',
       badge:sv(() => ONLINE.bew.length, 0), info:sv(() => ONLINE.kp ? (ONLINE.bew.length ? ONLINE.bew.length + ' neue Bewerbung' + (ONLINE.bew.length > 1 ? 'en' : '') : ONLINE.kp.name + ' · Kasse ' + eur(ONLINE.kp.kasse)) : 'gründen, beitreten, bewerben', 'Kasse und Ausbau')},
-    {grp:'Kameraden', go:'truppe:verzeichnis', label:'Kompanien', ok:on && !!USER, ic:'<path d="M12 2.5l7.5 2.6v5.6c0 4.9-3.2 8.4-7.5 9.8-4.3-1.4-7.5-4.9-7.5-9.8V5.1z"/><path d="M9 11h6M12 8v6"/>', info:'Verzeichnis und Bewerbungen'},
+    {grp:'Kameraden', go:'truppe:verzeichnis', label:'Kompanien', ok:on && !!USER, frei:'kompanie', ic:'<path d="M12 2.5l7.5 2.6v5.6c0 4.9-3.2 8.4-7.5 9.8-4.3-1.4-7.5-4.9-7.5-9.8V5.1z"/><path d="M9 11h6M12 8v6"/>', info:'Verzeichnis und Bewerbungen'},
+    {grp:'Kameraden', go:'truppe:kaserne', label:'Standort', ok:on, ic:'<path d="M12 21s-7-6.4-7-12a7 7 0 0 1 14 0c0 5.6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>', info:sv(() => S.standort ? 'Gemeinsamer Ausbau in ' + S.standort.ort : '', 'Karte und gemeinsamer Ausbau')},
     {grp:'Kameraden', go:'truppe:chat', label:'Funkkreis', ok:typeof renderChat === 'function' && !!USER, ic:'<path d="M4 5h16v11H9l-5 4z"/>',
       badge:sv(() => chatUnread(), 0), info:sv(() => { const m = ONLINE.chat[ONLINE.chat.length - 1]; return m ? m.name + ': ' + m.text : ''; }, 'Chat mit allen Spielern')},
     {grp:'Kameraden', go:'truppe:rang', label:'Rangliste', ok:on, ic:'<path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/>', info:'Spieler und Kompanien'},
     {grp:'Kameraden', go:'truppe:suche', label:'Personensuche', ok:typeof renderSuche === 'function' && !!USER, ic:'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>', info:'Steckbriefe ansehen'},
-    {grp:'Kameraden', go:'zuhause:kameraden', label:on ? 'Stubenkameraden' : 'Kameraden', ok:true, ic:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/>', info:sv(() => 'Ansehen · Album ' + ITEMS.filter(i => S.album[i.id]).length + '/' + ITEMS.length, 'Ansehen und Sammelalbum')},
-    {grp:'Feierabend', go:'feier:spiele', label:on ? 'Spielothek' : 'Stubenrunde', ok:true, ic:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 9v6M12 9v6M16 9v6"/>', info:on ? 'Automaten und Karten' : 'Karten mit Kalle'},
-    {grp:'Feierabend', go:'feier:lotto', label:'Soldatenlotto', ok:typeof renderLotto === 'function' && !!USER, ic:'<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>', info:sv(() => ONLINE.lotto && ONLINE.lotto.jackpot ? 'Jackpot ' + eur(ONLINE.lotto.jackpot) : '', 'Tippschein ausfüllen')},
     {grp:'Feierabend', go:'feier:leergut', label:'Leergut', ok:true, ic:'<path d="M10 2h4v4l2 3v13H8V9l2-3z"/>', info:'Flaschen sammeln'},
-    {grp:'Feierabend', go:'feier:schrauben', label:'Werkstatt', ok:true, ic:'<path d="M14 6l4 4-8 8H6v-4z"/><path d="M12 8l4 4"/>', info:'Autos reparieren und verkaufen'},
+    {grp:'Feierabend', go:'feier:schrauben', label:'Schrauberecke', ok:true, frei:'schrauben', ic:'<path d="M14 6l4 4-8 8H6v-4z"/><path d="M12 8l4 4"/>', info:'Autos reparieren und verkaufen'},
+    {grp:'Feierabend', go:'feier:spiele', label:on ? 'Spielothek' : 'Stubenrunde', ok:true, frei:'spiele', ic:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 9v6M12 9v6M16 9v6"/>',
+      info:on ? sv(() => ONLINE.lotto && ONLINE.lotto.jackpot ? 'Lotto-Jackpot ' + eur(ONLINE.lotto.jackpot) : '', 'Automaten, Karten und Lotto') : 'Karten mit Kalle'},
     {grp:'Zuhause', go:'zuhause:stube', label:'Stube', ok:true, ic:'<path d="M3 11 12 4l9 7v9H3z"/><path d="M9 20v-6h6v6"/>', info:'Ausbau und Ausrüstung'},
-    {grp:'Zuhause', go:'zuhause:vorsorge', label:'Vorsorge', ok:true, ic:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
-      badge:sv(() => pflegePflicht() && !S.pflege ? '!' : 0, 0), info:sv(() => pflegePflicht() && !S.pflege ? 'Pflegeversicherung fehlt!' : '', 'Versicherungen')},
-  ].filter(t => t.ok);
+    {grp:'Zuhause', go:'zuhause:kameraden', label:on ? 'Stubenkameraden' : 'Kameraden', ok:true, ic:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/>', info:sv(() => 'Ansehen · Album ' + ITEMS.filter(i => S.album[i.id]).length + '/' + ITEMS.length, 'Ansehen und Sammelalbum')},
+  ].filter(t => t.ok && (!t.frei || frei(t.frei)));
 }
 function renderKaserne(){
   const t = kTiles(), grps = [...new Set(t.map(x => x.grp))];
@@ -3370,7 +3438,7 @@ function fmtAgo(ts){
 /* =========================================================
    WETTER UND JAHRESZEITEN – gilt für alle Spieler gleich, ändert sich täglich
    ========================================================= */
-const OUT_IDS = ['boxer_d','puma_d','leo_d','tankw_d','sbs_d','speed_d','formal','wache','gelaende','uebung','ga_marsch','v_inf','lw_vorfeld','lw_flugplatz','m_seewache','m_hafenwache','kette_d','schlepp_d','boot_d','schnee','freibad','e_patr','e_wache','e_konvoi'];
+const OUT_IDS = ['sniper','boxer_d','puma_d','leo_d','tankw_d','sbs_d','speed_d','formal','wache','gelaende','uebung','ga_marsch','v_inf','lw_vorfeld','lw_flugplatz','m_seewache','m_hafenwache','kette_d','schlepp_d','boot_d','schnee','freibad','e_patr','e_wache','e_konvoi'];
 const WETTER = {
   sonne:   {name:'Sonnig',      fx:{}, desc:'Bestes Dienstwetter. Keine Ausreden.'},
   wolken:  {name:'Bewölkt',     fx:{}, desc:'Grau, aber trocken. Typisch norddeutsch.'},
@@ -3633,10 +3701,16 @@ function rtNote(d){ const f = rtF(d); return f < 1 ? '<div class="wxnote small">
 function fsCost(x){ return Math.round(x.cost * (S.fsRetry && S.fsRetry[x.id] ? .5 : 1) * (vb()==='kfz' ? .8 : 1)); }
 function fsMin(x){ return x.min * (S.fsRetry && S.fsRetry[x.id] ? .5 : 1) * (vb()==='kfz' ? .7 : 1); }
 function fsHas(id){ return !!(S.fsDone && S.fsDone[id]); }
+// Ab Besoldungsstufe 6 nur Unteroffiziere mit Portepee und Offiziere (Korporal und Stabskorporal sind Mannschaften)
+function fsRangOk(t){ const r = G.rank(); return r.t >= t && !(t >= 6 && r.g === 'M'); }
+function fsRangName(t){
+  if(t >= 6) return (RANKS.find(r => r.t === t && r.g === 'F') || RANKS.find(r => r.t >= t && r.g !== 'M')).name;
+  return [...new Set(RANKS.filter(r => r.t === t && (r.g === 'M' || r.g === 'U')).map(r => r.name))].join(' oder ');
+}
 function fsReqs(x){
   const out = [];
   if(x.need) out.push({label:'Führerschein ' + FS_I[x.need].name, ok:fsHas(x.need)});
-  if(x.t) out.push({label:'Dienstgrad ab ' + RANKS.find(r=>r.t===x.t).name, ok:G.rank().t >= x.t});
+  if(x.t) out.push({label:'Dienstgrad ab ' + fsRangName(x.t), ok:fsRangOk(x.t)});
   if(x.off) out.push({label:'Offizier oder Offizieranwärter', ok:['A','O','G'].includes(G.rank().g)});
   if(x.note) out.push({label:'Beurteilung „' + NOTES[x.note] + '“', ok:G.note() <= x.note});
   return out;
@@ -4162,6 +4236,21 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:20, d:'22.11.2026', t:'Mehr Übersicht', p:[
+    'Neue Spieler sehen am Anfang nur das Nötigste. Fahrschule, Lagekarte, Kompanie und Spielothek werden mit dem Fortschritt freigeschaltet',
+    'Was du schon hattest, bleibt natürlich frei',
+    'Die Werkstatt am Feierabend heißt jetzt Schrauberecke, damit sie nicht mit der Kfz-Werkstatt im Fuhrpark verwechselt wird',
+    'Versicherungen findest du jetzt in der Akte unter Mehr',
+    {o:1, x:'Lotto und Automaten liegen gemeinsam in der Spielothek'},
+    {o:1, x:'Der gemeinsame Standortausbau hat eine eigene Kachel und gehört nicht mehr zur Kompanie'}
+  ]},
+  {v:19, d:'21.11.2026', t:'Meisterstufen und Fahrschule', p:[
+    'Ausbildungswerte lohnen sich jetzt bis Stufe 60: Bei 40, 50 und 60 gibt es pro Wert einen besonderen Vorteil',
+    'Zum Beispiel mehr Fahrzeuge pro Auftrag, günstigere Beschaffung, weniger Verschleiß oder schnellere Ausdauer',
+    'Neuer Dienst ab Schießen 50: Scharfschützenausbildung',
+    'In der Ausbildung steht bei jedem Wert, was die Meisterstufen bringen. In der Stammakte zeigen Sterne, was du schon erreicht hast',
+    'Fahrschule: Leopard 2 und CH-47 Chinook erst ab Feldwebel, nicht mehr ab Korporal'
+  ]},
   {v:18, d:'21.11.2026', t:'Eigener Fuhrpark und Liegenschaft', p:[
     'Neu unter Dienst: Fuhrpark. Deine Fahrzeuge gehören jetzt dir, mit Kennzeichen, Kilometerstand und Zustand',
     'Jeder Einsatz nutzt die Fahrzeuge ab. Technischer Dienst einmal am Tag, sonst ab in die Werkstatt',
@@ -4330,7 +4419,7 @@ function renderAkte(){
   h += '<h2>Qualifikationen</h2><div class="panel pad">'
     + '<p class="akh">Führerscheine</p>' + (fs.length ? '<div class="pfchips">' + fs.map(x => '<span class="tag">' + esc(x.name) + '</span>').join('') + '</div>' : '<p class="small muted" style="margin:0">Noch keine. <button class="linkbtn" data-act="tab" data-id="fahrschule">Zur Fahrschule</button></p>')
     + '<p class="akh">Lehrgänge</p>' + (lg.length ? '<div class="pfchips">' + lg.map(l => '<span class="tag">' + esc(l.name) + (S.lgNote && S.lgNote[l.id] ? ' · Note ' + S.lgNote[l.id] : '') + '</span>').join('') + '</div>' : '<p class="small muted" style="margin:0">Noch keine. <button class="linkbtn" data-act="tab" data-id="lehrgaenge">Zu den Lehrgängen</button></p>')
-    + '<p class="akh">Ausbildungsstand</p>' + STATS.map(s => '<div class="pfbar"><span>' + s.name + '</span><i><b style="width:' + Math.min(100, S.stats[s.id] / STAT_MAX * 100) + '%"></b></i><span class="num">' + S.stats[s.id] + '</span></div>').join('')
+    + '<p class="akh">Ausbildungsstand</p>' + STATS.map(s => '<div class="pfbar"><span>' + s.name + '</span><i><b style="width:' + Math.min(100, S.stats[s.id] / STAT_MAX * 100) + '%"></b></i><span class="num">' + S.stats[s.id] + (mstZahl(s.id) ? '<span class="mststar" title="Meisterstufen">' + '★'.repeat(mstZahl(s.id)) + '</span>' : '') + '</span></div>').join('')
     + '</div>';
   if(typeof profilZeigen === 'function' && USER)
     h += '<h2>Steckbrief</h2><div class="panel pad"><p class="small" style="margin:0 0 10px">So sehen dich andere Spieler, wenn sie dich in der Personensuche, der Rangliste oder im Chat antippen. Standort und Anmeldedaten sind nie sichtbar.</p>'
@@ -4345,6 +4434,7 @@ function todoList(){
   if(S.pakete) t.push(['📦', '<b>Feldpost:</b> ' + (S.pakete === 1 ? 'ein Paket wartet' : S.pakete + ' Pakete warten'), 'Öffnen', 'paket', '', 'gold']);
   if(G.dzOver()) t.push(['📋', '<b>Dienstzeit zu Ende.</b> Weiterverpflichten oder ausscheiden', 'Entscheiden', 'tab', 'dv', 'warn']);
   else if(G.dzLeft() <= 6) t.push(['📋', 'Dienstzeitende in ' + fmtDZ(G.dzLeft()), 'Ansehen', 'tab', 'dv', '']);
+  if(pflegePflicht() && !S.pflege){ S.ui = S.ui || {}; S.ui['f:Pflegepflichtversicherung'] = true; }
   if(pflegePflicht() && !S.pflege) t.push(['🛡️', '<b>Pflegepflichtversicherung fehlt</b>' + (S.pflegeFrist && now() < S.pflegeFrist ? ', Frist ' + fmtRest(S.pflegeFrist - now()).replace(/\.$/, '') : ', Frist abgelaufen'), 'Abschließen', 'tab', 'vorsorge', 'warn']);
   if(!S.standort) t.push(['📍', 'Heimatstandort festlegen', 'Wählen', 'tab', 'dv', '']);
   if(!S.verw && G.rank().t >= 1) t.push(['🎯', 'Verwendung wählen', 'Wählen', 'tab', 'dv', '']);
@@ -4954,7 +5044,8 @@ const LK_CREW = ['Kalle', 'Dennis', 'Lena', 'Gefreiter Weber', 'Obergefreiter Yi
 
 function lkKoord(){ if(!S || !S.standort || typeof STANDORT_KOORD === 'undefined') return null; return STANDORT_KOORD[S.standort.bl + '/' + S.standort.ort] || null; }
 function lkKm(a, b){ const R6 = 6371, r = x => x * Math.PI / 180, dl = r(b[0] - a[0]), dn = r(b[1] - a[1]); const h = Math.sin(dl/2)**2 + Math.cos(r(a[0])) * Math.cos(r(b[0])) * Math.sin(dn/2)**2; return 2 * R6 * Math.asin(Math.sqrt(h)); }
-function lkBefehl(){ const g = G.rank().g; return {M:{fz:1, auf:1, name:'Kraftfahrer'}, U:{fz:2, auf:1, name:'Truppführer'}, A:{fz:3, auf:1, name:'Zugführer in Ausbildung'}, F:{fz:4, auf:2, name:'Zugführer'}, O:{fz:6, auf:3, name:'Kompaniechef'}, G:{fz:8, auf:4, name:'Kommandeur'}}[g] || {fz:1, auf:1, name:'Kraftfahrer'}; }
+function lkBefehl(){ const b = Object.assign({}, lkBefehlBasis()); if(mst('fuehrung', 40)) b.fz++; return b; }
+function lkBefehlBasis(){ const g = G.rank().g; return {M:{fz:1, auf:1, name:'Kraftfahrer'}, U:{fz:2, auf:1, name:'Truppführer'}, A:{fz:3, auf:1, name:'Zugführer in Ausbildung'}, F:{fz:4, auf:2, name:'Zugführer'}, O:{fz:6, auf:3, name:'Kompaniechef'}, G:{fz:8, auf:4, name:'Kommandeur'}}[g] || {fz:1, auf:1, name:'Kraftfahrer'}; }
 function lkState(){
   if(!S.lk) S.lk = {offen:[], aktiv:[], next:0, n:0};
   // Standort gewechselt: offene Aufträge gehören zum alten Standort und werden neu erzeugt
@@ -5012,9 +5103,9 @@ function lkDauer(a, fzUids){
 }
 function lkLohn(a, total){
   const t = LK_TYP.find(x => x.id === a.typ), n = t.v[a.vi].length;
-  const m = lkMod(a), pay = Math.round(total * 2.9 * t.f * (1 + .15 * (n - 1)) * G.payMult() * (m ? m.pay : 1));
+  const m = lkMod(a), pay = Math.round(total * 2.9 * t.f * (1 + .15 * (n - 1)) * G.payMult() * (m ? m.pay : 1) * (mst('fuehrung', 60) ? 1.1 : 1));
   const sprit = Math.round(a.km * 2 * .35 * n * (1 - .15 * fpBau('tank')));
-  return {pay, sprit, bp:Math.round(total / 6 * t.f * (m ? m.bp : 1)), st:Math.round((6 + total / 6) * (typeof rekrut === 'function' && rekrut() ? .7 : 1))};
+  return {pay, sprit, bp:Math.round(total / 6 * t.f * (m ? m.bp : 1)), st:Math.round((6 + total / 6) * (typeof rekrut === 'function' && rekrut() ? .7 : 1) * (mst('fitness', 50) ? .75 : 1))};
 }
 function lkTick(events){
   if(!S || !S.standort) return false;
@@ -5061,7 +5152,7 @@ function lkWahl(id, w){
   const a = lkState().aktiv.find(x => x.id === id); if(!a || a.phase !== 'vor' || a.wahl != null) return;
   const L0 = lkLage(a), kdr = lkMod(a) && lkMod(a).wagnis; a.wahl = w;
   let txt;
-  if(w === 1){ const ok = Math.random() * 100 < rollChance({stat:L0[3], base:50}); a.erg = ok ? (kdr ? 1.5 : 1.3) : (kdr ? .7 : .8); a.etxt = ok ? L0[4] : L0[5]; txt = (ok ? 'Gewagt und gewonnen! ' : 'Ging schief. ') + L0[(ok ? 4 : 5)]; }
+  if(w === 1){ const ok = Math.random() * 100 < rollChance({stat:L0[3], base:50}); a.erg = ok ? (kdr ? 1.5 : 1.3) + (mst('schiessen', 40) ? .1 : 0) : (kdr ? .7 : .8); a.etxt = ok ? L0[4] : L0[5]; txt = (ok ? 'Gewagt und gewonnen! ' : 'Ging schief. ') + L0[(ok ? 4 : 5)]; }
   else { a.erg = 1.05; txt = 'Sicher und sauber. Niemand beschwert sich.'; }
   save(); render(); toast(txt);
 }
@@ -5216,7 +5307,7 @@ function fpState(){
 function fpBau(id){ return (fpState().bau[id]) || 0; }
 function fpPlaetze(){ return FP_PLAETZE[fpBau('halle')] || 3; }
 function lkRadius(){ return 70 + 25 * fpBau('funk'); }
-function lkAufMax(){ return lkBefehl().auf + fpBau('bereit'); }
+function lkAufMax(){ return lkBefehl().auf + fpBau('bereit') + (mst('fuehrung', 50) ? 1 : 0); }
 function lkFzT(uid){
   const f = S && S.lk && S.lk.fp ? S.lk.fp.liste.find(x => x.uid === uid) : null;
   if(f) return LK_FZ.find(t => t.id === f.typ);
@@ -5233,13 +5324,16 @@ function fpStatus(f, belegt){
   if(f.zust < 25) return {k:'kaputt', txt:'Nicht einsatzbereit'};
   return {k:'bereit', txt:'Einsatzbereit'};
 }
+function fpPreis(typ){ return Math.round((FP_PREIS[typ] || 1000) * (mst('vitaminb', 40) ? .85 : 1)); }
+function fpBauzeit(b, s){ return b.zeit[s] * (mst('vitaminb', 60) ? .5 : 1); }
+function fpTdPlus(){ return mst('fachwissen', 60) ? 20 : 12; }
 function fpWert(f){ return Math.round((FP_PREIS[f.typ] || 1000) * .35 * f.zust / 100); }
-function fpRepKosten(f){ const w = fpBau('werkstatt'); return Math.max(20, Math.round((FP_PREIS[f.typ] || 1000) * .0012 * (100 - f.zust) * (w ? 1 - .15 * w : 1.3))); }
+function fpRepKosten(f){ const w = fpBau('werkstatt'); return Math.max(20, Math.round((FP_PREIS[f.typ] || 1000) * .0012 * (100 - f.zust) * (w ? 1 - .15 * w : 1.3) * (mst('fachwissen', 40) ? .8 : 1))); }
 function fpRepZeit(f){ const w = fpBau('werkstatt'); return Math.max(10, (100 - f.zust) * 3 * (w ? 1 - .18 * w : 1.5)); }
-function fpLiefer(typ){ return Math.min(1440, 60 + (FP_PREIS[typ] || 1000) / 100); }
+function fpLiefer(typ){ return Math.min(1440, 60 + (FP_PREIS[typ] || 1000) / 100) * (mst('vitaminb', 50) ? .5 : 1); }
 function fpVerschleiss(f, a){
   const t = LK_FZ.find(x => x.id === f.typ), schwer = t.cap.includes('schutz') || t.cap.includes('pionier') ? 1.4 : t.cap.includes('luft') || t.cap.includes('jet') ? 1.2 : 1;
-  return Math.round((3 + a.km * 2 * .03) * schwer * ((a.erg || 1) < 1 ? 1.4 : 1) + Math.random() * 3);
+  return Math.round((3 + a.km * 2 * .03) * schwer * ((a.erg || 1) < 1 ? 1.4 : 1) * (mst('fachwissen', 50) ? .75 : 1) + Math.random() * 3);
 }
 // Lieferungen, Werkstatt und Bau abschließen
 function fpTick(events){
@@ -5263,7 +5357,7 @@ function fpNachEinsatz(a, events){
 }
 
 function fpKaufen(typ){
-  const t = LK_FZ.find(x => x.id === typ), fp = fpState(), preis = FP_PREIS[typ];
+  const t = LK_FZ.find(x => x.id === typ), fp = fpState(), preis = FP_PREIS[typ] ? fpPreis(typ) : 0;
   if(!t || !preis) return 'Unbekanntes Fahrzeug.';
   if(t.fs && !fsHas(t.fs)) return 'Dafür fehlt dir der Schein.';
   if(fp.liste.length >= fpPlaetze()) return 'Kein Stellplatz frei. Baue die Fahrzeughalle aus.';
@@ -5278,7 +5372,7 @@ function fpBauen(id){
   if(fp.baut) return 'Es wird schon gebaut. Ein Bauvorhaben nach dem anderen.';
   if(s >= b.max) return 'Schon voll ausgebaut.';
   const k = b.kosten[s]; if(S.money < k) return 'Dafür reicht dein Geld nicht.';
-  S.money -= k; fp.baut = {id, start:now(), ende:now() + fpMs(b.zeit[s])};
+  S.money -= k; fp.baut = {id, start:now(), ende:now() + fpMs(fpBauzeit(b, s))};
   return null;
 }
 function fpReparieren(uids){
@@ -5294,9 +5388,10 @@ function fpTD(){
   if(fp.td === heute) return 'Technischer Dienst ist heute schon erledigt.';
   const l = fp.liste.filter(f => !f.liefer && !f.ws && !belegt.has(f.uid) && f.zust < 100);
   if(!l.length) return 'Alle Fahrzeuge in der Halle sind top in Schuss.';
-  if(S.stamina < 10) return 'Zu wenig Ausdauer (10 nötig).';
-  S.stamina -= 10; S.staminaTs = now(); fp.td = heute;
-  for(const f of l) f.zust = Math.min(100, f.zust + 12);
+  const kost = mst('fitness', 60) ? 0 : 10;
+  if(S.stamina < kost) return 'Zu wenig Ausdauer (10 nötig).';
+  if(kost){ S.stamina -= kost; S.staminaTs = now(); } fp.td = heute;
+  for(const f of l) f.zust = Math.min(100, f.zust + fpTdPlus());
   G.addPoints(5);
   return null;
 }
@@ -5320,7 +5415,7 @@ function renderFuhrpark(){
   const tdOk = fp.td !== heute && rep.length;
   let h = '<h2>Fuhrpark</h2><p class="small muted" style="margin-top:-4px">Deine Fahrzeuge in der Liegenschaft ' + esc(S.standort.ort) + '. Jeder Einsatz kostet Zustand. Unter 25 % bleibt ein Fahrzeug in der Halle.</p>'
     + '<div class="fpsum"><div><b>' + fp.liste.length + '/' + fpPlaetze() + '</b><span>Stellplätze</span></div><div><b>' + cnt('bereit') + '</b><span>einsatzbereit</span></div><div><b>' + cnt('weg') + '</b><span>im Einsatz</span></div><div><b>' + (cnt('ws') + cnt('kaputt')) + '</b><span>Werkstatt</span></div></div>'
-    + '<div class="fpakt"><button class="btn" data-act="fp_td" ' + (tdOk ? '' : 'disabled') + '><span>Technischer Dienst</span><small>' + (fp.td === heute ? 'heute erledigt' : rep.length ? '+12 % für alle in der Halle · 10 Ausdauer' : 'alles in Ordnung') + '</small></button>'
+    + '<div class="fpakt"><button class="btn" data-act="fp_td" ' + (tdOk ? '' : 'disabled') + '><span>Technischer Dienst</span><small>' + (fp.td === heute ? 'heute erledigt' : rep.length ? '+' + fpTdPlus() + ' % für alle in der Halle' + (mst('fitness', 60) ? '' : ' · 10 Ausdauer') : 'alles in Ordnung') + '</small></button>'
     + '<button class="btn ghost" data-act="fp_repall" ' + (rep.length && S.money >= repK ? '' : 'disabled') + '><span>Alle instandsetzen</span><small>' + (rep.length ? rep.length + ' Fahrzeug' + (rep.length > 1 ? 'e' : '') + ' · ' + eur(repK) : 'nichts zu tun') + '</small></button></div>'
     + '<div class="fplist">' + fp.liste.map((f, i) => {
       const t = LK_FZ.find(x => x.id === f.typ), s = st[i];
@@ -5335,7 +5430,7 @@ function renderFuhrpark(){
       + '<p class="small" style="margin:6px 0 2px">' + esc(b.fx(s)) + '</p>';
     if(laeuft) inner += '<p class="small" style="margin:4px 0"><b>Im Bau:</b> fertig in <span data-fpend="' + fp.baut.ende + '">' + fmtLeft(fp.baut.ende - now()) + '</span></p><div class="prog"><i data-fpprog="' + fp.baut.start + ':' + fp.baut.ende + '" style="width:' + Math.min(100, (now() - fp.baut.start) / (fp.baut.ende - fp.baut.start) * 100) + '%"></i></div>';
     else if(max) inner += '<p class="small muted" style="margin:4px 0 0">Voll ausgebaut.</p>';
-    else inner += '<p class="small muted" style="margin:2px 0 8px">Nächste Stufe: ' + esc(b.fx(s + 1)) + '</p><button class="btn wide" data-act="fp_bau" data-id="' + b.id + '" ' + (fp.baut || S.money < k ? 'disabled' : '') + '>' + eur(k) + ' · ' + fmtMin(b.zeit[s] / S.speed) + '</button>';
+    else inner += '<p class="small muted" style="margin:2px 0 8px">Nächste Stufe: ' + esc(b.fx(s + 1)) + '</p><button class="btn wide" data-act="fp_bau" data-id="' + b.id + '" ' + (fp.baut || S.money < k ? 'disabled' : '') + '>' + eur(k) + ' · ' + fmtMin(fpBauzeit(b, s) / S.speed) + '</button>';
     return '<div class="panel pad fpb' + (laeuft ? ' laeuft' : '') + '">' + inner + '<p class="small muted fpdesc">' + esc(b.desc) + '</p></div>';
   }).join('') + '</div>';
   // Beschaffung
@@ -5345,7 +5440,7 @@ function renderFuhrpark(){
   const kann = typen.filter(t => !t.fs || fsHas(t.fs)), zu = typen.filter(t => t.fs && !fsHas(t.fs));
   h += '<h2>Beschaffung</h2><p class="small muted" style="margin-top:-4px">Anträge gehen an das Beschaffungsamt. Du zahlst den Eigenanteil, die Lieferzeit ist verbindlich. Sagen sie.' + (voll ? ' <b>Kein Stellplatz frei:</b> erst die Fahrzeughalle ausbauen.' : '') + '</p>'
     + '<div class="fpkat">' + kann.map(t => '<div class="fpk"><span class="lkbig">' + t.ic + '</span><span class="fpi"><b>' + esc(t.name) + '</b><span class="small muted">' + t.cap.map(c => LK_CAP[c]).join(', ') + ' · ' + t.v + ' km/h · Lieferung ' + fmtMin(fpLiefer(t.id) / S.speed) + '</span></span>'
-      + '<button class="btn mini" data-act="fp_kauf" data-id="' + t.id + '" ' + (voll || S.money < FP_PREIS[t.id] ? 'disabled' : '') + '>' + eur(FP_PREIS[t.id]) + '</button></div>').join('')
+      + '<button class="btn mini" data-act="fp_kauf" data-id="' + t.id + '" ' + (voll || S.money < fpPreis(t.id) ? 'disabled' : '') + '>' + eur(fpPreis(t.id)) + '</button></div>').join('')
     + zu.map(t => { const fs = FS_I[t.fs]; return '<div class="fpk zu"><span class="lkbig">' + t.ic + '</span><span class="fpi"><b>' + esc(t.name) + '</b><span class="small muted">' + (fs && fs.off ? 'Kommt später ins Spiel' : 'Benötigt den Schein ' + esc(fs ? fs.name : t.fs)) + '</span></span><span class="small muted">' + eur(FP_PREIS[t.id]) + '</span></div>'; }).join('') + '</div>';
   return h;
 }
@@ -5376,7 +5471,7 @@ Object.assign(LK_ACT, {
   fp_rep(uid){ fpErg(fpReparieren([uid]), 'Ab in die Werkstatt.'); },
   fp_repall(){ fpErg(fpReparieren(fpState().liste.map(f => f.uid)), 'Alles in die Werkstatt.'); },
   fp_bau(id){ const b = FP_BAU_I[id]; fpErg(fpBauen(id), b ? 'Baubeginn: ' + b.name + '. Die Baufirma kommt. Irgendwann.' : ''); },
-  fp_kauf(typ){ const t = LK_FZ.find(x => x.id === typ); ask((t ? t.name : 'Fahrzeug') + ' für ' + eur(FP_PREIS[typ]) + ' beantragen? Lieferzeit ' + fmtMin(fpLiefer(typ) / S.speed) + '.', () => fpErg(fpKaufen(typ), 'Antrag genehmigt. Die Lieferung ist unterwegs.'), 'Beantragen'); },
+  fp_kauf(typ){ const t = LK_FZ.find(x => x.id === typ); ask((t ? t.name : 'Fahrzeug') + ' für ' + eur(fpPreis(typ)) + ' beantragen? Lieferzeit ' + fmtMin(fpLiefer(typ) / S.speed) + '.', () => fpErg(fpKaufen(typ), 'Antrag genehmigt. Die Lieferung ist unterwegs.'), 'Beantragen'); },
   fp_weg(uid){ const f = fpState().liste.find(x => x.uid === uid); if(!f) return; ask(lkFzT(uid).name + ' ' + f.kz + ' ausmustern? Du bekommst ' + eur(fpWert(f)) + '.', () => fpErg(fpAusmustern(uid), 'Ausgemustert.'), 'Ausmustern'); },
 });
 
@@ -5639,7 +5734,7 @@ const G = {
     return out;
   },
   maxStamina(){ return 100 + pflegeBonus() + 5*S.stats.fitness + 10*S.stube.kaffee + (vb()==='san' ? 20 : 0) + (hasGear('rucksack') ? 15 : 0) + (albumSet('s') ? 10 : 0) + albumSt() + 2*kStufe('truppenkueche') + 3*kpStufe('kantine'); },
-  regenMs(){ return 180000 / lageF('regen') / S.speed / (rel('dennis')>=30 ? 1.15 : 1) / (1 + .05*S.stube.bett) / (hasGear('wagen') ? 1.2 : 1) / (1 + .02*kStufe('sanbereich')) / (rekrut() ? 2 : 1); }, // 1 Ausdauer alle 3 Minuten, im Dienst keine Erholung
+  regenMs(){ return 180000 / lageF('regen') / (mst('fitness', 40) ? 1.1 : 1) / S.speed / (rel('dennis')>=30 ? 1.15 : 1) / (1 + .05*S.stube.bett) / (hasGear('wagen') ? 1.2 : 1) / (1 + .02*kStufe('sanbereich')) / (rekrut() ? 2 : 1); }, // 1 Ausdauer alle 3 Minuten, im Dienst keine Erholung
   normStamina(){
     if(S.dienst && S.dienst.start){ // Während des Dienstes erholt man sich nicht
       if(S.staminaTs >= S.dienst.start && now() <= S.dienst.end){ S.staminaTs = now(); return; }
@@ -5654,7 +5749,7 @@ const G = {
     }
   },
   payMult(){ return (1 + .01*ordenCount()) * (G.rank().sold/40) * (1 + .03*S.stats.fachwissen) * (1 + .02*S.stats.vitaminb) * (vb()==='inst' ? 1.1 : 1) * (1 + .05*Math.min(5, S.res||0)) * (hasGear('stander') ? 1.1 : 1) * (albumSet('g') ? 1.05 : 1) * (albumSet('l') ? 1.1 : 1) * albumPay() * (1 + .01*kStufe('betreuung') + .02*kpStufe('mannschaftsheim')); },
-  bpMult(){ return lageF('bp') * Math.max(.2, 1 + .01*medalCount() + .03*S.stats.vitaminb + .02*S.stats.fuehrung + rel('spiess')/500 + Math.max(0,rel('chef'))/1000 + .04*S.stube.spind + (vb()==='fm' ? .1 : 0) + (hasGear('kalender') ? .05 : 0) + (albumSet('e') ? .05 : 0) + albumBp() + .02*kpStufe('geschaeftszimmer')); },
+  bpMult(){ return (mst('schiessen', 60) ? 1.1 : 1) * lageF('bp') * Math.max(.2, 1 + .01*medalCount() + .03*S.stats.vitaminb + .02*S.stats.fuehrung + rel('spiess')/500 + Math.max(0,rel('chef'))/1000 + .04*S.stube.spind + (vb()==='fm' ? .1 : 0) + (hasGear('kalender') ? .05 : 0) + (albumSet('e') ? .05 : 0) + albumBp() + .02*kpStufe('geschaeftszimmer')); },
   dienstPay(d){ return Math.round(rtF(d) * wxF(d,'pay') * lagePay(d) * d.pay * G.payMult() * ((vb()==='inf' && (d.id==='gelaende'||d.id==='uebung')) ? 1.15 : 1)); },
   dienstSt(d){ return Math.round(wxF(d,'st') * lageF('st') * d.st * (vb()==='kfz' ? .8 : 1) * (hasGear('stiefel') ? .95 : 1) * (1 - .02*kpStufe('fahrzeughalle')) * (rekrut() ? .7 : 1)); },
   dienstMin(d){ return d.min * (hasGear('uhr') ? .95 : 1) * lageF('dur') * wxF(d,'dur'); },
@@ -5672,6 +5767,7 @@ const G = {
     if(S.einsatz && !d.einsatz) return 'im Auslandseinsatz';
     if(d.einsatz && !S.einsatz) return 'nur im Auslandseinsatz';
     if(d.fs && !fsHas(d.fs)) return 'nur mit Führerschein ' + FS_I[d.fs].name;
+    if(d.statReq) for(const [k, v] of Object.entries(d.statReq)) if(S.stats[k] < v) return 'erst ab ' + STAT_NAME[k] + ' Stufe ' + v;
     if(d.q && dqUsed(d.id) >= d.q) return 'heute keine Fahrzeuge mehr frei';
     { const wl = wxLock(d); if(wl) return wl; }
     if(d.tsk && d.tsk !== S.tsk) return 'nur '+TSK[d.tsk].name;
@@ -6163,7 +6259,7 @@ function renderAusb(){
         : running ? '<div class="small">Stufe '+(lv+1)+' in <span class="num" data-left="ausb"></span></div><div class="prog" style="margin:0"><i data-prog="ausb"></i></div><button class="btn ghost mini" style="text-align:center" data-act="kurz_open">Mit Ausdauer verkürzen</button>'
         : '<div class="small">Nächste Stufe <b>'+(lv+1)+'</b>, Dauer '+fmtMin(G.statMin(s.id)/S.speed)+'</div>'
           + '<button class="btn wide" data-act="stat" data-id="'+s.id+'" '+(dis?'disabled':'')+'>Ausbildung starten<small>'+eur(c)+'</small></button>')
-      + '</div><div class="medals">' + MEDAL_LV.map((l,i) => medalSvg(i, lv >= l, 'Leistungsabzeichen '+s.name+' in '+MEDAL_NAME[i]+' (ab Stufe '+l+')')).join('') + '</div></div>';
+      + mstHtml(s.id) + '</div><div class="medals">' + MEDAL_LV.map((l,i) => medalSvg(i, lv >= l, 'Leistungsabzeichen '+s.name+' in '+MEDAL_NAME[i]+' (ab Stufe '+l+')')).join('') + '</div></div>';
   }).join('') + '</div>'
   + '<p class="small muted" style="margin-top:10px">Leistungsabzeichen gibt es ab Stufe '+MEDAL_LV.join(', ')+'. Jedes bringt dauerhaft 1 % mehr Beurteilungspunkte. Bisher: '+medalCount()+' von '+(MEDAL_LV.length*STATS.length)+'.</p>';
 
@@ -6243,7 +6339,7 @@ function render(){
     main.innerHTML = renderPage();
   }
   if(S && tutOn() && main.insertAdjacentHTML) main.insertAdjacentHTML('afterbegin', tutBox());
-  renderNav(); renderRes(); live(); subnavHint(); seasonApply(); lkAttach(); clAuto(); appellAuto(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
+  renderNav(); renderRes(); live(); subnavHint(); seasonApply(); lkAttach(); clAuto(); appellAuto(); freiAuto(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
   if(typeof afterRender === "function") afterRender();
 }
 
@@ -6694,6 +6790,7 @@ const ACT = {
   sl_ovclose(){ if(S.slFree) S.slFree.intro = false; save(); const o = SLWRAP && SLWRAP.querySelector('.slx-ov'); if(o) o.remove(); slRefresh(); },
   sl_sound(){ S.slSound = !S.slSound; save(); slRefresh(); if(S.slSound) slSnd.win(); },
   sl_feierabend(){ document.getElementById('modalHost').innerHTML = ''; tab = 'stube'; render(); toast('Brockmann nickt zufrieden.'); },
+  frei_go(v){ ACT.close(); const [t, sub] = String(v).split(':'); if(sub){ tab = t; SUB[t] = sub; } else goPage(t); render(); window.scrollTo(0, 0); },
   ask_yes(){ const f = askFn; askFn = null; ACT.close(); if(f) f(); },
 };
 
@@ -7883,7 +7980,7 @@ function renderTruppe(){
   let h = '<h2>Standortkarte</h2><div id="mapslot"></div>' + renderKarteInfo();
   // Kaserne
   const key = standortKey();
-  h += '<h2>Kaserne '+(S.standort ? esc(S.standort.ort) : '')+'</h2>';
+  h += '<h2>Standortausbau '+(S.standort ? esc(S.standort.ort) : '')+'</h2>';
   if(!key){
     h += '<div class="panel pad"><p>Wähle zuerst in der Laufbahn deinen Standort.</p></div>';
   } else {
@@ -8570,7 +8667,7 @@ function slWarn(){
     + '<div class="choices"><button class="btn" data-act="sl_feierabend">Feierabend machen</button><button class="btn ghost" data-act="close">Noch ein paar Runden</button></div></div></div>';
 }
 function renderSpielothek(){
-  let h = '<h2>Spielothek</h2>';
+  let h = '<h2>Spielothek</h2><p class="small muted" style="margin-top:-4px">Nur Spielgeld, kein echtes Geld. Echtes Glücksspiel ist erst ab 18 erlaubt, und auch dann gewinnt am Ende die Bank.</p>';
   if(!slOpen()) return h + '<div class="panel pad"><p style="margin:0">' + (S.einsatz
     ? 'Im Feldlager gibt es keine Spielothek. Die Daddelkiste im Betreuungscontainer ist seit Wochen kaputt.'
     : 'Erst Dienstschluss, dann Spielothek. Brockmann sieht alles.') + '</p></div>';
