@@ -646,6 +646,118 @@ body.hasfab{padding-bottom:calc(136px + env(safe-area-inset-bottom,0px))}
 .xban{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:9px 12px;border-radius:10px;border:1.5px solid #E3B23C;background:linear-gradient(90deg,#22301A,#3F5A2C);color:#F4F1E6;font:inherit;text-align:left;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3)}
 .xbi{font-size:22px;flex:none}.xbx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}.xbx b{font-size:15px;color:#E3B23C}.xbx span{font-size:12.5px;color:#C9CFBC}
 .xbt{flex:none;font:400 17px 'Black Ops One',Impact,sans-serif;color:#F4F1E6;font-variant-numeric:tabular-nums;letter-spacing:.5px}.xbg{flex:none;font-size:20px;color:#E3B23C}
+
+/* =========================================================
+   GEFECHTSSTAND: Designsystem (dunkel, modern, Gold als Aktion)
+   Liegt bewusst am Ende und überschreibt den alten Stil.
+   ========================================================= */
+:root, :root[data-theme="dark"]{
+  --bg:#0B0F0A; --surface:#141A12; --surface2:#1B2318; --ink:#EEF1E6; --muted:#A3AC97; --line:#2B3626;
+  --olive:#1B2318; --olive-ink:#EEF1E6; --board:#0B0F0A; --mark:#E8ECDD;
+  --signal:#E8B33A; --stamp:#E05A4F; --ok:#8FBF5A; --bad:#E05A4F; --info:#6FA8DC;
+  --gold:#E8B33A; --gold-ink:#14180E; --line2:#3A4632; --rad:16px;
+}
+:root[data-theme="light"]{ --gold:#B8860B; --gold-ink:#FFFFFF; --line2:#B9C1AB; --rad:16px; --info:#2F6FA6 }
+body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+body::before{background:var(--bg)}
+
+/* Kopfleiste */
+.top{background:color-mix(in srgb,var(--bg) 92%,transparent);background-image:none;color:var(--ink);border-bottom:1px solid var(--line);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:10px 14px}
+.logo{color:var(--gold);font-size:20px}
+.res{gap:6px;font-weight:700;font-size:16px}
+.res>*{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px 9px;display:flex;align-items:center;gap:6px}
+.res>*:empty{display:none}
+.stam .bar{width:38px;height:5px;background:var(--line)}
+.stam .bar i{background:var(--ok)}
+
+/* Überschriften und Texte */
+h2{font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:700;font-size:17px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink);margin:24px 0 10px}
+h2::after{height:1px;background:var(--line)}
+.sheet h2,.create h2{letter-spacing:.5px}
+.note .big,.target .title,.ausweis .rank,.acard .ah{font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:700}
+.ausweis .rank{font-size:30px;line-height:1;text-transform:uppercase;letter-spacing:.5px}
+.target .title{font-size:22px}
+.note .big{font-size:46px}
+
+/* Flächen */
+.panel{border-radius:var(--rad)}
+.panel:not(.pad){padding:4px 14px}
+.ausweis{border-radius:18px;border:1px solid var(--line);border-left:1px solid var(--line);background:linear-gradient(160deg,color-mix(in srgb,var(--surface) 70%,#2F3D22) 0%,var(--surface) 60%);padding:16px}
+.ausweis.tap:hover{border-color:var(--gold)}
+.ausweis .akgo{color:var(--gold);top:auto;bottom:10px;right:14px}
+.strip{border-radius:14px;padding:10px 14px}
+.strip .prog{height:6px}
+.prog{border-radius:3px;background:var(--line)}
+.prog>i{background:var(--ok)}
+.acard{border-radius:var(--rad);box-shadow:none}
+.acard .ah{background:var(--surface2);background-image:none;color:var(--ink);font-size:16px;letter-spacing:.3px;border-bottom:1px solid var(--line)}
+.acard .lvl{border-color:var(--line)}
+.acard.run{outline:2px solid var(--gold);outline-offset:-2px}
+.ktile{border-radius:var(--rad);padding:12px 13px}
+.ktile:hover{border-color:var(--gold)}
+.kgrp{font-family:'Barlow Condensed','Barlow',sans-serif;font-size:13px;letter-spacing:2px;color:var(--muted)}
+.ktile .kti{color:var(--gold)}
+.secfold{border-radius:14px}
+.secfold>summary{font-family:'Barlow Condensed','Barlow',sans-serif;font-size:17px;letter-spacing:.8px;text-transform:uppercase}
+.sheet{border-radius:20px;border:1px solid var(--line)}
+.overlay{background:rgba(5,7,4,.72);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.lock{border-radius:10px}
+.tag{border-radius:6px}
+.toast{border-radius:12px;bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+
+/* Knöpfe: Gold nur für die Hauptaktion */
+.btn{border-radius:12px;font-weight:700;background:var(--surface2);color:var(--ink);border:1px solid var(--line2)}
+.btn:not(:disabled):hover{border-color:var(--gold)}
+.btn.gold{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.btn.ghost{background:transparent;border-color:var(--line2)}
+.btn.danger{border-color:var(--bad);color:var(--bad);background:transparent}
+.seg{border-radius:12px;border-color:var(--line2);background:var(--surface)}
+.seg button{font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--gold);color:var(--gold-ink);font-weight:700}
+.inp,.sel,.create input,.lp-form input,textarea{border-radius:10px!important}
+
+/* Unterbereiche als Pillen */
+.subnav{background:color-mix(in srgb,var(--bg) 94%,transparent);border-bottom:1px solid var(--line);box-shadow:none;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.subnav button{border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:20px;min-height:40px}
+.subnav button:hover{background:var(--surface2)}
+.subnav button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.kback button{border-radius:12px}
+
+/* Schwebende Navigation */
+.nav{left:max(10px,calc(50% - 320px));right:max(10px,calc(50% - 320px));bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:6px;border:1px solid var(--line);border-radius:20px;
+  background:color-mix(in srgb,var(--surface) 96%,transparent);box-shadow:0 10px 30px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.nav button{min-height:52px;padding:6px 0;border-radius:14px;font-size:11px;position:relative}
+.nav button[aria-current="page"]{background:var(--gold);color:var(--gold-ink)}
+.nav button[aria-current="page"] svg{color:var(--gold-ink)}
+.nav .dot{border-color:var(--surface)}
+.chatfab{bottom:calc(84px + env(safe-area-inset-bottom,0px));right:16px;border-color:var(--bg)}
+body.hasfab{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+
+/* Startseite */
+.lp-hero{background-color:#0B0F0A;border-bottom:1px solid var(--line);
+  background-image:radial-gradient(ellipse 120px 60px at 12% 18%,rgba(94,110,56,.35) 60%,transparent 62%),radial-gradient(ellipse 140px 55px at 85% 10%,rgba(58,46,30,.45) 60%,transparent 62%),radial-gradient(ellipse 110px 70px at 70% 58%,rgba(94,110,56,.25) 60%,transparent 62%),radial-gradient(ellipse 130px 50px at 20% 78%,rgba(46,58,26,.5) 60%,transparent 62%),linear-gradient(180deg,#1C2516 0%,#0B0F0A 100%)!important;background-size:auto!important}
+.lp-hero h1{color:#E8B33A}
+.lp-hero p{color:#C3CAB7}
+.lp-feat div,.lp-form{border-radius:var(--rad)}
+.lp-quote{border-left-color:var(--gold)}
+
+/* Heute: Ausweis mit Ring, Kennzahlen, Schnellzugriff */
+.gsring{position:relative;width:92px;height:92px;flex:none;display:flex;align-items:center;justify-content:center}
+.gsring>svg.ring{position:absolute;inset:0}
+.gsring>svg:not(.ring){position:relative}
+.gsnext{font-size:13px;margin-top:6px}.gsnext b{color:var(--gold)}
+.gsstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.gsstats div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-width:0}
+.gsstats b{display:block;font:700 22px/1.1 'Barlow Condensed','Barlow',sans-serif}
+.gsstats span{font-size:12px;color:var(--muted)}
+.gsdock{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.gsdock button{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);font:700 12px 'Barlow',sans-serif;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:68px;cursor:pointer;position:relative}
+.gsdock button:first-child{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.gsdock button:hover{border-color:var(--gold)}
+.gsdock .gsdot{position:absolute;top:7px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--bad)}
+.xban{border-radius:12px;background:color-mix(in srgb,var(--gold) 9%,var(--bg));border-color:color-mix(in srgb,var(--gold) 60%,transparent);box-shadow:none}
+.xbt{font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:700;font-size:19px;color:var(--gold)}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4276,6 +4388,12 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:23, d:'22.11.2026', t:'Neues Design: Gefechtsstand', p:[
+    'Das ganze Spiel hat einen neuen, modernen Look: dunkel, klar, Gold für die wichtigste Aktion',
+    'Schwebende Navigation unten, Unterbereiche als Pillen',
+    'Auf „Heute“: Dienstgradabzeichen im Fortschrittsring bis zur nächsten Beförderung, Kennzahlen und Schnellzugriff',
+    'Die helle Darstellung bleibt in den Einstellungen wählbar'
+  ]},
   {v:22, d:'22.11.2026', o:1, t:'Funkkreis leichter finden', p:[
     'Unten rechts gibt es jetzt immer einen Knopf zum Funkkreis, mit Zähler für neue Nachrichten',
     'Auf „Heute“ siehst du die letzten Nachrichten und kannst direkt antworten',
@@ -4910,6 +5028,46 @@ setInterval(() => {
   const [t, h, m, s] = xcdTeile(), z = n => String(n).padStart(2, '0'); e.textContent = t + ' T · ' + z(h) + ':' + z(m) + ':' + z(s);
 }, 1000);
 function xbanGo(id){ const h = [...document.querySelectorAll('main h2')].find(x => x.textContent.trim() === id); if(h){ const y = h.getBoundingClientRect().top + window.scrollY - 70; window.scrollTo({top:y, behavior:'smooth'}); } }
+/* ---------- Gefechtsstand: Ausweis mit Fortschrittsring, Kennzahlen, Schnellzugriff ---------- */
+function gsFortschritt(){
+  let best = null;
+  for(const id of (NEXT[S.rank] || [])){
+    if(!R[id]) continue;
+    let reqs = []; try{ reqs = G.promoReqs(id); }catch(e){ continue; }
+    const p = reqs.length ? reqs.filter(x => x.ok).length / reqs.length : 1;
+    if(!best || p > best.p) best = {id, p};
+  }
+  if(!best) return {p:1, txt:'Höchster Dienstgrad erreicht'};
+  const n = typeof rankNameFor === 'function' ? rankNameFor(S.tsk || 'heer', best.id) : R[best.id].name;
+  return {p:best.p, txt:'<b>' + Math.round(best.p * 100) + ' %</b> <span class="muted">bis ' + esc(n) + '</span>'};
+}
+function gsRing(p){
+  const u = 2 * Math.PI * 41, d = Math.max(0, Math.min(1, p)) * u;
+  return '<svg class="ring" width="92" height="92" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="41" fill="none" stroke="var(--line)" stroke-width="6"/>'
+    + (d > 0 ? '<circle cx="46" cy="46" r="41" fill="none" stroke="var(--gold)" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + d.toFixed(1) + ' ' + u.toFixed(1) + '" transform="rotate(-90 46 46)"/>' : '') + '</svg>';
+}
+function gsStats(){
+  return '<div class="gsstats"><div><b>' + G.note() + '</b><span>Beurteilung</span></div><div><b>' + (S.dienstCount || 0) + '</b><span>Dienste</span></div><div><b>' + ordenCount() + '</b><span>Orden</span></div></div>';
+}
+function gsDock(){
+  const ic = d => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true">' + d + '</svg>';
+  const I = {
+    dienst:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/>',
+    lage:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
+    fuhr:'<rect x="2" y="8" width="13" height="8" rx="1"/><path d="M15 11h4l3 3v2h-7"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',
+    kp:'<path d="M12 2.5l7.5 2.6v5.6c0 4.9-3.2 8.4-7.5 9.8-4.3-1.4-7.5-4.9-7.5-9.8V5.1z"/>',
+    ausb:'<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/>',
+    stube:'<path d="M3 11l9-7 9 7v9H3z"/>',
+    kaserne:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>',
+  };
+  const lage = frei('lage'), online = typeof renderTruppe === 'function';
+  const lkNeu = lage && S.lk && S.lk.offen && S.lk.offen.length && !(S.lk.aktiv || []).length;
+  const b = [['dienst:plan', 'Dienst', I.dienst, false]];
+  b.push(lage ? ['dienst:lage', 'Lagekarte', I.lage, lkNeu] : ['ausb:ausbildung', 'Ausbildung', I.ausb, false]);
+  b.push(lage ? ['dienst:fuhrpark', 'Fuhrpark', I.fuhr, false] : ['zuhause:stube', 'Stube', I.stube, false]);
+  b.push(online && frei('kompanie') ? ['truppe:kompanie', 'Kompanie', I.kp, false] : ['kaserne:hub', 'Kaserne', I.kaserne, false]);
+  return '<div class="gsdock">' + b.map(([go, l, i, dot]) => '<button data-act="frei_go" data-id="' + go + '">' + ic(i) + l + (dot ? '<span class="gsdot" aria-label="neue Aufträge"></span>' : '') + '</button>').join('') + '</div>';
+}
 function xcdCard(){ const h = xcdHtml(false); return h ? '<h2>Weihnachtsevent</h2>' + h : ''; }
 setInterval(() => {
   const el = document.querySelectorAll('[data-xcd]'); if(!el.length) return;
@@ -6221,12 +6379,14 @@ function renderStube(){
   const nextN = note>1 ? noteMin(note-1) : null;
   const prevN = note < 5 ? noteMin(note) : 0;
   const pct = nextN ? Math.min(100,(pts-prevN)/(nextN-prevN)*100) : 100;
-  let h = xcdBanner() + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span>'+insignia(S.rank,58)
+  const gs = gsFortschritt();
+  let h = xcdBanner() + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
     + '<div><div class="small muted">'+esc(GROUPS[r.g])+'</div><div class="rank">'+esc(r.name)+'</div>'
-    + '<div class="name">'+esc(S.name)+(S.verw ? ', '+esc(VERW[S.verw].name) : '')+'</div><div class="small muted">Tagessold '+eur(r.sold)+'</div>'
-    + (S.standort ? '<div class="small muted">Standort '+esc(S.standort.ort)+'</div>' : '')
+    + '<div class="name">'+esc(S.name)+(S.verw ? ' · '+esc(VERW[S.verw].name) : '')+'</div>'
+    + '<div class="small muted">Tagessold '+eur(r.sold)+(S.standort ? ' · '+esc(S.standort.ort) : '')+'</div>'
+    + '<div class="gsnext">'+gs.txt+'</div>'
     + (ordenCount() ? '<div class="spange" title="Ordensspange">'+ORDEN.filter(o => S.orden[o.id]).map(o => ribbon(o)).join('')+'</div>' : '')
-    + '</div></div>';
+    + '</div></div>' + gsStats() + gsDock();
 
   if(S.pending.length){
     h += '<h2>Meldungen</h2><div class="panel">' + S.pending.map(id => { const e = EV[id], n = NPCS[e.who];
