@@ -643,6 +643,9 @@ body.hasfab{padding-bottom:calc(136px + env(safe-area-inset-bottom,0px))}
 .cmb{display:inline-block;vertical-align:middle;margin-left:6px;font:700 12px Barlow,sans-serif;background:#B3261E;color:#fff;border-radius:10px;padding:2px 8px}
 @keyframes cfPuls{0%,100%{box-shadow:0 6px 16px rgba(0,0,0,.45),0 0 0 0 rgba(227,178,60,.6)}50%{box-shadow:0 6px 16px rgba(0,0,0,.45),0 0 0 10px rgba(227,178,60,0)}}
 @media (prefers-reduced-motion:reduce){.chatfab.neu{animation:none}.chatping{transition:none}}
+.xban{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:9px 12px;border-radius:10px;border:1.5px solid #E3B23C;background:linear-gradient(90deg,#22301A,#3F5A2C);color:#F4F1E6;font:inherit;text-align:left;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.xbi{font-size:22px;flex:none}.xbx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}.xbx b{font-size:15px;color:#E3B23C}.xbx span{font-size:12.5px;color:#C9CFBC}
+.xbt{flex:none;font:400 17px 'Black Ops One',Impact,sans-serif;color:#F4F1E6;font-variant-numeric:tabular-nums;letter-spacing:.5px}.xbg{flex:none;font-size:20px;color:#E3B23C}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4891,6 +4894,22 @@ function xcdHtml(lp){
     + (lp ? '<button class="btn gold" data-act="lmode" data-id="signup" style="margin-top:6px">Jetzt anmelden und dabei sein</button>' : '<p class="xcdf">Antreten um 00:00 Uhr. Stiefel geputzt, Mütze auf.</p>')
     + '</div>';
 }
+// Schmales Band ganz oben auf „Heute“: Countdown bis zum Event, im Dezember das Türchen des Tages
+function xcdBanner(){
+  if(xcdAktiv()){
+    const [t, h, m, s] = xcdTeile(), z = n => String(n).padStart(2, '0');
+    return '<button class="xban" data-act="xban" data-id="Weihnachtsevent"><span class="xbi" aria-hidden="true">🎄</span><span class="xbx"><b>Weihnachtsevent</b><span>startet am 1. Dezember</span></span><span class="xbt" data-xcdb>' + t + ' T · ' + z(h) + ':' + z(m) + ':' + z(s) + '</span><span class="xbg" aria-hidden="true">›</span></button>';
+  }
+  const tag = typeof xmasTag === 'function' ? xmasTag() : 0;
+  if(tag && tag <= 24 && typeof advState === 'function' && !advState().open[tag])
+    return '<button class="xban" data-act="xban" data-id="Adventskalender"><span class="xbi" aria-hidden="true">🎁</span><span class="xbx"><b>Türchen ' + tag + ' wartet!</b><span>Adventskalender</span></span><span class="xbg" aria-hidden="true">›</span></button>';
+  return '';
+}
+setInterval(() => {
+  const e = document.querySelector('[data-xcdb]'); if(!e || !xcdAktiv()) return;
+  const [t, h, m, s] = xcdTeile(), z = n => String(n).padStart(2, '0'); e.textContent = t + ' T · ' + z(h) + ':' + z(m) + ':' + z(s);
+}, 1000);
+function xbanGo(id){ const h = [...document.querySelectorAll('main h2')].find(x => x.textContent.trim() === id); if(h){ const y = h.getBoundingClientRect().top + window.scrollY - 70; window.scrollTo({top:y, behavior:'smooth'}); } }
 function xcdCard(){ const h = xcdHtml(false); return h ? '<h2>Weihnachtsevent</h2>' + h : ''; }
 setInterval(() => {
   const el = document.querySelectorAll('[data-xcd]'); if(!el.length) return;
@@ -6202,7 +6221,7 @@ function renderStube(){
   const nextN = note>1 ? noteMin(note-1) : null;
   const prevN = note < 5 ? noteMin(note) : 0;
   const pct = nextN ? Math.min(100,(pts-prevN)/(nextN-prevN)*100) : 100;
-  let h = '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span>'+insignia(S.rank,58)
+  let h = xcdBanner() + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span>'+insignia(S.rank,58)
     + '<div><div class="small muted">'+esc(GROUPS[r.g])+'</div><div class="rank">'+esc(r.name)+'</div>'
     + '<div class="name">'+esc(S.name)+(S.verw ? ', '+esc(VERW[S.verw].name) : '')+'</div><div class="small muted">Tagessold '+eur(r.sold)+'</div>'
     + (S.standort ? '<div class="small muted">Standort '+esc(S.standort.ort)+'</div>' : '')
@@ -6845,6 +6864,7 @@ const ACT = {
   ask_yes(){ const f = askFn; askFn = null; ACT.close(); if(f) f(); },
 };
 
+ACT.xban = xbanGo;
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
   if(!b || b.disabled) return;
