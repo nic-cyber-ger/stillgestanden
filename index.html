@@ -758,6 +758,12 @@ body.hasfab{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .gsdock .gsdot{position:absolute;top:7px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--bad)}
 .xban{border-radius:12px;background:color-mix(in srgb,var(--gold) 9%,var(--bg));border-color:color-mix(in srgb,var(--gold) 60%,transparent);box-shadow:none}
 .xbt{font-family:'Barlow Condensed','Barlow',sans-serif;font-weight:700;font-size:19px;color:var(--gold)}
+.lkalarm{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 10px;padding:10px 12px;border-radius:12px;border:1.5px solid var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--bg));color:var(--ink);font:inherit;text-align:left;cursor:pointer;animation:lkaPuls 1.6s ease-in-out infinite}
+.lkai{flex:none;width:28px;height:28px;border-radius:50%;background:var(--bad);color:#fff;font:800 18px/28px 'Barlow Condensed','Barlow',sans-serif;text-align:center}
+.lkat{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.lkat b{font-size:15px}.lkat>span{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lkago{flex:none;font:700 14px 'Barlow',sans-serif;color:var(--bad)}
+@keyframes lkaPuls{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--bad) 25%,transparent)}}
+@media (prefers-reduced-motion:reduce){.lkalarm{animation:none}}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -2113,7 +2119,7 @@ function renderPage(){
   const grp = kind ? vis.filter(p => cur.x.grp && p.x.grp === cur.x.grp) : vis;
   const nav = grp.length > 1 ? '<div class="subnav" role="group" aria-label="Unterbereiche">' + grp.map(p => '<button data-act="sub" data-id="' + p.x.id + '" aria-pressed="' + (p === cur) + '">' + p.x.label + '</button>').join('') + '</div>' : '';
   const back = kind ? '<div class="kback"><button data-act="main" data-id="kaserne">‹ Kaserne</button><b>' + esc(cur.x.grp ? GRP_NAME[cur.x.grp] : cur.x.label) + '</b></div>' : '';
-  return back + nav + runStrip() + foldWrap(cur.x, cur.html);
+  return back + nav + lkAlarm() + runStrip() + foldWrap(cur.x, cur.html);
 }
 
 /* ---------- Kaserne: Kacheln statt Reiter ---------- */
@@ -4600,6 +4606,7 @@ function renderAkte(){
 // Übersicht: alles, was zu tun ist, in einer Liste statt vieler einzelner Kästen
 function todoList(){
   const t = [];
+  for(const a of (typeof lkFragen === 'function' ? lkFragen() : [])) t.push(['🚨', '<b>Entscheidung nötig:</b> ' + esc(LK_TYP.find(x => x.id === a.typ).name + ' · ' + a.ort), 'Entscheiden', 'lk_open', a.id, 'warn']);
   for(const id of (NEXT[S.rank] || [])) if(S.gaDone && G.promoReqs(id).every(x => x.ok)){ t.push(['⭐', '<b>Beförderung möglich:</b> ' + esc(R[id].name), 'Beantragen', 'tab', 'laufbahn', 'gold']); break; }
   if(S.pakete) t.push(['📦', '<b>Feldpost:</b> ' + (S.pakete === 1 ? 'ein Paket wartet' : S.pakete + ' Pakete warten'), 'Öffnen', 'paket', '', 'gold']);
   if(G.dzOver()) t.push(['📋', '<b>Dienstzeit zu Ende.</b> Weiterverpflichten oder ausscheiden', 'Entscheiden', 'tab', 'dv', 'warn']);
@@ -5061,7 +5068,7 @@ function gsDock(){
     kaserne:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>',
   };
   const lage = frei('lage'), online = typeof renderTruppe === 'function';
-  const lkNeu = lage && S.lk && S.lk.offen && S.lk.offen.length && !(S.lk.aktiv || []).length;
+  const lkNeu = lage && ((S.lk && S.lk.offen && S.lk.offen.length && !(S.lk.aktiv || []).length) || lkFragen().length);
   const b = [['dienst:plan', 'Dienst', I.dienst, false]];
   b.push(lage ? ['dienst:lage', 'Lagekarte', I.lage, lkNeu] : ['ausb:ausbildung', 'Ausbildung', I.ausb, false]);
   b.push(lage ? ['dienst:fuhrpark', 'Fuhrpark', I.fuhr, false] : ['zuhause:stube', 'Stube', I.stube, false]);
@@ -5341,7 +5348,7 @@ function lkTick(events){
   if(!st.next) st.next = now();
   while(st.offen.length < 5 + fpBau('funk') && now() >= st.next){ const a = lkNeu(); st.next = now() + 40 * (1 - .1 * fpBau('funk')) * 60000 / S.speed; if(!a) break; st.offen.push(a); ch = true; if(st.offen.length < 4) st.next = now(); }
   for(const a of st.aktiv.slice()){
-    if(a.phase === 'an' && now() >= a.tAn){ a.phase = 'vor'; ch = true; events.push(LK_TYP.find(x => x.id === a.typ).name + ' ' + a.ort + ': vor Ort eingetroffen. Lage beachten!'); }
+    if(a.phase === 'an' && now() >= a.tAn){ a.phase = 'vor'; ch = true; events.push(LK_TYP.find(x => x.id === a.typ).name + ' ' + a.ort + ': vor Ort eingetroffen. Entscheidung nötig!'); }
     if(a.phase === 'vor' && now() >= a.tWork){ if(a.wahl == null) a.wahl = 0; a.phase = 'rueck'; ch = true; }
     if(a.phase === 'rueck' && now() >= a.tEnd){ lkFertig(a, events); ch = true; }
   }
@@ -5498,6 +5505,22 @@ const LK_ACT = {
   lk_wahl(v){ const [id, w] = String(v).split(':'); lkWahl(id, Number(w)); document.getElementById('modalHost').innerHTML = ''; },
 };
 function lkStrip(it){ if(S && S.lk) for(const a of S.lk.aktiv) if(a.mit) it.push(['lk:' + a.id, LK_TYP.find(x => x.id === a.typ).name + ' ' + a.ort + ' · ' + lkPhase(a)]); }
+
+/* ---------- Entscheidungen auf der Lagekarte nicht verpassen ---------- */
+function lkFragen(){ return S && S.lk && S.lk.aktiv ? S.lk.aktiv.filter(a => a.phase === 'vor' && a.wahl == null) : []; }
+function lkAlarm(){
+  const l = lkFragen(); if(!l.length) return '';
+  const a = l[0], t = LK_TYP.find(x => x.id === a.typ);
+  return '<button class="lkalarm" data-act="lk_open" data-id="' + a.id + '"><span class="lkai" aria-hidden="true">!</span><span class="lkat"><b>Entscheidung nötig' + (l.length > 1 ? ' (' + l.length + ')' : '') + '</b><span>' + esc(t.name + ' · ' + a.ort) + ' · noch <span data-lkl2="' + a.id + '">' + fmtLeft(a.tWork - now()) + '</span></span></span><span class="lkago">Entscheiden ›</span></button>';
+}
+// Beim Eintreffen vor Ort einmal von selbst das Entscheidungsfenster öffnen
+function lkFrageAuto(){
+  if(!S || (typeof tutOn === 'function' && tutOn())) return;
+  const a = lkFragen().find(x => !x.gefragt); if(!a) return;
+  const host = document.getElementById('modalHost'); if(!host || host.innerHTML.trim()) return;
+  a.gefragt = true; save(); LK_SEL = null; lkOpen(a.id);
+}
+setInterval(() => { document.querySelectorAll('[data-lkl2]').forEach(e => { const a = S && S.lk && S.lk.aktiv.find(x => x.id === e.dataset.lkl2); if(a) e.textContent = fmtLeft(a.tWork - now()); }); }, 1000);
 /* ---------- Fuhrpark und Liegenschaft: eigene Fahrzeuge, Zustand, Werkstatt, Ausbau ---------- */
 // Eigenanteil bei der Beschaffung in Euro
 const FP_PREIS = {unimog:2500, wolf:1200, lkw:3500, mulde:7500, dachs:14000, boxer:12000, puma:20000, leo:28000, nh90:35000, tankw:4000, schlepper:2500, chinook:45000, a400m:70000, ef:80000, mzb:3000, hafenboot:5500, frsb:4500, fregatte:120000, p8:60000};
@@ -6340,6 +6363,7 @@ function renderNav(){
   nav.innerHTML = TABS.map(([id,label]) =>
     '<button data-act="main" data-id="'+id+'" '+(navOf(tab)===id?'aria-current="page"':'')+'>'+(id==='stube' ? ICONS.raum : ICONS[id])+label
     + (id==='stube' && (S.pending.length || S.pakete || waReady()) ? '<span class="dot" aria-label="neue Meldung"></span>' : '')
+    + (id==='dienst' && typeof lkFragen === 'function' && lkFragen().length ? '<span class="dot" aria-label="Entscheidung auf der Lagekarte"></span>' : '')
     + (id==='akte' && ((S.gaDone && (NEXT[S.rank] || []).some(x => G.promoReqs(x).every(r => r.ok))) || (ONLINE.admin && ONLINE.fb && ONLINE.fb.offen)) ? '<span class="dot" aria-label="Beförderung möglich"></span>' : '')
     + (id==='kaserne' && typeof chatUnread === 'function' && chatUnread() ? '<span class="dot" aria-label="neue Nachrichten im Chat"></span>' : '')+'</button>').join('');
   if(typeof chatFabUpdate === 'function') chatFabUpdate();
@@ -6569,7 +6593,7 @@ function render(){
     main.innerHTML = renderPage();
   }
   if(S && tutOn() && main.insertAdjacentHTML) main.insertAdjacentHTML('afterbegin', tutBox());
-  renderNav(); renderRes(); live(); subnavHint(); seasonApply(); lkAttach(); clAuto(); appellAuto(); freiAuto(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
+  renderNav(); renderRes(); live(); subnavHint(); seasonApply(); lkAttach(); lkFrageAuto(); clAuto(); appellAuto(); freiAuto(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
   if(typeof afterRender === "function") afterRender();
 }
 
