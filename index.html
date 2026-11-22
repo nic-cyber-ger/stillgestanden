@@ -625,6 +625,24 @@ body.landing{padding-bottom:0}
 .spf{font:italic 500 12px Barlow,sans-serif;color:#B9AC99;margin:12px 0 0}
 @keyframes spPuls{50%{transform:scale(1.18)}}
 @media (prefers-reduced-motion:reduce){.sph{animation:none}}
+.spbz{max-width:330px;margin:12px auto 0;text-align:left;display:flex;flex-direction:column;gap:4px}.spbz>b{font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:#C9BBA8}
+.spbz>div.st{display:flex;gap:8px;align-items:center;padding:6px 9px;border-radius:6px;background:rgba(244,241,230,.06);border:1px dashed rgba(227,178,60,.35);font:600 14px Barlow,sans-serif;color:#C9BBA8}.spbz>div.st b{margin-left:auto;font-size:16px}.spbz>div.st.ok{color:#F4F1E6;border-style:solid;border-color:#E3B23C;background:rgba(227,178,60,.14)}.spbz>div.st.ok .spk{background:#E3B23C;color:#2C1E16;border-color:#E3B23C}
+.spbz .spbar{margin:6px 0 2px;max-width:none}.spbz .spn{text-align:center}
+.chatfab{position:fixed;right:14px;bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:8;width:54px;height:54px;border-radius:50%;border:2px solid #1E2416;background:#E3B23C;color:#1E2416;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,.45);cursor:pointer;padding:0}
+.chatfab[hidden]{display:none}.chatfab.neu{animation:cfPuls 1.8s ease-in-out infinite}
+.chatfab .cfb{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:#B3261E;color:#fff;font:700 12px/22px Barlow,sans-serif;border:2px solid var(--bg);box-sizing:border-box}
+.chatfab .cfb[hidden]{display:none}
+body.hasfab{padding-bottom:calc(136px + env(safe-area-inset-bottom,0px))}
+.chatping{position:fixed;left:12px;right:12px;top:calc(64px + env(safe-area-inset-top,0px));z-index:60;display:flex;gap:10px;align-items:center;text-align:left;background:#F4F1E6;color:#1E2416;border:0;border-left:5px solid #E3B23C;border-radius:10px;padding:10px 12px;box-shadow:0 10px 26px rgba(0,0,0,.45);font:inherit;cursor:pointer;transform:translateY(-140%);opacity:0;transition:transform .35s cubic-bezier(.2,1.2,.4,1),opacity .25s;max-width:520px;margin:0 auto}
+.chatping.on{transform:none;opacity:1}.cpi{font-size:22px;flex:none}.cpt{display:flex;flex-direction:column;min-width:0;font-size:13px}.cpt b{font-size:14px}.cpt .cph{color:#6B6B5A;font-size:12.5px}.cpt span{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#3B4524}
+.cmini .cmm{display:grid;grid-template-columns:auto 1fr;column-gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.cmini .cmm b{font-size:14px}.cmini .cmm time{font-size:12px;color:var(--muted);justify-self:end}.cmini .cmm span{grid-column:1/-1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);opacity:.9}
+.cmini .cmm.neu{border-left:3px solid var(--signal);padding-left:8px}.cmini .cmm.neu b::after{content:' neu';color:var(--signal);font-size:11px}
+.cmform{display:flex;gap:8px;margin-top:10px}.cmform input{flex:1;min-width:0;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:16px}.cmform .btn{flex:none;min-width:48px;padding:0 12px}
+.cmini .cmh2{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.cmb{display:inline-block;vertical-align:middle;margin-left:6px;font:700 12px Barlow,sans-serif;background:#B3261E;color:#fff;border-radius:10px;padding:2px 8px}
+@keyframes cfPuls{0%,100%{box-shadow:0 6px 16px rgba(0,0,0,.45),0 0 0 0 rgba(227,178,60,.6)}50%{box-shadow:0 6px 16px rgba(0,0,0,.45),0 0 0 10px rgba(227,178,60,0)}}
+@media (prefers-reduced-motion:reduce){.chatfab.neu{animation:none}.chatping{transition:none}}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1800,8 +1818,8 @@ function notifyEvents(ev){
 const SUBS = {
   stube: [
     {id:'uebersicht', label:'Heute', src:'stube', rest:true, fold:true,
-     open:['Meldungen','Zu erledigen','Grundausbildung','Prüfungen','Weihnachtsevent','Weihnachtsspende','Adventskalender','Weihnachtsfeier','Auslandseinsatz','Tageslage','Dienstzeitende'],
-     match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Zu erledigen','Weihnachtsevent','Weihnachtsspende','Adventskalender','Weihnachtsfeier','Tageslage']},
+     open:['Meldungen','Zu erledigen','Funkkreis','Grundausbildung','Prüfungen','Weihnachtsevent','Weihnachtsspende','Adventskalender','Weihnachtsfeier','Auslandseinsatz','Tageslage','Dienstzeitende'],
+     match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Zu erledigen','Funkkreis','Weihnachtsevent','Weihnachtsspende','Adventskalender','Weihnachtsfeier','Tageslage']},
   ],
   dienst: [
     {id:'plan', label:'Dienstplan', src:'dienst', rest:true, match:['Dienstplan']},
@@ -4255,10 +4273,16 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:22, d:'22.11.2026', o:1, t:'Funkkreis leichter finden', p:[
+    'Unten rechts gibt es jetzt immer einen Knopf zum Funkkreis, mit Zähler für neue Nachrichten',
+    'Auf „Heute“ siehst du die letzten Nachrichten und kannst direkt antworten',
+    'Kommt eine neue Nachricht, erscheint oben kurz ein Funkspruch. Abschalten kannst du das im Funkkreis'
+  ]},
   {v:21, d:'22.11.2026', o:1, t:'Weihnachtsspende der Truppe', p:[
     'Vom 1. bis 24. Dezember sammeln alle Spieler gemeinsam Spielgeld für das Soldatenhilfswerk der Bundeswehr',
     'Je mehr Spieler mitmachen, desto mehr echtes Geld spendet die Spielleitung: 10 € auf jeden Fall, bis zu 50 € bei 50 Spendern',
     'Mitspenden kann jeder ab Gefreiter. Wer mitmacht, bekommt den Orden „Wohltäter der Truppe“',
+    'Bonusziel: Sammelt die Truppe 25 Millionen Spielgeld, legt die Spielleitung noch 25 € drauf',
     'Nach Weihnachten steht der Nachweis der Überweisung direkt im Spiel'
   ]},
   {v:20, d:'22.11.2026', t:'Mehr Übersicht', p:[
@@ -6134,13 +6158,14 @@ const TABS = [['stube','Heute'],['dienst','Dienst'],['ausb','Ausbildung'],['kase
 function renderNav(){
   const nav = document.getElementById('nav');
   nav.hidden = !(S && USER && ONLINE.profile);
-  if(nav.hidden) return;
+  if(nav.hidden){ if(typeof chatFabUpdate === 'function') chatFabUpdate(); return; }
   nav.style.gridTemplateColumns = 'repeat('+TABS.length+',1fr)';
   nav.innerHTML = TABS.map(([id,label]) =>
     '<button data-act="main" data-id="'+id+'" '+(navOf(tab)===id?'aria-current="page"':'')+'>'+(id==='stube' ? ICONS.raum : ICONS[id])+label
     + (id==='stube' && (S.pending.length || S.pakete || waReady()) ? '<span class="dot" aria-label="neue Meldung"></span>' : '')
     + (id==='akte' && ((S.gaDone && (NEXT[S.rank] || []).some(x => G.promoReqs(x).every(r => r.ok))) || (ONLINE.admin && ONLINE.fb && ONLINE.fb.offen)) ? '<span class="dot" aria-label="Beförderung möglich"></span>' : '')
     + (id==='kaserne' && typeof chatUnread === 'function' && chatUnread() ? '<span class="dot" aria-label="neue Nachrichten im Chat"></span>' : '')+'</button>').join('');
+  if(typeof chatFabUpdate === 'function') chatFabUpdate();
 }
 
 function renderRes(){
@@ -6196,7 +6221,7 @@ function renderStube(){
     h += '<h2>Grundausbildung</h2><div class="panel pad"><p class="small">Bevor es richtig losgeht: Grundausbildung. Etwa eine Stunde, und jeder Schritt wird sofort belohnt. Am Ende steht das feierliche Gelöbnis mit '+eur(5*G.rank().sold)+' Prämie.</p>'
       + reqList(req) + (S.dgOk ? '' : '<button class="btn ghost wide" data-act="dgtest" style="margin-bottom:8px">Dienstgradtest ablegen</button>') + '<button class="btn wide" data-act="geloebnis" '+(ok?'':'disabled')+'>Gelöbnis ablegen</button></div>';
   }
-  h += todoList();
+  h += todoList() + (typeof chatMiniHtml === 'function' ? chatMiniHtml() : '');
   h += xcdCard() + spendeHeute() + adventCard() + (typeof feierCard === 'function' ? feierCard() : '');
   h += appellCard() + rekrutCard();
   h += renderWA();
@@ -7474,9 +7499,11 @@ function renderAdmin(){
     + '<div class="admbtns">' + btn('adm_ansage', 'Veröffentlichen') + btn('adm_ansage_weg', 'Mitteilung löschen') + '</div></div>';
   { const sp = ONLINE.spende;
     h += '<div class="panel pad adm"><h3>Weihnachtsspende</h3>' + (sp ? '<p class="small">Stand: <b>' + sp.spender + ' Spender</b>, ' + eur(Number(sp.summe)) + ' Spielgeld, aktuell <b>' + sp.euro + ' € echte Spende</b> (' + sp.phase + ').</p>' : '<p class="small muted">Noch nicht geladen oder SQL fehlt.</p>')
+      + (sp && sp.bonus ? '<p class="small">Davon Bonus aus dem Spielgeld-Ziel: <b>' + sp.bonus + ' €</b></p>' : '')
       + '<p class="small muted">Stufen bitte nur erhöhen, nie senken, das wäre unfair gegenüber den Spielern.</p>'
       + '<label for="admSpSockel" style="display:block;margin-top:8px">Sockel in € (auf jeden Fall)</label><input id="admSpSockel" type="number" min="0" value="' + (sp ? sp.sockel : 10) + '">'
       + '<label for="admSpStufen" style="display:block;margin-top:8px">Stufen (Spender:Euro, mit Komma getrennt)</label><input id="admSpStufen" value="' + (sp ? (sp.stufen || []).map(x => x[0] + ':' + x[1]).join(', ') : '10:20, 25:35, 50:50') + '">'
+      + '<label for="admSpBz" style="display:block;margin-top:8px">Bonusziel (Spielgeld:Euro, mit Komma getrennt, leer = aus)</label><input id="admSpBz" value="' + (sp ? (sp.betrag_stufen || []).map(x => x[0] + ':' + x[1]).join(', ') : '25000000:25') + '">'
       + '<label for="admSpNw" style="display:block;margin-top:8px">Nachweis (nach der Überweisung)</label><input id="admSpNw" maxlength="300" placeholder="z. B. 50 € überwiesen am 27.12.2026" value="' + esc(sp && sp.nachweis || '') + '">'
       + '<label for="admSpUrl" style="display:block;margin-top:8px">Link zum Beleg (https://…, optional)</label><input id="admSpUrl" maxlength="300" value="' + esc(sp && sp.nachweis_url || '') + '">'
       + '<div class="admbtns">' + btn('adm_spende', 'Speichern') + btn('adm_spende_laden', 'Stand laden') + '</div></div>'; }
@@ -7489,7 +7516,10 @@ const ADM = {
     const stufen = v('admSpStufen').split(',').map(x => x.trim()).filter(Boolean).map(x => x.split(':').map(Number));
     if(stufen.some(x => x.length !== 2 || x.some(n => !Number.isFinite(n) || n < 0))){ toast('Stufen bitte als Spender:Euro, z. B. 10:20, 25:35'); return; }
     stufen.sort((a, b) => a[0] - b[0]);
-    const { data, error } = await sb.rpc('admin_spende_setzen', {p_sockel:Number(v('admSpSockel')) || 0, p_stufen:stufen, p_nachweis:v('admSpNw'), p_url:v('admSpUrl')});
+    const bz = v('admSpBz').split(',').map(x => x.trim().replace(/\./g, '')).filter(Boolean).map(x => x.split(':').map(Number));
+    if(bz.some(x => x.length !== 2 || x.some(n => !Number.isFinite(n) || n < 0))){ toast('Bonusziel bitte als Spielgeld:Euro, z. B. 25000000:25'); return; }
+    bz.sort((a, b) => a[0] - b[0]);
+    const { data, error } = await sb.rpc('admin_spende_setzen', {p_sockel:Number(v('admSpSockel')) || 0, p_stufen:stufen, p_nachweis:v('admSpNw'), p_url:v('admSpUrl'), p_betrag_stufen:bz});
     if(error){ toast(error.message); return; }
     ONLINE.spende = data; toast('Spendenaktion gespeichert.'); render();
   },
@@ -7556,7 +7586,7 @@ async function loadChat(){
   const alt = ONLINE.chat.length ? ONLINE.chat[ONLINE.chat.length-1].id : null;
   ONLINE.chat = (data || []).reverse(); ONLINE.chatOk = true; ONLINE.chatErr = null;
   const neu = ONLINE.chat.length ? ONLINE.chat[ONLINE.chat.length-1].id : null;
-  if(neu !== alt){ chatList(); if(!chatOnPage()) renderNav(); }
+  if(neu !== alt){ chatList(); if(!chatOnPage()) renderNav(); chatMini(); chatPing(ONLINE.chat[ONLINE.chat.length - 1]); }
   chatSubscribe();
 }
 function chatSubscribe(){
@@ -7565,7 +7595,7 @@ function chatSubscribe(){
     CHAT_SUB = sb.channel('funkkreis')
       .on('postgres_changes', {event:'INSERT', schema:'public', table:'chat_nachrichten'}, p => {
         const m = p.new; if(!m || ONLINE.chat.some(x => x.id === m.id)) return;
-        ONLINE.chat.push(m); ONLINE.chat = ONLINE.chat.slice(-80); chatList(); if(!chatOnPage()) renderNav();
+        ONLINE.chat.push(m); ONLINE.chat = ONLINE.chat.slice(-80); chatList(); if(!chatOnPage()) renderNav(); chatMini(); chatPing(m);
       })
       .on('postgres_changes', {event:'DELETE', schema:'public', table:'chat_nachrichten'}, p => {
         const id = p.old && p.old.id; ONLINE.chat = ONLINE.chat.filter(x => x.id !== id); chatList();
@@ -7626,7 +7656,7 @@ function chatAttach(){
   if(!ONLINE.chatOk) loadChat();
 }
 function renderChat(){
-  return '<h2>Funkkreis</h2><p class="small muted" style="margin-top:-4px">Der Chat für alle Spieler. Nachrichten bleiben 30 Tage sichtbar.</p><div id="chatslot"></div>';
+  return '<h2>Funkkreis</h2><p class="small muted" style="margin-top:-4px">Der Chat für alle Spieler. Nachrichten bleiben 30 Tage sichtbar. <button class="linkbtn" data-act="chat_pop" style="padding:0;font-size:inherit">' + (S && S.chatPop === false ? 'Hinweise bei neuen Nachrichten einschalten' : 'Hinweise bei neuen Nachrichten ausschalten') + '</button></p><div id="chatslot"></div>';
 }
 const CHAT_ACT = {
   async chat_del(id){ if(!ONLINE.admin) return; const { error } = await sb.rpc('admin_chat_loeschen', {p_id:Number(id)}); if(error){ toast('Fehler: ' + error.message); return; } ONLINE.chat = ONLINE.chat.filter(x => x.id !== Number(id)); chatList(); },
@@ -7639,6 +7669,71 @@ const CHAT_ACT = {
 };
 
 for(const k in CHAT_ACT) ACT[k] = CHAT_ACT[k];
+
+/* ---------- Funkkreis sichtbarer machen: Knopf mit Zähler, Karte auf „Heute“, Funkspruch bei neuen Nachrichten ---------- */
+let CHAT_PING_ID = null, CHAT_PING_TS = 0;
+function chatFabUpdate(){
+  let fab = document.getElementById('chatFab');
+  const zeigen = !!(S && USER && ONLINE.profile) && !chatOnPage() && !document.body.classList.contains('landing');
+  if(!fab){
+    if(!zeigen) return;
+    fab = document.createElement('button'); fab.id = 'chatFab'; fab.className = 'chatfab'; fab.dataset.act = 'chat_go'; fab.setAttribute('aria-label', 'Funkkreis öffnen');
+    fab.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg><span class="cfb" hidden></span>';
+    document.body.appendChild(fab);
+  }
+  fab.hidden = !zeigen; document.body.classList.toggle('hasfab', zeigen);
+  const n = chatUnread(), b = fab.querySelector('.cfb');
+  b.hidden = !n; b.textContent = n > 9 ? '9+' : String(n);
+  fab.classList.toggle('neu', n > 0);
+  fab.setAttribute('aria-label', 'Funkkreis öffnen' + (n ? ', ' + n + ' neue Nachrichten' : ''));
+  document.title = (n ? '(' + n + ') ' : '') + 'Stillgestanden!';
+}
+// Kurzer Funkspruch oben, wenn eine neue Nachricht kommt und man nicht im Chat ist
+function chatPing(m){
+  if(!m || !S || !USER || chatOnPage() || document.hidden || m.user_id === USER.id || S.chatPop === false) return;
+  if(m.id === CHAT_PING_ID || Date.now() - new Date(m.created_at).getTime() > 600000) return;
+  if(new Date(m.created_at).getTime() <= chatSeen()) return;
+  CHAT_PING_ID = m.id; CHAT_PING_TS = Date.now();
+  let el = document.getElementById('chatPing');
+  if(!el){ el = document.createElement('button'); el.id = 'chatPing'; el.className = 'chatping'; el.dataset.act = 'chat_go'; document.body.appendChild(el); }
+  el.innerHTML = '<span class="cpi" aria-hidden="true">📻</span><span class="cpt"><span class="cph"><b>' + esc(m.name) + '</b> im Funkkreis</span><span>' + esc(String(m.text).slice(0, 90)) + (String(m.text).length > 90 ? ' …' : '') + '</span></span>';
+  el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 5000);
+}
+function chatMiniListe(){
+  if(!ONLINE.chatOk) return '<p class="small muted" style="margin:0">' + (ONLINE.chatErr ? 'Funkkreis gerade nicht erreichbar.' : 'Funkverbindung wird aufgebaut …') + '</p>';
+  const l = ONLINE.chat.slice(-3), s = chatSeen();
+  if(!l.length) return '<p class="small muted" style="margin:0">Noch Funkstille. Sag als Erster Moin!</p>';
+  return l.map(m => { const neu = new Date(m.created_at).getTime() > s && m.user_id !== USER.id;
+    return '<div class="cmm' + (neu ? ' neu' : '') + '"><b>' + esc(m.name) + '</b><time>' + chatZeit(m.created_at) + '</time><span>' + esc(m.text) + '</span></div>'; }).join('');
+}
+function chatMiniHtml(){
+  if(!USER || !ONLINE.profile) return '';
+  if(!ONLINE.chatOk && !chatBusy) setTimeout(loadChat, 0);
+  const n = chatUnread();
+  return '<h2>Funkkreis</h2><div class="panel pad cmini"><div class="cmh2"><span class="small muted">Chat mit allen Spielern</span><span id="chatMiniBadge">' + (n ? '<span class="cmb">' + n + ' neu</span>' : '') + '</span></div><div id="chatMiniList">' + chatMiniListe() + '</div>'
+    + '<form class="cmform" id="chatMiniForm" onsubmit="return false"><label for="chatMiniIn" class="sr">Nachricht an alle</label><input id="chatMiniIn" maxlength="300" placeholder="Nachricht an alle …" autocomplete="off" enterkeyhint="send"><button class="btn gold" data-act="chat_mini_send" aria-label="Senden"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 12l16-8-6 16-3-7z"/></svg></button></form>'
+    + '<button class="linkbtn" data-act="chat_go" style="margin-top:8px">Zum Funkkreis ›</button></div>';
+}
+function chatMini(){
+  const box = document.getElementById('chatMiniList'); if(box) box.innerHTML = chatMiniListe();
+  const bd = document.getElementById('chatMiniBadge'); if(bd){ const n = chatUnread(); bd.innerHTML = n ? '<span class="cmb">' + n + ' neu</span>' : ''; }
+  chatFabUpdate();
+}
+async function chatMiniSend(){
+  const inp = document.getElementById('chatMiniIn'); if(!inp) return;
+  const t = inp.value.trim(); if(!t) return;
+  inp.disabled = true;
+  const { error } = await sb.rpc('chat_senden', {p_text:t, p_tsk:S.tsk || 'heer'});
+  inp.disabled = false;
+  if(error){ toast(error.message || 'Senden fehlgeschlagen.'); return; }
+  inp.value = ''; await loadChat(); chatMarkSeen(); chatMini(); toast('Funkspruch abgesetzt.');
+}
+ACT.chat_go = () => { const p = document.getElementById('chatPing'); if(p) p.classList.remove('on'); ACT.close && document.querySelector('#modalHost .overlay') && ACT.close(); tab = 'truppe'; SUB.truppe = 'chat'; render(); window.scrollTo(0, 0); };
+ACT.chat_mini_send = () => chatMiniSend();
+ACT.chat_pop = () => { S.chatPop = S.chatPop === false; save(); render(); toast(S.chatPop === false ? 'Funksprüche bei neuen Nachrichten aus.' : 'Funksprüche bei neuen Nachrichten an.'); };
+document.addEventListener('keydown', e => { if(e.key === 'Enter' && e.target && e.target.id === 'chatMiniIn'){ e.preventDefault(); chatMiniSend(); } });
+setTimeout(() => { if(USER && S && ONLINE.profile && !ONLINE.chatOk) loadChat(); }, 2500);
 /* =========================================================
    PERSONENSUCHE UND STECKBRIEF (Server: stillgestanden_personen.sql)
    ========================================================= */
@@ -7756,9 +7851,16 @@ function spendeKarte(lp){
   let h = '<div class="spd' + (lp ? ' lp' : '') + '"><div class="xcdst">' + (vorbei ? 'Abgeschlossen' : 'Spendenaktion') + '</div>'
     + '<div class="spt">' + (vorbei ? 'Danke, Truppe!' : 'Weihnachtsspende der Truppe') + '</div>'
     + '<div class="spu">für das ' + esc(s.organisation) + '</div>'
-    + '<div class="spe"><span class="sph" aria-hidden="true">❤</span><b>' + s.euro + ' €</b><span>' + (vorbei ? 'echte Spende von der Spielleitung' : 'echte Spende, Stand jetzt') + '</span></div>'
+    + '<div class="spe"><span class="sph" aria-hidden="true">❤</span><b>' + s.euro + ' €</b><span>' + (vorbei ? 'echte Spende von der Spielleitung' : 'echte Spende, Stand jetzt') + (s.bonus ? ', davon ' + s.bonus + ' € Bonus' : '') + '</span></div>'
     + spendeLeiter(s);
   if(!vorbei && naechste) h += '<div class="spbar"><i style="width:' + Math.min(100, (s.spender - vor) / Math.max(1, naechste[0] - vor) * 100) + '%"></i></div><p class="spn">Noch <b>' + (naechste[0] - s.spender) + ' Spender</b> bis ' + naechste[1] + ' €' + (lp ? '. Jeder neue Spieler zählt!' : '. Lade deine Kameraden ein!') + '</p>';
+  { const bs = (s.betrag_stufen || []).slice().sort((a, b) => a[0] - b[0]);
+    if(bs.length){
+      const mio = n => (n >= 1e6 ? (n / 1e6).toLocaleString('de-DE', {maximumFractionDigits:1}) + ' Mio. €' : eur(n));
+      const nx = bs.find(([g]) => Number(s.summe) < g), vg = bs.filter(([g]) => Number(s.summe) >= g).map(x => x[0]).pop() || 0;
+      h += '<div class="spbz"><b>Bonusziel Spielgeld</b>' + bs.map(([g, e]) => '<div class="st' + (Number(s.summe) >= g ? ' ok' : '') + '"><span class="spk">' + (Number(s.summe) >= g ? '✓' : '') + '</span><span>' + mio(g) + ' gesammelt</span><b>+' + e + ' €</b></div>').join('')
+        + (nx && !vorbei ? '<div class="spbar"><i style="width:' + Math.min(100, (Number(s.summe) - vg) / Math.max(1, nx[0] - vg) * 100) + '%"></i></div><p class="spn">Noch <b>' + mio(nx[0] - Number(s.summe)) + '</b> Spielgeld bis +' + nx[1] + ' €</p>' : '') + '</div>';
+    } }
   h += '<div class="spz"><div><b>' + s.spender + '</b><span>Spender</span></div><div><b>' + eur(Number(s.summe)) + '</b><span>Spielgeld gesammelt</span></div><div><b>' + (vorbei ? 'vorbei' : 'bis ' + ende) + '</b><span>Aktion</span></div></div>';
   if(vorbei) h += s.nachweis ? '<div class="spnw"><b>Nachweis:</b> ' + esc(s.nachweis) + (s.nachweis_url ? ' <a href="' + esc(s.nachweis_url) + '" target="_blank" rel="noopener noreferrer">ansehen</a>' : '') + '</div>' : '<p class="spn">Die Spende wird überwiesen. Den Nachweis zeigen wir hier, sobald er da ist.</p>';
   else if(lp) h += '<button class="btn gold" data-act="lmode" data-id="signup" style="margin-top:10px">Mitmachen: kostenlos anmelden</button>';
@@ -7770,7 +7872,7 @@ function spendeKarte(lp){
       + '<p class="small" style="margin:6px 0 0;color:#C9CFBC">Heute noch bis ' + eur(rest) + ' möglich.</p>';
   }
   if(s.top && s.top.length) h += '<div class="sptop"><b>Größte Unterstützer</b>' + s.top.map((t, i) => '<div><span>' + (i + 1) + '.</span><span>' + esc(t.name) + '</span><span>' + eur(Number(t.betrag)) + '</span></div>').join('') + '</div>';
-  h += '<p class="spf">Spielgeld ist kein echtes Geld. Die echte Spende zahlt die Spielleitung aus eigener Tasche, höchstens ' + Math.max(s.sockel, ...(s.stufen || []).map(x => x[1])) + ' €. Kein Angebot der Bundeswehr oder des Soldatenhilfswerks.</p></div>';
+  h += '<p class="spf">Spielgeld ist kein echtes Geld. Die echte Spende zahlt die Spielleitung aus eigener Tasche, höchstens ' + (Math.max(s.sockel, ...(s.stufen || []).map(x => x[1])) + Math.max(0, ...(s.betrag_stufen || []).map(x => x[1]))) + ' €. Kein Angebot der Bundeswehr oder des Soldatenhilfswerks.</p></div>';
   return h;
 }
 function spendeHeute(){ const k = spendeKarte(false); return k ? '<h2>Weihnachtsspende</h2>' + k : ''; }
