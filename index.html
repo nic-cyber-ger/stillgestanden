@@ -765,6 +765,10 @@ body.hasfab{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .lkago{flex:none;font:700 14px 'Barlow',sans-serif;color:var(--bad)}
 @keyframes lkaPuls{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--bad) 25%,transparent)}}
 @media (prefers-reduced-motion:reduce){.lkalarm{animation:none}}
+.spban{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:9px 12px;border-radius:12px;border:1.5px solid #8C3A2E;background:linear-gradient(90deg,#3A1A16,#1B2318);color:#F4F1E6;font:inherit;text-align:left;cursor:pointer}
+.spban svg{flex:none;animation:spPuls 1.4s ease-in-out infinite}.spbx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.spbx b{font-size:15px;color:#FFD9D2}.spbx span{font-size:12.5px;color:#D9C9BE;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.spbg{flex:none;font:700 14px 'Barlow',sans-serif;color:#F2D27A}
+:root[data-theme="light"] .spban{background:linear-gradient(90deg,#FBE4DF,#F5F7F0);color:#3A1A16;border-color:#D9A79B}:root[data-theme="light"] .spbx b{color:#8C1F17}:root[data-theme="light"] .spbx span{color:#5A3A33}:root[data-theme="light"] .spbg{color:#8C1F17}
+.spinfo{text-align:left}.sph2{display:flex;justify-content:center}.spil{margin:0;padding:0 0 0 18px;display:flex;flex-direction:column;gap:8px;font-size:14.5px;line-height:1.4}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -6410,7 +6414,7 @@ function renderStube(){
   const prevN = note < 5 ? noteMin(note) : 0;
   const pct = nextN ? Math.min(100,(pts-prevN)/(nextN-prevN)*100) : 100;
   const gs = gsFortschritt();
-  let h = xcdBanner() + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
+  let h = xcdBanner() + (typeof spendeBanner === 'function' ? spendeBanner() : '') + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
     + '<div><div class="small muted">'+esc(GROUPS[r.g])+'</div><div class="rank">'+esc(r.name)+'</div>'
     + '<div class="name">'+esc(S.name)+(S.verw ? ' · '+esc(VERW[S.verw].name) : '')+'</div>'
     + '<div class="small muted">Tagessold '+eur(r.sold)+(S.standort ? ' · '+esc(S.standort.ort) : '')+'</div>'
@@ -6599,7 +6603,7 @@ function render(){
     main.innerHTML = renderPage();
   }
   if(S && tutOn() && main.insertAdjacentHTML) main.insertAdjacentHTML('afterbegin', tutBox());
-  renderNav(); renderRes(); live(); subnavHint(); seasonApply(); lkAttach(); lkFrageAuto(); clAuto(); appellAuto(); freiAuto(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
+  renderNav(); renderRes(); live(); subnavHint(); seasonApply(); lkAttach(); lkFrageAuto(); clAuto(); appellAuto(); freiAuto(); if(typeof spendeAuto === 'function') spendeAuto(); if(typeof slAttach === 'function' && S) slAttach(); if(typeof chatAttach === 'function' && S) chatAttach(); if(typeof psAttach === 'function' && S) psAttach();
   if(typeof afterRender === "function") afterRender();
 }
 
@@ -8043,9 +8047,11 @@ async function loadSpende(){
 }
 setTimeout(loadSpende, 1200);
 setInterval(() => { if(!document.hidden) loadSpende(); }, 300000);
+// Weihnachts-Test im Admin-Bereich: Spendenkarte als Vorschau zeigen, Spenden geht erst ab Start
+function spendeVorschau(){ const s = ONLINE.spende; return !!(s && s.phase === 'vorher' && typeof xmasTestTag === 'function' && xmasTestTag()); }
 function spendeSichtbar(){
   const s = ONLINE.spende; if(!s) return false;
-  if(s.phase === 'laeuft') return true;
+  if(s.phase === 'laeuft' || spendeVorschau()) return true;
   if(s.phase === 'vorbei'){ const bis = new Date(s.ende); bis.setDate(bis.getDate() + 30); return new Date(s.heute) <= bis; }
   return false;
 }
@@ -8058,7 +8064,7 @@ function spendeKarte(lp){
   if(!spendeSichtbar()) return '';
   const s = ONLINE.spende, vorbei = s.phase === 'vorbei', ende = new Date(s.ende).toLocaleDateString('de-DE', {day:'numeric', month:'long'});
   const naechste = (s.stufen || []).find(([n]) => s.spender < n), vor = [0].concat((s.stufen || []).map(x => x[0])).filter(n => n <= s.spender).pop() || 0;
-  let h = '<div class="spd' + (lp ? ' lp' : '') + '"><div class="xcdst">' + (vorbei ? 'Abgeschlossen' : 'Spendenaktion') + '</div>'
+  let h = '<div class="spd' + (lp ? ' lp' : '') + '"><div class="xcdst">' + (vorbei ? 'Abgeschlossen' : spendeVorschau() ? 'Vorschau' : 'Spendenaktion') + '</div>'
     + '<div class="spt">' + (vorbei ? 'Danke, Truppe!' : 'Weihnachtsspende der Truppe') + '</div>'
     + '<div class="spu">für das ' + esc(s.organisation) + '</div>'
     + '<div class="spe"><span class="sph" aria-hidden="true">❤</span><b>' + s.euro + ' €</b><span>' + (vorbei ? 'echte Spende von der Spielleitung' : 'echte Spende, Stand jetzt') + (s.bonus ? ', davon ' + s.bonus + ' € Bonus' : '') + '</span></div>'
@@ -8075,6 +8081,7 @@ function spendeKarte(lp){
   if(vorbei) h += s.nachweis ? '<div class="spnw"><b>Nachweis:</b> ' + esc(s.nachweis) + (s.nachweis_url ? ' <a href="' + esc(s.nachweis_url) + '" target="_blank" rel="noopener noreferrer">ansehen</a>' : '') + '</div>' : '<p class="spn">Die Spende wird überwiesen. Den Nachweis zeigen wir hier, sobald er da ist.</p>';
   else if(lp) h += '<button class="btn gold" data-act="lmode" data-id="signup" style="margin-top:10px">Mitmachen: kostenlos anmelden</button>';
   else if(S && G.rank().t < 1) h += '<p class="spn">Nach der Grundausbildung, ab Gefreiter, kannst du mitspenden.</p>';
+  else if(spendeVorschau()) h += '<p class="spn" style="margin-top:12px"><b>Vorschau aus dem Weihnachts-Test.</b> Spenden ist erst ab ' + new Date(s.start).toLocaleDateString('de-DE', {day:'numeric', month:'long'}) + ' möglich.</p>';
   else if(S && s.ich){
     const rest = Math.max(0, s.ich.limit - s.ich.heute);
     h += '<p class="spn" style="margin-top:12px">Dein Beitrag: <b>' + eur(Number(s.ich.gesamt)) + '</b>' + (Number(s.ich.gesamt) >= s.min_betrag ? ' · du zählst als Spender ✓' : ' · ab ' + eur(s.min_betrag) + ' zählst du als Spender') + '</p>'
@@ -8095,6 +8102,44 @@ async function spendeEin(v){
   toast(eur(b) + ' gespendet. Danke, Kamerad!'); render();
 }
 ACT.spende_ein = v => spendeEin(v);
+
+// Eigenes Band oben auf „Heute“ und einmaliges Infofenster, damit niemand die Spendenaktion verpasst
+function spendeBanner(){
+  const s = ONLINE.spende; if(!s) return '';
+  const herz = '<svg width="22" height="22" viewBox="0 0 24 24" fill="#E05A4F" aria-hidden="true"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg>';
+  let t, u, k;
+  if(s.phase === 'vorher'){ t = 'Neu: Weihnachtsspende'; u = 'Ab 1. Dezember fürs Soldatenhilfswerk'; k = 'Infos'; }
+  else if(s.phase === 'laeuft'){ t = 'Weihnachtsspende: ' + s.euro + ' €'; u = s.spender + ' Spender · fürs Soldatenhilfswerk'; k = 'Mitspenden'; }
+  else if(spendeSichtbar()){ t = 'Danke, Truppe! ' + s.euro + ' €'; u = 'gehen ans Soldatenhilfswerk'; k = 'Ansehen'; }
+  else return '';
+  return '<button class="spban" data-act="spende_info">' + herz + '<span class="spbx"><b>' + esc(t) + '</b><span>' + esc(u) + '</span></span><span class="spbg">' + k + ' ›</span></button>';
+}
+function spendeInfo(){
+  const s = ONLINE.spende, host = document.getElementById('modalHost'); if(!s || !host) return;
+  try{ localStorage.setItem('sg_spende_info', '1'); }catch(e){}
+  if(s.phase !== 'vorher' && spendeSichtbar()){ host.innerHTML = ''; goPage('stube'); render(); const h = [...document.querySelectorAll('main h2')].find(x => x.textContent.trim() === 'Weihnachtsspende'); if(h) window.scrollTo({top:h.getBoundingClientRect().top + window.scrollY - 70, behavior:'smooth'}); return; }
+  const max = Math.max(s.sockel, ...(s.stufen || []).map(x => x[1])), bonus = Math.max(0, ...(s.betrag_stufen || []).map(x => x[1]));
+  const start = new Date(s.start).toLocaleDateString('de-DE', {day:'numeric', month:'long'}), ende = new Date(s.ende).toLocaleDateString('de-DE', {day:'numeric', month:'long'});
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="spit"><div class="sheet spinfo">'
+    + '<div class="sph2" aria-hidden="true"><svg width="44" height="44" viewBox="0 0 24 24" fill="#E05A4F"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg></div>'
+    + '<h2 id="spit" style="margin:6px 0 4px;text-align:center">Weihnachtsspende der Truppe</h2>'
+    + '<p class="small muted" style="text-align:center;margin:0 0 14px">' + esc(start) + ' bis ' + esc(ende) + ' · für das ' + esc(s.organisation) + '</p>'
+    + '<ul class="spil"><li><b>Ihr spielt, ich spende.</b> Ihr zahlt nur Spielgeld ein, die Spielleitung spendet dafür echtes Geld.</li>'
+    + '<li><b>' + s.sockel + ' € sind sicher.</b> Je mehr Spieler mitmachen, desto mehr: bis ' + max + ' €' + (bonus ? ', mit dem Spielgeld-Bonusziel bis ' + (max + bonus) + ' €' : '') + '.</li>'
+    + '<li><b>Jeder zählt.</b> Ab Gefreiter kannst du mitspenden und bekommst den Orden „Wohltäter der Truppe“.</li>'
+    + '<li><b>Mit Nachweis.</b> Nach Weihnachten steht die Überweisung hier im Spiel.</li></ul>'
+    + '<p class="small" style="margin:12px 0 0;text-align:center">Erzähl es deinen Kameraden: Jeder neue Spieler macht die Spende größer.</p>'
+    + '<button class="btn gold wide" data-act="close" style="margin-top:14px">Bin dabei!</button></div></div>';
+}
+function spendeAuto(){
+  const s = ONLINE.spende; if(!s || !S || !USER || (typeof tutOn === 'function' && tutOn())) return;
+  if(s.phase !== 'vorher' && s.phase !== 'laeuft') return;
+  try{ if(localStorage.getItem('sg_spende_info')) return; }catch(e){ return; }
+  const host = document.getElementById('modalHost'); if(!host || host.innerHTML.trim()) return;
+  if(s.phase === 'laeuft'){ try{ localStorage.setItem('sg_spende_info', '1'); }catch(e){} }
+  spendeInfo();
+}
+ACT.spende_info = () => spendeInfo();
 
 // ---------- Kompanieverzeichnis und Bewerbungen ----------
 const KPV_WAPPEN = {
