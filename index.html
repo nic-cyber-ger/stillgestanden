@@ -4421,7 +4421,8 @@ const CHANGELOG = [
     'Wer über deinen Link kommt, startet mit Extra-Sold und einem Feldpost-Paket',
     'Sobald dein Kamerad Gefreiter ist, bekommst du eine Belohnung. Ab 3 Geworbenen gibt es den Orden „Werbeoffizier“',
     'Jeder neue Spieler macht die Weihnachtsspende fürs Soldatenhilfswerk größer',
-    'Die Spendenaktion hat jetzt ein eigenes Band oben auf „Heute“'
+    'Die Spendenaktion hat jetzt ein eigenes Band oben auf „Heute“',
+    'Fehler behoben: Eine Beförderung in der alten Laufbahn (z. B. Hauptgefreiter zu Stabsgefreiter) setzt die Wartezeit für den Laufbahnwechsel nicht mehr zurück. Gezählt wird ab dem ersten Dienstgrad, von dem aus der Wechsel möglich war'
   ]},
   {v:23, d:'22.11.2026', t:'Neues Design: Gefechtsstand', p:[
     'Das ganze Spiel hat einen neuen, modernen Look: dunkel, klar, Gold für die wichtigste Aktion',
@@ -6112,10 +6113,22 @@ const G = {
     return null;
   },
   einstand(targetId){ return R[targetId].einstand * G.rank().sold; },
+  // Beginn der Mindestdienstzeit. Beim Laufbahnwechsel zählt die Zeit, seit der Wechsel ohne Unterbrechung möglich ist,
+  // damit eine Beförderung in der alten Laufbahn (z. B. HG zu SG) die Wartezeit nicht wieder auf null setzt.
+  promoStart(targetId){
+    const t = R[targetId], r = G.rank(), h = S.history || [];
+    if((t.g === r.g && !!t.spec === !!r.spec) || !h.length || h[h.length - 1].rank !== S.rank) return S.lastPromo;
+    let start = S.lastPromo;
+    for(let i = h.length - 1; i >= 0; i--){
+      if(!(NEXT[h[i].rank] || []).includes(targetId) || !h[i].ts) break;
+      start = Math.min(start, h[i].ts);
+    }
+    return start;
+  },
   promoReqs(targetId){
     const t = R[targetId], out = [];
-    const needMs = t.minH*3600000/S.speed, done = now()-S.lastPromo;
-    out.push({label: 'Mindestdienstzeit: ' + fmtHours(t.minH/S.speed) + (done<needMs ? ' (noch ' + fmtLeft(needMs-done) + ')' : ''), ok: done>=needMs});
+    const start = G.promoStart(targetId), needMs = t.minH*3600000/S.speed, done = now()-start;
+    out.push({label: 'Mindestdienstzeit: ' + fmtHours(t.minH/S.speed) + (start < S.lastPromo ? ' seit ' + R[(S.history.find(x => x.ts === start) || {}).rank || S.rank].name : '') + (done<needMs ? ' (noch ' + fmtLeft(needMs-done) + ')' : ''), ok: done>=needMs});
     out.push({label: 'Beurteilung mindestens „' + NOTES[t.note] + '“', ok: G.note() <= t.note});
     for(const [k,v] of Object.entries(t.stats||{})) out.push({label: STAT_NAME[k]+' Stufe '+v, ok: S.stats[k]>=v});
     if(t.ga) out.push({label:'Grundausbildung mit Gelöbnis abgeschlossen', ok:!!S.gaDone});
