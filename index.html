@@ -7810,14 +7810,23 @@ const ADM = {
   adm_spende_laden(){ loadSpende().then(() => render()); },
   async adm_spende(){
     const v = id => (document.getElementById(id) || {}).value || '';
-    const stufen = v('admSpStufen').split(',').map(x => x.trim()).filter(Boolean).map(x => x.split(':').map(Number));
+    // tolerant: Komma, Semikolon oder Zeilenumbruch trennen; Punkte, Leerzeichen und € in Zahlen sind erlaubt
+    const teile = t => String(t).split(/[,;\n]+/).map(x => x.trim()).filter(Boolean).map(x => x.split(/\s*[:=]\s*/).map(n => Number(n.replace(/[€\s.]/g, ''))));
+    const stufen = teile(v('admSpStufen'));
     if(stufen.some(x => x.length !== 2 || x.some(n => !Number.isFinite(n) || n < 0))){ toast('Stufen bitte als Spender:Euro, z. B. 10:20, 25:35'); return; }
     stufen.sort((a, b) => a[0] - b[0]);
-    const bz = v('admSpBz').split(',').map(x => x.trim().replace(/\./g, '')).filter(Boolean).map(x => x.split(':').map(Number));
+    const bz = teile(v('admSpBz'));
     if(bz.some(x => x.length !== 2 || x.some(n => !Number.isFinite(n) || n < 0))){ toast('Bonusziel bitte als Spielgeld:Euro, z. B. 25000000:25'); return; }
     bz.sort((a, b) => a[0] - b[0]);
-    const { data, error } = await sb.rpc('admin_spende_setzen', {p_sockel:Number(v('admSpSockel')) || 0, p_stufen:stufen, p_nachweis:v('admSpNw'), p_url:v('admSpUrl'), p_betrag_stufen:bz});
-    if(error){ toast(error.message); return; }
+    const url = v('admSpUrl').trim();
+    if(url && !/^https:\/\//.test(url)){ toast('Der Link zum Beleg muss mit https:// beginnen oder leer sein.'); return; }
+    const { data, error } = await sb.rpc('admin_spende_setzen', {p_sockel:Number(v('admSpSockel')) || 0, p_stufen:stufen, p_nachweis:v('admSpNw'), p_url:url, p_betrag_stufen:bz});
+    if(error){
+      const m = error.message || '';
+      if(/admin_spende_setzen|schema cache|Could not find the function|does not exist/i.test(m)) toast('Die Spendenfunktion in Supabase ist veraltet. Bitte stillgestanden_spende.sql noch einmal im SQL Editor ausführen.');
+      else toast('Speichern ging nicht: ' + m);
+      console.warn('admin_spende_setzen', error); return;
+    }
     ONLINE.spende = data; toast('Spendenaktion gespeichert.'); render();
   },
   adm_xmas(){ const v = Number((document.getElementById('admXmas')||{}).value || 0); if(v < 1 || v > 31){ toast('Tag 1 bis 31 eingeben'); return; } try{ localStorage.setItem('sg_xmas', String(v)); }catch(e){} ONLINE.xmasTs = 0; ONLINE.xmas = null; render(); toast('Weihnachten: Testtag ' + v + '. Dezember'); },
