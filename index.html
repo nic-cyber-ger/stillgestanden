@@ -7354,10 +7354,10 @@ async function authSubmit(mode){
    RECHTLICHES – BITTE AUSFÜLLEN, bevor der Link öffentlich wird.
    ========================================================= */
 const RECHT = {
-  name:     'Niclas Schoth',   // Vor- und Nachname, z. B. 'Max Mustermann'
-  strasse:  'Buchenhain 2',   // Straße und Hausnummer
-  ort:      '23701 Eutin',   // PLZ und Ort
-  email:    'niclasschoth@gmail.com',   // Kontakt-E-Mail
+  name:     '',   // Vor- und Nachname, z. B. 'Max Mustermann'
+  strasse:  '',   // Straße und Hausnummer
+  ort:      '',   // PLZ und Ort
+  email:    '',   // Kontakt-E-Mail
   stand:    'November 2026',
 };
 const TESTMODE = /[?&]test\b/.test(location.search);
@@ -7366,18 +7366,19 @@ function rechtHtml(){
   const ok = RECHT.name && RECHT.strasse && RECHT.ort && RECHT.email;
   const v = x => x ? esc(x) : '<i>[noch nicht ausgefüllt]</i>';
   const anb = v(RECHT.name) + '<br>' + v(RECHT.strasse) + '<br>' + v(RECHT.ort) + '<br>E-Mail: ' + v(RECHT.email);
+  const kontakt = ok ? 'die oben genannte E-Mail-Adresse' : 'die Feedback-Funktion im Spiel (Akte › Mehr › Feedback)';
   return '<div class="recht">'
-    + (ok ? '' : '<p class="small" style="color:var(--stamp)"><b>Hinweis an den Betreiber:</b> Bitte oben im Code bei RECHT Name, Anschrift und E-Mail eintragen.</p>')
-    + '<h3>Impressum</h3><p>Angaben gemäß § 5 DDG:<br>' + anb + '</p>'
+    + (ok ? '<h3>Impressum</h3><p>Angaben gemäß § 5 DDG:<br>' + anb + '</p>'
+          : '<h3>Betreiber</h3><p>Privat betriebenes Hobbyprojekt. Kontakt zur Spielleitung über die Feedback-Funktion im Spiel (Akte › Mehr › Feedback).</p>')
     + '<p>„Stillgestanden!“ ist ein privates, nicht kommerzielles Hobbyprojekt und ein satirisches Spiel. Es ist kein Angebot der Bundeswehr und steht in keiner Verbindung zu ihr. Alle Figuren sind erfunden.</p>'
     + '<h3>Datenschutzerklärung</h3>'
-    + '<p><b>Verantwortlich</b> für die Datenverarbeitung ist der oben genannte Betreiber.</p>'
+    + '<p><b>Verantwortlich</b> für die Datenverarbeitung ist der Betreiber dieses Spiels' + (ok ? ' (siehe oben)' : '') + '. Erreichbar über ' + kontakt + '.</p>'
     + '<p><b>Welche Daten wir speichern.</b> Für dein Konto: Benutzername und Passwort (nur verschlüsselt als Hash). Eine E-Mail-Adresse ist nicht nötig; nur Konten, die früher mit E-Mail angelegt wurden, haben eine hinterlegt. Für das Spiel: Spielname, Spielstand, Kompanie, gewählter Standort (Ort und Bundesland) sowie Spielstatistiken für Ranglisten. Andere Spieler sehen nur deinen Spielnamen, Dienstgrad, Punkte und deine Kompanie, nie deine E-Mail-Adresse. Im Steckbrief der Personensuche sehen andere Spieler außerdem deine Dienstzeit im Spiel, Werte, Orden, Führerscheine, Lehrgänge und Spielstatistiken, aber nie deinen Standort. Nachrichten im Chat „Funkkreis“ sind für alle angemeldeten Spieler sichtbar und werden nach 30 Tagen automatisch gelöscht.</p>'
     + '<p><b>Zweck und Rechtsgrundlage.</b> Die Daten werden nur verarbeitet, um dir das Spiel bereitzustellen (Art. 6 Abs. 1 lit. b DSGVO). Es gibt keine Werbung, kein Tracking und keine Weitergabe zu Werbezwecken.</p>'
     + '<p><b>Dienstleister.</b> Die Seite liegt bei GitHub Pages (GitHub Inc., USA). Beim Aufruf verarbeitet GitHub technisch notwendige Daten wie deine IP-Adresse. Konto und Spielstand liegen bei Supabase (Supabase Inc.), mit dem ein Auftragsverarbeitungsvertrag besteht. Für die Standortkarte werden Kartenbilder von OpenStreetMap geladen; dabei wird deine IP-Adresse an die OpenStreetMap Foundation übertragen. Schriften und Programmbibliotheken werden von dieser Seite selbst geladen, nicht von Google oder anderen Anbietern.</p>'
     + '<p><b>Im Browser</b> speichert das Spiel eine Kopie deines Spielstands und deine Anmeldung (Local Storage). Cookies zu Werbe- oder Analysezwecken gibt es nicht.</p>'
     + '<p><b>Speicherdauer.</b> Deine Daten bleiben gespeichert, solange dein Konto besteht. Du kannst dein Konto jederzeit in den Einstellungen löschen; dann werden Konto, Spielstand und Profil sofort entfernt. Einträge im Kassenbuch deiner Kompanie bleiben ohne Bezug zu deiner Person erhalten.</p>'
-    + '<p><b>Deine Rechte.</b> Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Schreib dafür an die oben genannte E-Mail-Adresse. Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren.</p>'
+    + '<p><b>Deine Rechte.</b> Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Wende dich dafür an die Spielleitung über ' + kontakt + '. Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren.</p>'
     + '<p class="small muted">Stand: ' + esc(RECHT.stand) + '</p></div>';
 }
 function rechtModal(){
