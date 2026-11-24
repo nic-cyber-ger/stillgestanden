@@ -769,6 +769,15 @@ body.hasfab{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .spban svg{flex:none;animation:spPuls 1.4s ease-in-out infinite}.spbx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.spbx b{font-size:15px;color:#FFD9D2}.spbx span{font-size:12.5px;color:#D9C9BE;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.spbg{flex:none;font:700 14px 'Barlow',sans-serif;color:#F2D27A}
 :root[data-theme="light"] .spban{background:linear-gradient(90deg,#FBE4DF,#F5F7F0);color:#3A1A16;border-color:#D9A79B}:root[data-theme="light"] .spbx b{color:#8C1F17}:root[data-theme="light"] .spbx span{color:#5A3A33}:root[data-theme="light"] .spbg{color:#8C1F17}
 .spinfo{text-align:left}.sph2{display:flex;justify-content:center}.spil{margin:0;padding:0 0 0 18px;display:flex;flex-direction:column;gap:8px;font-size:14.5px;line-height:1.4}
+.wblp{display:flex;gap:10px;align-items:flex-start;margin:0 0 14px;padding:12px 14px;border-radius:14px;background:rgba(232,179,58,.12);border:1.5px solid var(--gold,#E8B33A);color:var(--ink,#EEF1E6);font-size:14.5px;line-height:1.4}.wblp svg{flex:none;color:var(--gold,#E8B33A);margin-top:1px}
+.wbbox .wblink{padding:11px 12px;border-radius:12px;background:var(--surface2,#1B2318);border:1px dashed var(--line2,#3A4632);font:600 14px 'Barlow',sans-serif;word-break:break-all;user-select:all}
+.wbbtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}.wbbtns .btn{margin:0;padding-left:6px;padding-right:6px;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center}
+.wbreg{margin:0;padding:0 0 0 18px;display:flex;flex-direction:column;gap:8px;font-size:14.5px;line-height:1.4}
+.wbz{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}.wbz div{background:var(--surface2,#1B2318);border-radius:12px;padding:10px 4px}.wbz b{display:block;font:700 24px 'Barlow Condensed',sans-serif;color:var(--gold,#E8B33A)}.wbz span{font-size:12.5px;color:var(--muted,#A3AC97)}
+.wbl{list-style:none;margin:12px 0 0;padding:0}.wbl li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line,#2B3626)}.wbi{flex:none;width:26px;display:flex;justify-content:center}.wbn{flex:1;min-width:0;display:flex;flex-direction:column}.wbs{flex:none;font-size:12.5px;font-weight:700;color:var(--muted,#A3AC97)}.wbs.ok{color:var(--ok,#8FBF5A)}
+.wbsheet .wbbig{display:flex;justify-content:center;color:var(--gold,#E8B33A)}.wbsheet .wbbig svg{width:46px;height:46px}
+.spwerb{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}.spwerb svg{width:18px;height:18px}
+.wbadm{width:100%;border-collapse:collapse;font-size:13.5px}.wbadm th,.wbadm td{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line,#2B3626)}.wbadm td:nth-child(n+3),.wbadm th:nth-child(n+3){text-align:right}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1984,6 +1993,7 @@ const SUBS = {
     {id:'kaserne', label:'Standort', grp:'st', src:'truppe', match:['Standortkarte','Standortausbau']},
     {id:'verzeichnis', label:'Verzeichnis', grp:'kp', frei:'kompanie', src:'kpliste', match:['Kompanieverzeichnis']},
     {id:'chat', get label(){ const n = typeof chatUnread === 'function' ? chatUnread() : 0; return 'Funkkreis' + (n ? ' (' + n + ')' : ''); }, src:'chat', match:['Funkkreis']},
+    {id:'werben', label:'Werben', src:'werben', match:['Kameraden werben','So funktioniert es','Deine Geworbenen','Beste Werber']},
     {id:'suche', label:'Personensuche', src:'suche', match:['Personensuche']},
     {id:'rang', label:'Rangliste', src:'truppe', match:['Ranglisten']},
   ],
@@ -2074,7 +2084,7 @@ function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LAST
 function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === navOf(a[0])), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
   const f = {stube:renderStube, kaserne:renderKaserne, lage:renderLage, fuhrpark:renderFuhrpark, mini:renderMini, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
-    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null, kpliste: typeof renderKpListe === 'function' && USER ? renderKpListe : null}[src];
+    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null, kpliste: typeof renderKpListe === 'function' && USER ? renderKpListe : null, werben: typeof renderWerben === 'function' && USER ? renderWerben : null}[src];
   return f ? f() : '';
 }
 function splitSecs(html){
@@ -2141,6 +2151,8 @@ function kTiles(){
       badge:sv(() => ONLINE.bew.length, 0), info:sv(() => ONLINE.kp ? (ONLINE.bew.length ? ONLINE.bew.length + ' neue Bewerbung' + (ONLINE.bew.length > 1 ? 'en' : '') : ONLINE.kp.name + ' · Kasse ' + eur(ONLINE.kp.kasse)) : 'gründen, beitreten, bewerben', 'Kasse und Ausbau')},
     {grp:'Kameraden', go:'truppe:verzeichnis', label:'Kompanien', ok:on && !!USER, frei:'kompanie', ic:'<path d="M12 2.5l7.5 2.6v5.6c0 4.9-3.2 8.4-7.5 9.8-4.3-1.4-7.5-4.9-7.5-9.8V5.1z"/><path d="M9 11h6M12 8v6"/>', info:'Verzeichnis und Bewerbungen'},
     {grp:'Kameraden', go:'truppe:kaserne', label:'Standort', ok:on, ic:'<path d="M12 21s-7-6.4-7-12a7 7 0 0 1 14 0c0 5.6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>', info:sv(() => S.standort ? 'Gemeinsamer Ausbau in ' + S.standort.ort : '', 'Karte und gemeinsamer Ausbau')},
+    {grp:'Kameraden', go:'truppe:werben', label:'Kameraden werben', ok:typeof renderWerben === 'function' && !!USER, ic:'<path d="M15 20c0-3.3-2.7-6-6-6s-6 2.7-6 6"/><circle cx="9" cy="8" r="3.5"/><path d="M19 7v7M15.5 10.5h7"/>',
+      badge:sv(() => ONLINE.werb && ONLINE.werb.abholbar || 0, 0), info:sv(() => ONLINE.werb && ONLINE.werb.code ? (ONLINE.werb.geworben ? ONLINE.werb.geworben + ' eingeladen' : 'Link teilen, Belohnung bekommen') : '', 'Link teilen, Belohnung bekommen')},
     {grp:'Kameraden', go:'truppe:chat', label:'Funkkreis', ok:typeof renderChat === 'function' && !!USER, ic:'<path d="M4 5h16v11H9l-5 4z"/>',
       badge:sv(() => chatUnread(), 0), info:sv(() => { const m = ONLINE.chat[ONLINE.chat.length - 1]; return m ? m.name + ': ' + m.text : ''; }, 'Chat mit allen Spielern')},
     {grp:'Kameraden', go:'truppe:rang', label:'Rangliste', ok:on, ic:'<path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/>', info:'Spieler und Kompanien'},
@@ -4404,6 +4416,13 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:24, d:'24.11.2026', o:1, t:'Kameraden werben', p:[
+    'Neu unter Kaserne › Kameraden werben: dein eigener Einladungslink zum Teilen, mit WhatsApp-Knopf',
+    'Wer über deinen Link kommt, startet mit Extra-Sold und einem Feldpost-Paket',
+    'Sobald dein Kamerad Gefreiter ist, bekommst du eine Belohnung. Ab 3 Geworbenen gibt es den Orden „Werbeoffizier“',
+    'Jeder neue Spieler macht die Weihnachtsspende fürs Soldatenhilfswerk größer',
+    'Die Spendenaktion hat jetzt ein eigenes Band oben auf „Heute“'
+  ]},
   {v:23, d:'22.11.2026', t:'Neues Design: Gefechtsstand', p:[
     'Das ganze Spiel hat einen neuen, modernen Look: dunkel, klar, Gold für die wichtigste Aktion',
     'Schwebende Navigation unten, Unterbereiche als Pillen',
@@ -6664,7 +6683,7 @@ const ACT = {
     if(error){ toast(error.code==='23505' ? 'Der Name ist schon vergeben.' : 'Fehler: '+error.message); return; }
     ONLINE.profile = {id:USER.id, name:v, standort:std.ort, bundesland:std.bl};
     if(!S){ newGame(v); } else { S.name = v; }
-    S.standort = std; save(); await cloudPush(true); await loadOnline(); tab='stube'; render();
+    S.standort = std; save(); await cloudPush(true); await loadOnline(); tab='stube'; render(); if(typeof wbNachLogin === 'function') wbNachLogin();
   },
   dienst(id){ const e=G.startDienst(id); if(e) toast(e); else { save(); toast(D[id].name+' angetreten'); } render(); },
   stat(id){ const e=G.startStat(id); if(e) toast(e); else { save(); toast('Ausbildung '+STAT_NAME[id]+' begonnen'); } render(); },
@@ -7215,6 +7234,7 @@ async function afterLogin(){
   await loadKompanie();
   if(S) await abholen();
   await kpBonusFlush();
+  if(typeof wbNachLogin === 'function') wbNachLogin();
 }
 
 const SPLASH_TXT = ['Spind wird aufgeschlossen …', 'Warte auf Freigabe durch den Spieß …', 'Stiefel werden geputzt …', 'Spind wird auf Kante gebracht …',
@@ -7239,6 +7259,8 @@ function hideSplash(){
 splashTick();
 setTimeout(hideSplash, 12000); // Notbremse, falls der Server nicht antwortet
 
+// Einladungscode aus dem Link (?k=CODE) merken, bevor angemeldet wird
+(function(){ try{ const k = new URLSearchParams(location.search).get('k'); if(k && /^[A-Za-z0-9]{3,12}$/.test(k)){ localStorage.setItem('sg_werber', k.toUpperCase()); history.replaceState(null, '', location.pathname + location.hash); } }catch(e){} })();
 async function boot(){
   render();
   if(!sb){
@@ -8088,6 +8110,7 @@ function spendeKarte(lp){
       + '<div class="spbtn">' + [5, 20, 50].map(m => { const b = Math.min(rest, Math.max(s.min_betrag, Math.round(G.rank().sold * m))); return '<button class="btn ghost" data-act="spende_ein" data-id="' + b + '" ' + (!b || S.money < b ? 'disabled' : '') + '>' + eur(b) + '</button>'; }).join('') + '</div>'
       + '<p class="small" style="margin:6px 0 0;color:#C9CFBC">Heute noch bis ' + eur(rest) + ' möglich.</p>';
   }
+  if(!lp && !vorbei && USER && typeof renderWerben === 'function') h += '<button class="btn ghost wide spwerb" data-act="wb_go">' + WB_IC + ' Kameraden einladen: jeder zählt</button>';
   if(s.top && s.top.length) h += '<div class="sptop"><b>Größte Unterstützer</b>' + s.top.map((t, i) => '<div><span>' + (i + 1) + '.</span><span>' + esc(t.name) + '</span><span>' + eur(Number(t.betrag)) + '</span></div>').join('') + '</div>';
   h += '<p class="spf">Spielgeld ist kein echtes Geld. Die echte Spende zahlt die Spielleitung aus eigener Tasche, höchstens ' + (Math.max(s.sockel, ...(s.stufen || []).map(x => x[1])) + Math.max(0, ...(s.betrag_stufen || []).map(x => x[1]))) + ' €. Kein Angebot der Bundeswehr oder des Soldatenhilfswerks.</p></div>';
   return h;
@@ -8129,7 +8152,7 @@ function spendeInfo(){
     + '<li><b>Jeder zählt.</b> Ab Gefreiter kannst du mitspenden und bekommst den Orden „Wohltäter der Truppe“.</li>'
     + '<li><b>Mit Nachweis.</b> Nach Weihnachten steht die Überweisung hier im Spiel.</li></ul>'
     + '<p class="small" style="margin:12px 0 0;text-align:center">Erzähl es deinen Kameraden: Jeder neue Spieler macht die Spende größer.</p>'
-    + '<button class="btn gold wide" data-act="close" style="margin-top:14px">Bin dabei!</button></div></div>';
+    + '<button class="btn gold wide" data-act="close" style="margin-top:14px">Bin dabei!</button>' + (USER ? '<button class="btn ghost wide" data-act="wb_go" style="margin-top:8px">Kameraden einladen</button>' : '') + '</div></div>';
 }
 function spendeAuto(){
   const s = ONLINE.spende; if(!s || !S || !USER || (typeof tutOn === 'function' && tutOn())) return;
@@ -8140,6 +8163,126 @@ function spendeAuto(){
   spendeInfo();
 }
 ACT.spende_info = () => spendeInfo();
+
+/* ---------- Kameraden werben: Einladungslink, Startbonus, Belohnung ab Gefreiter ---------- */
+const WB_NEU = {money:3, paket:1}, WB_WERBER = {money:5, paket:1, bp:10};
+ORDEN.push({id:'werber', grp:'kp', tier:2, name:'Werbeoffizier (inoffiziell)', req:'3 Kameraden geworben, die Gefreiter geworden sind', cond:() => (S.werbQ || 0) >= 3});
+function wbGespeichert(){ try{ return localStorage.getItem('sg_werber') || ''; }catch(e){ return ''; } }
+function wbVergessen(){ try{ localStorage.removeItem('sg_werber'); }catch(e){} }
+function wbLink(code){ return location.origin + location.pathname + '?k=' + encodeURIComponent(code); }
+function wbText(link){ return 'Ich spiele „Stillgestanden!“, ein Bundeswehr-Karrierespiel im Browser, kostenlos. Komm in meine Truppe, über meinen Link bekommst du einen Startbonus. Und im Dezember spenden wir zusammen fürs Soldatenhilfswerk der Bundeswehr. ' + link; }
+const WB_IC = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 20c0-3.3-2.7-6-6-6s-6 2.7-6 6"/><circle cx="9" cy="8" r="3.5"/><path d="M19 7v7M15.5 10.5h7"/></svg>';
+function wbLp(){
+  if(!wbGespeichert()) return '';
+  return '<div class="wblp">' + WB_IC + '<span><b>Ein Kamerad hat dich eingeladen!</b> Registriere dich über diese Seite und du bekommst einen Startbonus: Extra-Sold und ein Feldpost-Paket.</span></div>';
+}
+async function wbAuto(){
+  const code = wbGespeichert(); if(!code || !sb || !USER || !S || !ONLINE.profile) return;
+  if(S.werbOk){ wbVergessen(); return; }
+  const { data, error } = await sb.rpc('werbung_einloesen', {p_code:code});
+  if(error){
+    const m = error.message || '';
+    if(/fetch|network|Failed|timeout/i.test(m)) return;   // später nochmal versuchen
+    wbVergessen();
+    if(/gibt es nicht|gegenseitig/.test(m)) toast(m);
+    return;
+  }
+  wbVergessen(); S.werbOk = 1; rewGive(WB_NEU); save(); render();
+  wbWillkommen(data || {});
+}
+function wbWillkommen(d){
+  const host = document.getElementById('modalHost'); if(!host) return;
+  const k = d.kompanie;
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="wbt"><div class="sheet wbsheet"><div class="wbbig" aria-hidden="true">' + WB_IC + '</div>'
+    + '<h2 id="wbt" style="margin:6px 0 4px;text-align:center">Willkommen in der Truppe!</h2>'
+    + '<p style="text-align:center">' + (d.werber ? '<b>' + esc(d.werber) + '</b> hat dich eingeladen.' : 'Du bist über eine Einladung gekommen.') + ' Dein Startbonus ist schon gutgeschrieben:</p>'
+    + '<div class="chips" style="justify-content:center">' + rewText(WB_NEU).split(', ').map(x => '<span class="chip">' + esc(x) + '</span>').join('') + '</div>'
+    + (k ? '<p class="small" style="text-align:center;margin:12px 0 0">' + esc(d.werber) + ' dient in der Kompanie <b>' + esc(k.name) + ' (' + esc(k.kuerzel) + ')</b>. Schau sie dir an, nach der Grundausbildung kannst du dich dort bewerben.</p>'
+        + '<button class="btn gold wide" data-act="kpv_profil" data-id="' + esc(k.id) + '" style="margin-top:14px">Kompanie ansehen</button><button class="btn ghost wide" data-act="close" style="margin-top:8px">Später</button>'
+      : '<button class="btn gold wide" data-act="close" style="margin-top:14px">Wegtreten</button>')
+    + '</div></div>';
+}
+async function wbLoad(){
+  if(!sb || !USER || !ONLINE.profile || ONLINE.werbLaed || Date.now() - (ONLINE.werbTs || 0) < 20000) return;
+  ONLINE.werbLaed = true; ONLINE.werbTs = Date.now();
+  const { data, error } = await sb.rpc('werbung_status');
+  ONLINE.werbLaed = false;
+  const vorher = ONLINE.werb;
+  ONLINE.werb = error || !data ? {err:error && !/werbung_status|function/i.test(error.message) ? error.message : 'Das Werbesystem ist noch nicht eingerichtet.'} : data;
+  if(data && S){ S.werbQ = data.qualifiziert || 0; if(data.abholbar && !ONLINE.werbHinweis){ ONLINE.werbHinweis = 1; toast(data.abholbar === 1 ? 'Dein geworbener Kamerad ist Gefreiter: Belohnung abholen!' : data.abholbar + ' geworbene Kameraden sind Gefreiter: Belohnungen abholen!'); } }
+  if((tab === 'truppe' && SUB.truppe === 'werben') || !vorher) render();
+}
+async function wbNachLogin(){ await wbAuto(); wbLoad(); }
+setInterval(() => { if(USER && ONLINE.profile && !document.hidden) wbLoad(); }, 10 * 60000);
+function renderWerben(){
+  const W = ONLINE.werb;
+  if(!W || (!W.code && !W.err)){ wbLoad(); return '<h2>Kameraden werben</h2><div class="panel pad"><p class="muted" style="margin:0">Wird geladen …</p></div>'; }
+  if(W.err) return '<h2>Kameraden werben</h2><div class="panel pad"><p style="margin:0 0 10px">' + esc(W.err) + '</p><button class="btn ghost" data-act="wb_neu">Nochmal versuchen</button></div>';
+  const link = wbLink(W.code);
+  let h = '<h2>Kameraden werben</h2><div class="panel pad wbbox"><p style="margin:0 0 12px">Jeder neue Spieler stärkt die Truppe und macht die <b>Weihnachtsspende fürs Soldatenhilfswerk</b> größer. Schick deinen Link an Kameraden, Freunde und die Gruppe von früher.</p>'
+    + '<div class="wblink">' + esc(link.replace(/^https?:\/\//, '')) + '</div>'
+    + '<div class="wbbtns"><button class="btn gold" data-act="wb_teilen">Teilen</button><button class="btn ghost" data-act="wb_kopieren">Kopieren</button><a class="btn ghost" href="https://wa.me/?text=' + encodeURIComponent(wbText(link)) + '" target="_blank" rel="noopener noreferrer">WhatsApp</a></div>'
+    + '<p class="small muted" style="margin:10px 0 0">Dein Code: <b>' + esc(W.code) + '</b></p></div>';
+  h += '<h2>So funktioniert es</h2><div class="panel pad"><ul class="wbreg">'
+    + '<li><b>Dein Kamerad</b> registriert sich über deinen Link und bekommt sofort einen Startbonus: Extra-Sold und ein Feldpost-Paket.</li>'
+    + '<li><b>Du</b> bekommst eine Belohnung, sobald er Gefreiter ist: ' + esc(rewText(WB_WERBER)) + ' je Kamerad.</li>'
+    + '<li>Ab 3 geworbenen Gefreiten gibt es den Orden <b>Werbeoffizier</b>.</li>'
+    + '<li>Gilt nur für neue Konten. Zweitkonten bringen nichts, die Spielleitung sieht sie.</li></ul></div>';
+  h += '<h2>Deine Geworbenen</h2><div class="panel pad"><div class="wbz"><div><b>' + W.geworben + '</b><span>eingeladen</span></div><div><b>' + W.qualifiziert + '</b><span>Gefreiter erreicht</span></div><div><b>' + W.abholbar + '</b><span>abholbar</span></div></div>'
+    + (W.abholbar ? '<button class="btn gold wide" data-act="wb_abholen" style="margin-top:12px">' + (W.abholbar === 1 ? 'Belohnung abholen' : W.abholbar + ' Belohnungen abholen') + '</button>' : '')
+    + (W.liste && W.liste.length ? '<ul class="wbl">' + W.liste.map(p => '<li><span class="wbi">' + (R[p.rang] ? insigniaFor(p.tsk || 'heer', p.rang, 26) : '') + '</span><span class="wbn"><b>' + esc(p.name) + '</b><span class="small muted">' + esc(R[p.rang] ? rankNameFor(p.tsk || 'heer', p.rang) : '') + '</span></span><span class="wbs' + (p.ok ? ' ok' : '') + '">' + (p.ok ? '✓ zählt' : 'noch Rekrut') + '</span></li>').join('') + '</ul>'
+      : '<p class="small muted" style="margin:12px 0 0">Noch niemand dabei. Dein erster Kamerad steht vielleicht schon in deiner Kontaktliste.</p>')
+    + '</div>';
+  if(W.top && W.top.length) h += '<h2>Beste Werber</h2><div class="panel pad"><ol class="rl">' + W.top.map((t, i) => '<li><span style="flex:none;width:22px;font-weight:700">' + (i + 1) + '.</span><span style="flex:1;min-width:0">' + esc(t.name) + '</span><span class="num">' + t.n + '</span></li>').join('') + '</ol></div>';
+  return h;
+}
+function wbKopieren(txt){
+  const ok = () => toast('Link kopiert. Jetzt einfügen und abschicken!');
+  if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(ok, () => wbKopierenAlt(txt, ok));
+  else wbKopierenAlt(txt, ok);
+}
+function wbKopierenAlt(txt, ok){
+  const ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:-100px;opacity:0';
+  document.body.appendChild(ta); ta.select(); let g = false; try{ g = document.execCommand('copy'); }catch(e){} ta.remove();
+  if(g) ok(); else toast('Kopieren ging nicht. Halte den Link gedrückt und kopiere ihn von Hand.');
+}
+Object.assign(ACT, {
+  wb_go(){ const m = document.getElementById('modalHost'); if(m) m.innerHTML = ''; goPage('truppe'); SUB.truppe = 'werben'; render(); window.scrollTo(0, 0); },
+  wb_neu(){ ONLINE.werb = null; ONLINE.werbTs = 0; render(); },
+  wb_teilen(){
+    const W = ONLINE.werb; if(!W || !W.code) return; const l = wbLink(W.code);
+    if(navigator.share) navigator.share({title:'Stillgestanden!', text:wbText('').trim(), url:l}).catch(e => { if(e && e.name !== 'AbortError') wbKopieren(wbText(l)); });
+    else wbKopieren(wbText(l));
+  },
+  wb_kopieren(){ const W = ONLINE.werb; if(W && W.code) wbKopieren(wbText(wbLink(W.code))); },
+  async wb_abholen(){
+    const b = document.querySelector('[data-act="wb_abholen"]'); if(b){ b.disabled = true; b.textContent = 'Wird abgeholt …'; }
+    const { data, error } = await sb.rpc('werbung_abholen');
+    if(error){ toast(error.message); if(b) b.disabled = false; return; }
+    const n = Number(data) || 0;
+    if(n){ for(let i = 0; i < n; i++) rewGive(WB_WERBER); save(); toast('Belohnung erhalten: ' + rewText({money:WB_WERBER.money * n, paket:WB_WERBER.paket * n, bp:WB_WERBER.bp * n}) + '. Danke fürs Werben!'); }
+    ONLINE.werb = null; ONLINE.werbTs = 0; await wbLoad(); render();
+  },
+  async adm_wbcode(){
+    const c = document.getElementById('admWbCode'), l = document.getElementById('admWbLabel');
+    const { error } = await sb.rpc('admin_werbecode_anlegen', {p_code:c ? c.value : '', p_label:l ? l.value : ''});
+    if(error){ toast(error.message); return; }
+    toast('Code angelegt.'); ONLINE.werbAdm = null; render();
+  },
+  adm_wbcopy(code){ wbKopieren(wbLink(code)); },
+});
+function wbAdminHtml(){
+  const A = ONLINE.werbAdm;
+  if(!A && !ONLINE.werbAdmL){ ONLINE.werbAdmL = 1; sb.rpc('admin_werbung').then(({data, error}) => { ONLINE.werbAdmL = 0; ONLINE.werbAdm = error ? {err:error.message} : (data || []); if(tab === 'akte') render(); }); }
+  let h = '<div class="panel pad adm"><h3>Kameraden werben</h3><p class="small muted">Welcher Code wie viele Spieler gebracht hat. Lege für jedes Video einen eigenen Code an und setz den Link in Bio oder Beschreibung, dann siehst du, was wirkt.</p>';
+  if(!A) h += '<p class="small muted">Wird geladen …</p>';
+  else if(A.err) h += '<p class="small">' + esc(A.err) + '</p>';
+  else h += A.length ? '<table class="wbadm"><tr><th>Code</th><th>Von</th><th>Neu</th><th>Gefr.</th></tr>' + A.map(x => '<tr><td><button class="linkbtn" data-act="adm_wbcopy" data-id="' + esc(x.code) + '" title="Link kopieren">' + esc(x.code) + '</button></td><td>' + esc(x.kampagne ? (x.label || 'Kampagne') : (x.von || '–')) + '</td><td>' + x.n + '</td><td>' + x.q + '</td></tr>').join('') + '</table>' : '<p class="small muted">Noch keine Einladungen.</p>';
+  h += '<div class="admrow" style="margin-top:10px"><input id="admWbCode" maxlength="12" placeholder="Code, z. B. TIKTOK6" autocapitalize="characters"><input id="admWbLabel" maxlength="40" placeholder="Beschriftung"></div><button class="btn ghost" data-act="adm_wbcode" style="margin-top:8px">Kampagnen-Code anlegen</button>'
+    + '<p class="small muted" style="margin:8px 0 0">Link: ' + esc(wbLink('CODE').replace(/^https?:\/\//, '')) + '. Tippe einen Code an, um seinen Link zu kopieren.</p></div>';
+  return h;
+}
+{ const _ra = renderAdmin; renderAdmin = function(){ const h = _ra(); return h ? h + wbAdminHtml() : h; }; }
 
 // ---------- Kompanieverzeichnis und Bewerbungen ----------
 const KPV_WAPPEN = {
@@ -8378,7 +8521,7 @@ loadKompanie = async function(){ await kpvLoadBase(); await kpvNach(); };
 // Chef und Spieß: alle zwei Minuten nach neuen Bewerbungen schauen
 setInterval(() => { if(USER && sb && !document.hidden && ONLINE.kp && (ONLINE.kp.rolle === 'chef' || ONLINE.kp.rolle === 'spiess')) { const vor = ONLINE.bew.map(b => b.id).join(); kpvNach().then(() => { const ae = document.activeElement, tippt = ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName); if(ONLINE.bew.map(b => b.id).join() !== vor && !tippt && !document.querySelector('#modalHost .overlay') && (tab === 'truppe' || tab === 'kaserne')) render(); }); } }, 120000);
 
-let LOGIN_MODE = 'login';
+let LOGIN_MODE = (() => { try{ return localStorage.getItem('sg_werber') ? 'signup' : 'login'; }catch(e){ return 'login'; } })();
 const LP_ICON = {
   karriere:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4v-5H4zM10 20h4V10h-4zM16 20h4V4h-4z"/></svg>',
   truppe:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3 3-6 6-6s6 3 6 6M16 11a3 3 0 1 0 0-6M22 20c0-3-2-6-5-6"/></svg>',
@@ -8389,7 +8532,7 @@ const LP_ICON = {
 function renderLogin(){
   const reg = LOGIN_MODE === 'signup';
   const klappe = '<svg width="56" height="90" viewBox="0 0 56 90" aria-hidden="true"><path d="M4 88V24Q4 4 28 2Q52 4 52 24V88Z" fill="#2A3318" stroke="#5E6E38" stroke-width="1.5"/><circle cx="28" cy="15" r="3.5" fill="#E8ECDD"/><rect x="13" y="70" width="30" height="5" rx="1" fill="#E3B23C"/><rect x="13" y="61" width="30" height="5" rx="1" fill="#E3B23C"/><rect x="13" y="52" width="30" height="5" rx="1" fill="#E3B23C"/></svg>';
-  return '<div class="lp">'
+  return '<div class="lp">' + (typeof wbLp === 'function' ? wbLp() : '')
     + '<section class="lp-hero">' + klappe
     + '<h1>Stillgestanden!</h1>'
     + '<p>Vom Schulterglatzer zum General. Die Bundeswehr-Karriere als Browserspiel, mit Kameraden, Kasernen und reichlich Formularen.</p>'
