@@ -778,6 +778,24 @@ body.hasfab{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .wbsheet .wbbig{display:flex;justify-content:center;color:var(--gold,#E8B33A)}.wbsheet .wbbig svg{width:46px;height:46px}
 .spwerb{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}.spwerb svg{width:18px;height:18px}
 .wbadm{width:100%;border-collapse:collapse;font-size:13.5px}.wbadm th,.wbadm td{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line,#2B3626)}.wbadm td:nth-child(n+3),.wbadm th:nth-child(n+3){text-align:right}
+.ltban{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:8px 12px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--info,#6FA8DC) 55%,transparent);background:color-mix(in srgb,var(--info,#6FA8DC) 10%,var(--bg,#0B0F0A));color:var(--ink,#EEF1E6);font:inherit;text-align:left;cursor:pointer}
+.ltban svg{flex:none}.ltbx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.ltbx b{font-size:15px}.ltbx span{font-size:12.5px;color:var(--muted,#A3AC97);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ltbg{flex:none;font:700 14px 'Barlow',sans-serif;color:var(--gold,#E8B33A)}
+.glk{width:44px;height:44px;font-size:24px;background:#E05A4F;border-color:#fff;animation:lkPuls 1.2s ease-in-out infinite}
+.gl .glkopf{display:flex;gap:12px;align-items:center}.glic{flex:none;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:color-mix(in srgb,var(--bad,#E05A4F) 18%,transparent)}
+.glst{font:700 12px 'Barlow Condensed',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:var(--bad,#E05A4F)}.gl-verlegung .glst,.gl-einsatz .glst{color:var(--gold,#E8B33A)}.gl-fertig .glst{color:var(--ok,#8FBF5A)}.glti{font:700 18px 'Barlow',sans-serif;line-height:1.2}
+.glsteps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:12px 0 10px}.glsteps span{font:600 11.5px 'Barlow',sans-serif;text-align:center;padding:5px 2px;border-radius:8px;background:var(--surface2,#1B2318);color:var(--muted,#A3AC97)}.glsteps .ok{color:var(--ok,#8FBF5A)}.glsteps .jetzt{background:var(--gold,#E8B33A);color:var(--gold-ink,#14180E)}
+.glbed{display:grid;grid-template-columns:1fr 1fr;gap:6px}.glbed div{display:flex;justify-content:space-between;padding:7px 10px;border-radius:10px;background:var(--surface2,#1B2318);font-size:13.5px}.glbed .ok b{color:var(--ok,#8FBF5A)}
+.glbar{position:relative;height:24px;border-radius:12px;background:var(--surface2,#1B2318);margin-top:8px;overflow:hidden}.glbar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#B3261E,#E8B33A)}.glbar span{position:relative;display:block;text-align:center;font:700 12.5px/24px 'Barlow',sans-serif;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.glzeit{margin:10px 0 0}.glbtns{display:flex;gap:8px;margin-top:12px}.glbtns .btn{flex:1;margin:0}.glres{display:flex;flex-wrap:wrap;gap:6px}
+.glkr{margin-top:14px;font-size:14px}.glkr>div{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--line,#2B3626)}
+.glmine{margin-top:10px}.glmine>div,.glw{display:flex;gap:10px;align-items:center;padding:6px 0}.glfz{flex:none;width:56px}.glfz .vic,.glw .vic{width:56px;height:35px}.glmine .small{flex:1;min-width:0}
+.glwahl{display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow:auto}.glw{width:100%;text-align:left;padding:8px 10px;border-radius:12px;border:1.5px solid var(--line,#2B3626);background:var(--surface2,#1B2318);color:inherit;font:inherit;cursor:pointer}.glw .small{flex:1;min-width:0}.glw.on{border-color:var(--gold,#E8B33A)}.glcb{flex:none;width:24px;height:24px;border-radius:6px;border:2px solid var(--line2,#3A4632);display:flex;align-items:center;justify-content:center;color:var(--gold-ink,#14180E);font-weight:700}.glw.on .glcb{background:var(--gold,#E8B33A);border-color:var(--gold,#E8B33A)}
+.glfrage{margin-top:14px;padding:12px;border-radius:12px;background:var(--surface2,#1B2318)}.glfrage.neu{outline:2px solid var(--bad,#E05A4F)}.glfrage.zu{opacity:.75}
+.glopt{display:flex;gap:10px;align-items:center;width:100%;margin-top:6px;padding:9px 10px;border-radius:10px;border:1.5px solid var(--line2,#3A4632);background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}.glopt:disabled{cursor:default}.glopt span:nth-child(2){flex:1}.glopt b{flex:none;min-width:22px;text-align:right}.glopt.ich{border-color:var(--gold,#E8B33A)}.glopt.sieg{background:color-mix(in srgb,var(--gold,#E8B33A) 14%,transparent)}
+.glart{flex:none;font:700 11px 'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:6px;background:var(--surface,#141A12);color:var(--muted,#A3AC97)}
+.glerg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;text-align:center}.glerg div{padding:10px;border-radius:12px;background:var(--surface2,#1B2318)}.glerg b{display:block;font:700 22px 'Barlow Condensed',sans-serif;color:var(--gold,#E8B33A)}.glerg span{font-size:12.5px;color:var(--muted,#A3AC97)}
+.glang{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line,#2B3626)}
+.glban{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:8px 12px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--gold,#E8B33A) 60%,transparent);background:color-mix(in srgb,var(--gold,#E8B33A) 9%,var(--bg,#0B0F0A));color:var(--ink,#EEF1E6);font:inherit;text-align:left;cursor:pointer}.glban.rot{border-color:#E05A4F;background:linear-gradient(90deg,#3A1A16,var(--surface,#141A12))}.glbi{flex:none;font-size:22px}.glban.rot .glbi{animation:spPuls 1.2s ease-in-out infinite}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1984,7 +2002,7 @@ const SUBS = {
     {id:'leergut', label:'Leergut', src:'feier', rest:true, match:['Leergut']},
     {id:'schrauben', label:'Schrauberecke', frei:'schrauben', src:'feier', match:['Schrauben','Kleinanzeigen','Garage']},
     {id:'spiele', label:'Spielothek', grp:'sp', frei:'spiele', src:'feier', match:['Spielothek','Stubenrunde']},
-    {id:'lotto', label:'Soldatenlotto', grp:'sp', frei:'spiele', src:'lotto', match:['Soldatenlotto']},
+    {id:'lotto', label:'Lotto', frei:'spiele', src:'lotto', match:['Soldatenlotto']},
   ],
   truppe: [
     {id:'kompanie', label:'Kompanie', grp:'kp', frei:'kompanie', src:'truppe', rest:true, match:['Kompanie','Bewerbungen','Kompanieprofil','Mitglieder','Einladen']},
@@ -2159,8 +2177,11 @@ function kTiles(){
     {grp:'Kameraden', go:'truppe:suche', label:'Personensuche', ok:typeof renderSuche === 'function' && !!USER, ic:'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>', info:'Steckbriefe ansehen'},
     {grp:'Feierabend', go:'feier:leergut', label:'Leergut', ok:true, ic:'<path d="M10 2h4v4l2 3v13H8V9l2-3z"/>', info:'Flaschen sammeln'},
     {grp:'Feierabend', go:'feier:schrauben', label:'Schrauberecke', ok:true, frei:'schrauben', ic:'<path d="M14 6l4 4-8 8H6v-4z"/><path d="M12 8l4 4"/>', info:'Autos reparieren und verkaufen'},
+    {grp:'Feierabend', go:'feier:lotto', label:'Soldatenlotto', ok:on && !!USER && typeof renderLotto === 'function', frei:'spiele', ic:'<circle cx="8" cy="9" r="4"/><circle cx="16.5" cy="9" r="3"/><circle cx="12" cy="17" r="3.5"/>',
+      badge:sv(() => ONLINE.lotto ? (ONLINE.lotto.offen > 0 || ONLINE.lotto.gratis_frei ? 1 : 0) : 0, 0),
+      info:sv(() => { const L = ONLINE.lotto; if(!L) return ''; if(L.offen > 0) return 'Gewinn wartet: ' + eur(L.offen); return 'Jackpot ' + eur(L.jackpot) + (L.gratis_frei ? ' · Gratistipp frei' : ''); }, 'Jackpot und Ziehungen')},
     {grp:'Feierabend', go:'feier:spiele', label:on ? 'Spielothek' : 'Stubenrunde', ok:true, frei:'spiele', ic:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 9v6M12 9v6M16 9v6"/>',
-      info:on ? sv(() => ONLINE.lotto && ONLINE.lotto.jackpot ? 'Lotto-Jackpot ' + eur(ONLINE.lotto.jackpot) : '', 'Automaten, Karten und Lotto') : 'Karten mit Kalle'},
+      info:on ? 'Automaten und Karten' : 'Karten mit Kalle'},
     {grp:'Zuhause', go:'zuhause:stube', label:'Stube', ok:true, ic:'<path d="M3 11 12 4l9 7v9H3z"/><path d="M9 20v-6h6v6"/>', info:'Ausbau und Ausrüstung'},
     {grp:'Zuhause', go:'zuhause:kameraden', label:on ? 'Stubenkameraden' : 'Kameraden', ok:true, ic:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/>', info:sv(() => 'Ansehen · Album ' + ITEMS.filter(i => S.album[i.id]).length + '/' + ITEMS.length, 'Ansehen und Sammelalbum')},
   ].filter(t => t.ok && (!t.frei || frei(t.frei)));
@@ -4422,6 +4443,10 @@ const CHANGELOG = [
     'Sobald dein Kamerad Gefreiter ist, bekommst du eine Belohnung. Ab 3 Geworbenen gibt es den Orden „Werbeoffizier“',
     'Jeder neue Spieler macht die Weihnachtsspende fürs Soldatenhilfswerk größer',
     'Die Spendenaktion hat jetzt ein eigenes Band oben auf „Heute“',
+    'Neu: Großlagen der Kompanie auf der Lagekarte. Chef oder Spieß nehmen eine Lage an, alle melden Fahrzeuge, ihr rückt gemeinsam aus und stimmt vor Ort über zwei Entscheidungen ab',
+    'Erfolg bringt Geld in die Kompaniekasse und eine Belohnung für jeden, der Fahrzeuge gestellt hat. Dazu zwei neue Orden',
+    'Das Soldatenlotto hat wieder eine eigene Kachel und einen eigenen Reiter unter Feierabend',
+    'Am Tag der Ziehung erinnert eine kleine Meldung auf „Heute“ an Jackpot und Ziehung, ebenso wenn ein Gewinn wartet',
     'Fehler behoben: Eine Beförderung in der alten Laufbahn (z. B. Hauptgefreiter zu Stabsgefreiter) setzt die Wartezeit für den Laufbahnwechsel nicht mehr zurück. Gezählt wird ab dem ersten Dienstgrad, von dem aus der Wechsel möglich war'
   ]},
   {v:23, d:'22.11.2026', t:'Neues Design: Gefechtsstand', p:[
@@ -6446,7 +6471,7 @@ function renderStube(){
   const prevN = note < 5 ? noteMin(note) : 0;
   const pct = nextN ? Math.min(100,(pts-prevN)/(nextN-prevN)*100) : 100;
   const gs = gsFortschritt();
-  let h = xcdBanner() + (typeof spendeBanner === 'function' ? spendeBanner() : '') + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
+  let h = xcdBanner() + (typeof spendeBanner === 'function' ? spendeBanner() : '') + (typeof glBanner === 'function' ? glBanner() : '') + (typeof ltBanner === 'function' ? ltBanner() : '') + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
     + '<div><div class="small muted">'+esc(GROUPS[r.g])+'</div><div class="rank">'+esc(r.name)+'</div>'
     + '<div class="name">'+esc(S.name)+(S.verw ? ' · '+esc(VERW[S.verw].name) : '')+'</div>'
     + '<div class="small muted">Tagessold '+eur(r.sold)+(S.standort ? ' · '+esc(S.standort.ort) : '')+'</div>'
@@ -7409,14 +7434,15 @@ async function lottoFlush(){
 async function loadLotto(){
   if(!sb || !USER || ONLINE.ltLoading) return;
   ONLINE.ltLoading = true;
+  const banVor = tab === 'stube' && typeof ltBanner === 'function' ? ltBanner() : '';
   const { data, error } = await sb.rpc('lotto_status');
   ONLINE.ltLoading = false; ONLINE.ltTs = Date.now();
   if(error){ ONLINE.ltErr = error.message || 'Serverfehler'; }
   else {
     ONLINE.lotto = data; ONLINE.ltErr = null;
-    if(data.offen > 0 && !ONLINE.ltHinweis){ ONLINE.ltHinweis = true; toast('Lottogewinn wartet: ' + eur(data.offen) + '. Abholen unter Feierabend → Lotto.'); }
+    if(data.offen > 0 && !ONLINE.ltHinweis){ ONLINE.ltHinweis = true; toast('Lottogewinn wartet: ' + eur(data.offen) + '. Abholen unter Kaserne → Soldatenlotto.'); }
   }
-  if(tab === 'feier' && (SUB.feier || LASTSUB.feier) === 'lotto') render();
+  if((tab === 'feier' && (SUB.feier || LASTSUB.feier) === 'lotto') || (tab === 'stube' && typeof ltBanner === 'function' && ltBanner() !== banVor)) render();
 }
 function ltDatum(ts){
   try{ return new Date(ts).toLocaleString('de-DE', {weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit', timeZone:'Europe/Berlin'}) + ' Uhr'; }
@@ -7424,6 +7450,23 @@ function ltDatum(ts){
 }
 function ltBalls(zahlen, hits, anim){
   return '<div class="ltballs">' + zahlen.map((n, i) => '<span class="ltball' + (hits && hits.includes(n) ? ' hit' : '') + (anim ? ' anim' : '') + '"' + (anim ? ' style="animation-delay:' + (i * .45) + 's"' : '') + '>' + n + '</span>').join('') + '</div>';
+}
+// Kleine Meldung auf „Heute“: am Tag der Ziehung (12 Stunden vorher) und wenn ein Gewinn wartet
+function ltBanner(){
+  const L = ONLINE.lotto; if(!L || !USER || !S || typeof frei !== 'function' || !frei('spiele')) return '';
+  const ic = '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="4.2" fill="#E8B33A"/><circle cx="16.5" cy="8.5" r="3.2" fill="#6FA8DC"/><circle cx="12.5" cy="17" r="3.8" fill="#E05A4F"/></svg>';
+  let t, u, k;
+  if(L.offen > 0){ t = 'Lottogewinn: ' + eur(L.offen); u = 'Wartet auf dich in der Lottozentrale'; k = 'Abholen'; }
+  else {
+    const bis = new Date(L.naechste).getTime() - Date.now();
+    if(!(bis > 0 && bis <= 12 * 3600000)) return '';
+    const uhr = new Date(L.naechste).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit', timeZone:'Europe/Berlin'});
+    const n = (L.meine || []).length;
+    t = 'Lotto-Ziehung heute ' + uhr + ' Uhr';
+    u = 'Jackpot ' + eur(L.jackpot) + ' · ' + (n ? (n === 1 ? 'dein Tipp ist dabei' : 'deine ' + n + ' Tipps sind dabei') : L.gratis_frei ? 'dein Gratistipp wartet' : 'noch kein Tipp abgegeben');
+    k = n && !L.gratis_frei ? 'Ansehen' : 'Tippen';
+  }
+  return '<button class="ltban" data-act="frei_go" data-id="feier:lotto">' + ic + '<span class="ltbx"><b>' + esc(t) + '</b><span>' + esc(u) + '</span></span><span class="ltbg">' + k + ' ›</span></button>';
 }
 function renderLotto(){
   const L = ONLINE.lotto;
@@ -8297,6 +8340,278 @@ function wbAdminHtml(){
 }
 { const _ra = renderAdmin; renderAdmin = function(){ const h = _ra(); return h ? h + wbAdminHtml() : h; }; }
 
+/* ---------- Großlagen der Kompanie: gemeinsam Fahrzeuge melden, ausrücken, abstimmen ---------- */
+const GL_TYPEN = [
+  {id:'hochwasser', name:'Hochwasser', ic:'🌊', titel:'Hochwasser bei {ort}', gew:{last:3, pers:2, pionier:1, san:1},
+   txt:'Nach tagelangem Regen tritt die Elbe über die Ufer. Der Landrat ruft den Katastrophenfall aus und bittet die Bundeswehr um Hilfe.',
+   fragen:[{t:'Der Deich bei {ort} weicht an zwei Stellen gleichzeitig auf.', a:'Kräfte bündeln und eine Stelle sicher halten', b:'Aufteilen und beide Stellen halten'},
+           {t:'Ein Seniorenheim am Ortsrand muss raus, die Zufahrt steht schon unter Wasser.', a:'Warten, bis die Pioniere eine sichere Furt haben', b:'Mit den Lkw sofort durchs Wasser'}]},
+  {id:'schnee', name:'Schneechaos', ic:'❄️', titel:'Schneechaos rund um {ort}', gew:{last:2, bergen:2, pers:2, san:1}, monate:[11, 12, 1, 2, 3],
+   txt:'Über Nacht 60 Zentimeter Neuschnee. Straßen dicht, Höfe abgeschnitten, der Winterdienst kapituliert.',
+   fragen:[{t:'Auf der Bundesstraße bei {ort} stecken 40 Fahrzeuge fest, darunter ein Linienbus.', a:'Erst den Bus bergen, dann der Reihe nach', b:'Alle Bergefahrzeuge gleichzeitig, Straße in einem Zug frei'},
+           {t:'Ein Bauernhof ist seit zwei Tagen abgeschnitten. Die Kühe müssen gemolken werden.', a:'Morgen früh mit Räumgerät hin', b:'Sofort über den Feldweg, Schneeketten drauf'}]},
+  {id:'bahn', name:'Zugunglück', ic:'🚆', titel:'Zugunglück bei {ort}', gew:{san:2, bergen:2, pers:2, erkund:1},
+   txt:'Ein Regionalzug ist bei {ort} entgleist. Rettungsdienst und Feuerwehr fordern Unterstützung an.',
+   fragen:[{t:'Ein Waggon hängt schräg an der Böschung und rutscht langsam weiter.', a:'Erst sichern, dann bergen', b:'Sofort mit dem Bergefahrzeug aufrichten'},
+           {t:'Die Presse will Bilder aus dem Sperrgebiet.', a:'Pressesprecher schicken und Abstand halten', b:'Kurzes Interview vom Kompaniechef vor Ort'}]},
+  {id:'uebung', name:'Großübung', ic:'🎯', titel:'Großübung {ort}', gew:{schutz:3, last:2, san:1, pers:1}, uebpl:true,
+   txt:'Die Division übt den Ernstfall. Die ganze Kompanie verlegt auf den {ort}, der General schaut zu.',
+   fragen:[{t:'Lagewechsel von der Übungsleitung: Gegner im Waldstück Nord.', a:'Stellung halten und erst aufklären', b:'Sofort angreifen, bevor er sich eingräbt'},
+           {t:'Der Inspekteur kündigt sich an. In 20 Minuten.', a:'Ordentlich vorführen, was geübt wurde', b:'Spontane Gefechtsvorführung mit allem, was rollt'}]},
+  {id:'waldbrand', name:'Waldbrand', ic:'🔥', titel:'Waldbrand bei {ort}', gew:{last:2, pionier:2, luft:1, pers:1}, monate:[4, 5, 6, 7, 8, 9],
+   txt:'Seit Tagen kein Regen. Bei {ort} brennen 300 Hektar Kiefernwald, der Wind dreht.',
+   fragen:[{t:'Das Feuer läuft auf eine Ortschaft zu.', a:'Schneise weit vor dem Ort ziehen', b:'Direkt an der Feuerfront löschen'},
+           {t:'Alte Munition im Waldboden beginnt zu detonieren.', a:'Alle zurück, Sperrkreis 1000 Meter', b:'Weiterlöschen mit gepanzerten Fahrzeugen'}]},
+];
+const GL_TYP_I = Object.fromEntries(GL_TYPEN.map(t => [t.id, t]));
+const GL_ST = {alarm:'Alarmierung', verlegung:'Verlegung', einsatz:'Im Einsatz', fertig:'Abgeschlossen', abgebrochen:'Abgebrochen'};
+ORDEN.push({id:'gl1', grp:'kp', tier:1, name:'Einsatzband Großlage (inoffiziell)', req:'An einer Großlage der Kompanie teilnehmen', cond:() => (S.glN || 0) >= 1});
+ORDEN.push({id:'gl5', grp:'kp', tier:2, name:'Großlagen-Veteran (inoffiziell)', req:'An 5 Großlagen der Kompanie teilnehmen', cond:() => (S.glN || 0) >= 5});
+function glNow(){ return Date.now() + (ONLINE.glOff || 0); }
+function glT(s){ return s ? new Date(s).getTime() : 0; }
+function glLage(){ const g = ONLINE.gl; return g && g.lage ? g.lage : null; }
+function glLaeuft(){ const l = glLage(); return !!(l && ['alarm', 'verlegung', 'einsatz'].includes(l.status)); }
+function glFuehrung(){ const g = ONLINE.gl; return !!(g && ['chef', 'spiess'].includes(g.rolle)); }
+function glTitel(l){ const t = GL_TYP_I[l.typ]; return (t ? t.ic + ' ' : '') + l.titel; }
+async function glLoad(force){
+  if(!sb || !USER || !ONLINE.kp || ONLINE.glLaed) return;
+  if(!force && Date.now() - (ONLINE.glTs || 0) < 30000) return;
+  ONLINE.glLaed = true; ONLINE.glTs = Date.now();
+  const vorher = JSON.stringify(ONLINE.gl || null);
+  const { data, error } = await sb.rpc('kp_gl_status');
+  ONLINE.glLaed = false;
+  if(error){ ONLINE.gl = {err:/kp_gl_status|function/i.test(error.message) ? 'Großlagen sind noch nicht eingerichtet.' : error.message}; }
+  else { ONLINE.gl = data; if(data && data.jetzt) ONLINE.glOff = glT(data.jetzt) - Date.now(); }
+  if(JSON.stringify(ONLINE.gl) !== vorher && (tab === 'stube' || onPage('lage'))) { render(); }
+}
+setInterval(() => { if(USER && ONLINE.kp && !document.hidden) glLoad(); }, 120000);
+// Zeitgesteuerte Wechsel (Alarm zu Ende, Einsatz vorbei) sofort nachladen
+setInterval(() => {
+  const l = glLage(); if(!l || !glLaeuft()) return;
+  const t = glNow(), grenzen = [glT(l.alarm_bis), glT(l.einsatz_ab), glT(l.frage1_ab), glT(l.ende_at)].filter(Boolean);
+  if(grenzen.some(x => x <= t && x > t - 2000)) glLoad(true);
+  document.querySelectorAll('[data-gll]').forEach(e => { const z = glT(e.dataset.gll) - glNow(); e.textContent = z > 0 ? fmtLeft(z) : '…'; });
+  glMove();
+}, 1000);
+
+// Seeded Zufall, damit die Angebote für den Tag stabil bleiben
+function glRnd(seed){ let h = 2166136261; for(const c of seed) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; }; }
+function glAngebote(){
+  const me = lkKoord(); if(!me) return [];
+  const r = glRnd(dateStr() + (ONLINE.kp ? ONLINE.kp.id : '') + (ONLINE.glN || 0)), mon = new Date().getMonth() + 1;
+  const typen = GL_TYPEN.filter(t => !t.monate || t.monate.includes(mon));
+  const orte = Object.entries(STANDORT_KOORD).map(([k, ll]) => ({ort:k.split('/')[1], ll, km:lkKm(me, ll)})).filter(x => x.km >= 20 && x.km <= 160);
+  const pl = TRUEBPL.map(([n, a, b]) => ({ort:n, ll:[a, b], km:lkKm(me, [a, b])})).sort((x, y) => x.km - y.km).slice(0, 3);
+  const out = [], frei = typen.slice();
+  while(out.length < 3 && frei.length){
+    const t = frei.splice(Math.floor(r() * frei.length), 1)[0];
+    const quelle = t.uebpl ? pl : orte; if(!quelle.length) continue;
+    const o = quelle[Math.floor(r() * quelle.length)];
+    out.push({typ:t.id, ort:o.ort.replace(/ \(.*\)$/, ''), ll:o.ll, km:Math.round(o.km)});
+  }
+  return out;
+}
+function glText(s, ort){ return String(s).replace(/\{ort\}/g, ort); }
+
+// Fahrzeuge, die durch die Großlage gebunden sind
+function glMeineUids(){ const l = glLage(); return l && glLaeuft() ? (l.meine || []).map(x => x.uid) : []; }
+{ const _lb = lkBelegt; lkBelegt = function(){ const b = _lb(); for(const u of glMeineUids()) b.add(u); return b; }; }
+
+// Karte: Großlage und eigene Fahrzeugkolonne
+let GL_MARK = null;
+function glPos(l){
+  const me = lkKoord(), ziel = [l.lat, l.lng]; if(!me) return ziel;
+  const a = glT(l.ausgerueckt_at), e = glT(l.einsatz_ab), t = glNow();
+  if(l.status === 'alarm' || !a) return me;
+  const q = Math.max(0, Math.min(1, (t - a) / Math.max(1, e - a)));
+  return [me[0] + (ziel[0] - me[0]) * q, me[1] + (ziel[1] - me[1]) * q];
+}
+{ const _ld = lkDraw; lkDraw = function(){
+  _ld(); GL_MARK = null;
+  const l = glLage(); if(!l || !LKMAP || !LKLAYER || !window.L || !['alarm', 'verlegung', 'einsatz'].includes(l.status)) return;
+  const t = GL_TYP_I[l.typ] || {ic:'⚠️'}, me = lkKoord(), ziel = [l.lat, l.lng];
+  window.L.circle(ziel, {radius:6000, color:'#E05A4F', weight:2, opacity:.8, fillColor:'#E05A4F', fillOpacity:.12, interactive:false}).addTo(LKLAYER);
+  window.L.marker(ziel, {icon:window.L.divIcon({html:'<span class="lki glk">' + t.ic + '</span>', className:'lkic', iconSize:[44, 44], iconAnchor:[22, 22]}), zIndexOffset:1200})
+    .bindTooltip('Großlage: ' + esc(l.titel), {direction:'top', offset:[0, -20]}).on('click', glScroll).addTo(LKLAYER);
+  const mine = l.meine || [];
+  if(me && mine.length){
+    window.L.polyline([me, ziel], {color:'#E05A4F', weight:3, dashArray:'2 8', opacity:.8}).addTo(LKLAYER);
+    if(l.status !== 'alarm'){ const ic = lkFzT(mine[0].uid).ic; GL_MARK = window.L.marker(glPos(l), {icon:lkIcon('<span class="lkfz">' + ic + (mine.length > 1 ? '<b>' + mine.length + '</b>' : '') + '</span>', 'fz'), zIndexOffset:1100}).addTo(LKLAYER); }
+  }
+  if(LKMAP._glFit !== l.id && me){ LKMAP._glFit = l.id; LKMAP.fitBounds([me, ziel], {padding:[40, 40], maxZoom:10}); }
+}; }
+function glMove(){ const l = glLage(); if(GL_MARK && l && LKMAP) GL_MARK.setLatLng(glPos(l)); }
+function glScroll(){ const h = [...document.querySelectorAll('main h2')].find(x => x.textContent.trim() === 'Großlage'); if(h) window.scrollTo({top:h.getBoundingClientRect().top + window.scrollY - 70, behavior:'smooth'}); }
+
+// Abschnitt auf der Lagekarte
+function glHtml(){
+  if(!ONLINE.kp || !USER) return '';
+  const G0 = ONLINE.gl;
+  if(!G0){ glLoad(); return ''; }
+  if(G0.err) return '<h2>Großlage</h2><div class="panel pad"><p class="small muted" style="margin:0">' + esc(G0.err) + '</p></div>';
+  glLoad();
+  const l = G0.lage;
+  if(!l || (l.status === 'abgebrochen' && glT(l.alarm_bis) < glNow() - 6 * 3600000) || (l.status === 'fertig' && (l.abgeholt || !(l.meine || []).length) && glT(l.ende_at) < glNow() - 6 * 3600000)) return glStartHtml(G0);
+  const t = GL_TYP_I[l.typ] || {ic:'⚠️', txt:'', fragen:[]};
+  let h = '<h2>Großlage</h2><div class="panel pad gl gl-' + l.status + '"><div class="glkopf"><span class="glic" aria-hidden="true">' + t.ic + '</span><div><div class="glst">' + GL_ST[l.status] + '</div><div class="glti">' + esc(l.titel) + '</div></div></div>';
+  if(t.txt) h += '<p class="small" style="margin:8px 0 0">' + esc(glText(t.txt, l.ort)) + '</p>';
+  // Zeitleiste
+  const step = ['alarm', 'verlegung', 'einsatz', 'fertig'], idx = l.status === 'abgebrochen' ? -1 : step.indexOf(l.status);
+  h += '<div class="glsteps">' + ['Alarm', 'Verlegung', 'Einsatz', 'Ergebnis'].map((n, i) => '<span class="' + (i < idx ? 'ok' : i === idx ? 'jetzt' : '') + '">' + n + '</span>').join('') + '</div>';
+  const zeit = (lab, bis) => '<p class="small glzeit">' + lab + ' <b data-gll="' + bis + '">' + fmtLeft(glT(bis) - glNow()) + '</b></p>';
+  // Bedarf
+  const erf = Math.round(Number(l.erfuellung || 0) * 100);
+  const bed = Object.entries(l.bedarf || {}).sort((a, b) => b[1].soll - a[1].soll);
+  h += '<div class="glbed">' + bed.map(([cap, b]) => '<div class="' + (b.ist >= b.soll ? 'ok' : '') + '"><span>' + esc(LK_CAP[cap] || cap) + '</span><b>' + b.ist + ' / ' + b.soll + '</b></div>').join('') + '</div>'
+    + '<div class="glbar"><i style="width:' + Math.min(100, erf) + '%"></i><span>' + erf + ' % der Kräfte' + (l.status === 'alarm' ? (erf >= 50 ? ' · bereit zum Ausrücken' : ' · ab 50 % kann ausgerückt werden') : '') + '</span></div>';
+  if(l.status === 'alarm'){
+    h += zeit('Automatisch ausrücken in', l.alarm_bis);
+    const mine = l.meine || [];
+    h += '<div class="glbtns"><button class="btn gold" data-act="gl_melden">' + (mine.length ? 'Weitere Fahrzeuge melden' : 'Fahrzeuge melden') + '</button>'
+      + (glFuehrung() || G0.rolle === 'zugfuehrer' ? '<button class="btn ghost" data-act="gl_aus"' + (erf < 50 ? ' disabled' : '') + '>Ausrücken!</button>' : '') + '</div>';
+    if(glFuehrung()){
+      const fehlt = bed.filter(([, b]) => b.ist < b.soll);
+      if(fehlt.length) h += '<p class="small muted" style="margin:10px 0 6px">Fehlt etwas? Reservisten aus der Kompaniekasse, 3.000 € je Fahrzeug:</p><div class="glres">' + fehlt.map(([cap]) => '<button class="btn mini ghost" data-act="gl_res" data-id="' + esc(cap) + '">+ ' + esc(LK_CAP[cap] || cap) + '</button>').join('') + '</div>';
+    }
+  } else if(l.status === 'verlegung') h += zeit('Ankunft am Einsatzort in', l.einsatz_ab);
+  else if(l.status === 'einsatz') h += zeit('Einsatzende in', l.ende_at);
+  // Wer ist dabei
+  const kr = l.kraefte || [];
+  h += '<div class="glkr"><b>Gemeldet</b>' + (kr.length ? kr.map(k => '<div><span>' + esc(k.name) + (k.ich ? ' (du)' : '') + '</span><span class="small muted">' + k.n + (k.n === 1 ? ' Fahrzeug' : ' Fahrzeuge') + '</span></div>').join('') : '<p class="small muted" style="margin:4px 0 0">Noch niemand. Sei der Erste!</p>') + '</div>';
+  if((l.meine || []).length && l.status === 'alarm') h += '<div class="glmine">' + l.meine.map(m => { const f = fpState().liste.find(x => x.uid === m.uid); const tt = lkFzT(m.uid);
+    return '<div><span class="glfz">' + tt.ic + '</span><span class="small">' + esc(tt.name) + (f ? ' <span class="fpkz">' + esc(f.kz) + '</span>' : '') + '<br><span class="muted">' + esc(LK_CAP[m.cap] || m.cap) + '</span></span><button class="btn mini ghost" data-act="gl_zur" data-id="' + esc(m.uid) + '">Zurück</button></div>'; }).join('') + '</div>';
+  // Entscheidungen
+  if(l.status === 'einsatz' || l.status === 'fertig'){
+    (l.fragen || t.fragen || []).forEach((f0, i) => {
+      const f = t.fragen && t.fragen[i] ? t.fragen[i] : f0, ab = i === 0 ? l.einsatz_ab : l.frage1_ab, bis = i === 0 ? l.frage1_ab : l.ende_at;
+      if(glT(ab) > glNow() && l.status === 'einsatz'){ h += '<div class="glfrage zu"><b>Entscheidung ' + (i + 1) + '</b><p class="small muted" style="margin:4px 0 0">Steht an in <span data-gll="' + ab + '">' + fmtLeft(glT(ab) - glNow()) + '</span>.</p></div>'; return; }
+      const st = (l.stimmen || [])[i] || {a:0, b:0, ich:null}, offen = l.status === 'einsatz' && glT(bis) > glNow();
+      const erg = l.wahl && l.wahl[i];
+      h += '<div class="glfrage' + (offen && st.ich == null ? ' neu' : '') + '"><b>Entscheidung ' + (i + 1) + (offen ? ' · Abstimmung läuft' : '') + '</b><p style="margin:4px 0 8px">' + esc(glText(f.t, l.ort)) + '</p>'
+        + [['a', 0, 'Sicher'], ['b', 1, 'Wagnis']].map(([k, w, art]) => '<button class="glopt' + (st.ich === w ? ' ich' : '') + (erg && erg.w === w ? ' sieg' : '') + '"' + (offen ? ' data-act="gl_stimme" data-id="' + i + ':' + w + '"' : ' disabled') + '><span class="glart">' + art + '</span><span>' + esc(f[k]) + '</span><b>' + st[k] + '</b></button>').join('')
+        + (offen ? '<p class="small muted" style="margin:6px 0 0">Jeder in der Kompanie stimmt ab, der Chef zählt doppelt. Ende in <span data-gll="' + bis + '">' + fmtLeft(glT(bis) - glNow()) + '</span>.</p>'
+          : erg ? '<p class="small" style="margin:6px 0 0"><b>' + (erg.ok === true ? 'Gewagt und gewonnen!' : erg.ok === false ? 'Gewagt und schiefgegangen.' : 'Sicher und sauber.') + '</b></p>' : '')
+        + '</div>';
+    });
+  }
+  if(l.status === 'fertig'){
+    h += '<div class="glerg"><div><b>' + Math.round(Number(l.ergebnis || 0) * 100) + ' %</b><span>Einsatzerfolg</span></div><div><b>+' + eur(Number(l.kasse || 0)) + '</b><span>Kompaniekasse</span></div></div>';
+    if((l.meine || []).length && !l.abgeholt) h += '<button class="btn gold wide" data-act="gl_abholen" style="margin-top:12px">Belohnung abholen</button>';
+    else if(l.abgeholt) h += '<p class="small muted" style="margin:10px 0 0">Belohnung abgeholt. Gut gemacht, Truppe!</p>';
+    else h += '<p class="small muted" style="margin:10px 0 0">Du hattest diesmal keine Fahrzeuge dabei.</p>';
+  }
+  if(l.status === 'abgebrochen') h += '<p class="small" style="margin:10px 0 0">Zu wenige Kräfte gemeldet. Die Lage hat eine andere Einheit übernommen. Beim nächsten Mal mehr Fahrzeuge melden!</p>';
+  return h + '</div>';
+}
+function glStartHtml(G0){
+  let h = '<h2>Großlage</h2><div class="panel pad gl">';
+  const ab = glT(G0.naechste_ab), pause = ab > glNow();
+  if(!glFuehrung()){
+    return h + '<p class="small" style="margin:0">Gerade keine Großlage. Chef oder Spieß können eine annehmen' + (pause ? ', die nächste ab <b data-gll="' + G0.naechste_ab + '">' + fmtLeft(ab - glNow()) + '</b>' : '') + '. Dann meldet jeder in der Kompanie Fahrzeuge aus seinem Fuhrpark und ihr rückt gemeinsam aus.</p></div>';
+  }
+  if(pause) return h + '<p class="small" style="margin:0">Die Kompanie erholt sich noch. Nächste Großlage möglich in <b data-gll="' + G0.naechste_ab + '">' + fmtLeft(ab - glNow()) + '</b>.</p></div>';
+  const ang = glAngebote();
+  h += '<p class="small" style="margin:0 0 10px">Anforderungen an die Kompanie. Wähle eine Lage, dann bekommen alle Mitglieder den Alarm. Der Umfang richtet sich nach euren aktiven Soldaten (' + (G0.aktive || 1) + ').</p>';
+  h += ang.map((a, i) => { const t = GL_TYP_I[a.typ];
+    return '<div class="glang"><span class="glic" aria-hidden="true">' + t.ic + '</span><div style="flex:1;min-width:0"><b>' + esc(glText(t.titel, a.ort)) + '</b><div class="small muted">' + a.km + ' km · braucht ' + Object.keys(t.gew).map(c => LK_CAP[c] || c).join(', ') + '</div></div><button class="btn mini gold" data-act="gl_start" data-id="' + i + '">Annehmen</button></div>'; }).join('');
+  return h + '<p class="small muted" style="margin:10px 0 0">Ablauf: bis zu 12 Std. Alarmierung, 45 Min. Verlegung, 3 Std. Einsatz mit zwei Abstimmungen. Danach Pause von 6 Std.</p></div>';
+}
+// in die Lagekarte einhängen
+{ const _rl = renderLage; renderLage = function(){ const h = _rl(); const g = typeof glHtml === 'function' ? glHtml() : ''; if(!g) return h; const i = h.indexOf('<h2>Laufende Aufträge</h2>'), j = h.indexOf('<h2>Offene Aufträge</h2>'); const k = i >= 0 ? i : j; return k >= 0 ? h.slice(0, k) + g + h.slice(k) : h + g; }; }
+{ const L0 = SUBS.dienst && SUBS.dienst.find(x => x.id === 'lage'); if(L0 && !L0.match.includes('Großlage')) L0.match.push('Großlage'); }
+
+// Fahrzeuge melden
+let GL_SEL = new Set();
+function glZuteilen(l, sel){
+  const rest = Object.fromEntries(Object.entries(l.bedarf || {}).map(([c, b]) => [c, b.soll - b.ist]));
+  const out = {};
+  for(const f of lkFuhrpark().filter(f => sel.has(f.uid))){
+    const caps = f.t.cap.filter(c => c in rest);
+    if(!caps.length) continue;
+    caps.sort((a, b) => rest[b] - rest[a]);
+    out[f.uid] = caps[0]; rest[caps[0]]--;
+  }
+  return out;
+}
+function glMeldenOpen(){
+  const l = glLage(); if(!l || l.status !== 'alarm') return;
+  const host = document.getElementById('modalHost'); if(!host) return;
+  const bel = lkBelegt(), caps = Object.keys(l.bedarf || {});
+  const frei = lkFuhrpark().filter(f => !bel.has(f.uid) && f.t.cap.some(c => caps.includes(c)));
+  for(const u of [...GL_SEL]) if(!frei.some(f => f.uid === u)) GL_SEL.delete(u);
+  const zu = glZuteilen(l, GL_SEL);
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="glmt"><div class="sheet glsheet"><h2 id="glmt" style="margin:0 0 4px">Fahrzeuge melden</h2>'
+    + '<p class="small muted" style="margin:0 0 10px">' + esc(l.titel) + '. Gemeldete Fahrzeuge sind bis zum Ende der Großlage gebunden und nutzen sich etwas ab.</p>'
+    + (frei.length ? '<div class="glwahl">' + frei.map(f => { const on = GL_SEL.has(f.uid), cap = zu[f.uid];
+        return '<button class="glw' + (on ? ' on' : '') + '" data-act="gl_sel" data-id="' + esc(f.uid) + '" aria-pressed="' + on + '"><span class="glfz">' + f.t.ic + '</span><span class="small"><b>' + esc(f.t.name) + '</b> <span class="fpkz">' + esc(f.f.kz || '') + '</span><br><span class="muted">' + (on ? (cap ? 'deckt: ' + esc(LK_CAP[cap] || cap) : 'wird nicht mehr gebraucht') : 'kann: ' + f.t.cap.filter(c => caps.includes(c)).map(c => LK_CAP[c] || c).join(', ')) + ' · Zustand ' + Math.round(f.f.zust) + ' %</span></span><span class="glcb">' + (on ? '✓' : '') + '</span></button>'; }).join('') + '</div>'
+      : '<p class="small">Du hast gerade kein freies, passendes Fahrzeug. Fahrzeuge in der Werkstatt oder im Einsatz können nicht gemeldet werden.</p>')
+    + '<div class="glbtns" style="margin-top:12px"><button class="btn gold" data-act="gl_senden"' + (GL_SEL.size ? '' : ' disabled') + '>' + (GL_SEL.size ? GL_SEL.size + (GL_SEL.size === 1 ? ' Fahrzeug' : ' Fahrzeuge') + ' melden' : 'Fahrzeuge wählen') + '</button><button class="btn ghost" data-act="close">Abbrechen</button></div></div></div>';
+}
+async function glRpc(name, args, ok){
+  const { data, error } = await sb.rpc(name, args || {});
+  if(error){ toast(error.message); return null; }
+  if(data && data.lage !== undefined){ ONLINE.gl = data; if(data.jetzt) ONLINE.glOff = glT(data.jetzt) - Date.now(); }
+  if(ok) toast(ok);
+  LKFIT = ''; render(); return data;
+}
+function glBelohnung(e){ const n = e.n || 1, q = Math.max(.3, Number(e.ergebnis) || 0); return {money:Math.round((2 + .8 * n) * q * 10) / 10, bp:Math.round((6 + 3 * n) * q), paket:q >= 1 ? 1 : 0}; }
+Object.assign(ACT, {
+  gl_melden(){ GL_SEL = new Set(); glMeldenOpen(); },
+  gl_sel(uid){ if(GL_SEL.has(uid)) GL_SEL.delete(uid); else GL_SEL.add(uid); glMeldenOpen(); },
+  async gl_senden(){
+    const l = glLage(); if(!l) return; const zu = glZuteilen(l, GL_SEL);
+    const liste = Object.entries(zu).map(([uid, cap]) => ({uid, typ:lkFzT(uid).id, cap}));
+    if(!liste.length){ toast('Keins der gewählten Fahrzeuge wird noch gebraucht.'); return; }
+    document.getElementById('modalHost').innerHTML = '';
+    await glRpc('kp_gl_melden', {p_id:l.id, p_fz:liste}, liste.length === 1 ? 'Fahrzeug gemeldet.' : liste.length + ' Fahrzeuge gemeldet.');
+    GL_SEL = new Set();
+  },
+  async gl_zur(uid){ const l = glLage(); if(l) await glRpc('kp_gl_zurueckziehen', {p_id:l.id, p_uid:uid}, 'Fahrzeug zurückgezogen.'); },
+  async gl_aus(){ const l = glLage(); if(l) await glRpc('kp_gl_ausruecken', {p_id:l.id}, 'Die Kompanie rückt aus!'); },
+  async gl_res(cap){ const l = glLage(); if(l) await glRpc('kp_gl_reserve', {p_id:l.id, p_cap:cap}, 'Reservisten angefordert.'); },
+  async gl_stimme(v){ const l = glLage(); if(!l) return; const [f, w] = String(v).split(':').map(Number); await glRpc('kp_gl_abstimmen', {p_id:l.id, p_frage:f, p_wahl:w}, 'Stimme abgegeben.'); },
+  async gl_start(i){
+    const a = glAngebote()[Number(i)]; if(!a) return; const t = GL_TYP_I[a.typ];
+    const r = await glRpc('kp_gl_starten', {p_typ:t.id, p_titel:glText(t.titel, a.ort), p_ort:a.ort, p_lat:a.ll[0], p_lng:a.ll[1], p_gewichte:t.gew, p_fragen:t.fragen.map(f => ({t:glText(f.t, a.ort), a:f.a, b:f.b}))}, 'Großlage angenommen. Alle Mitglieder werden alarmiert!');
+    if(r) ONLINE.glN = (ONLINE.glN || 0) + 1;
+  },
+  async gl_abholen(){
+    const l = glLage(); if(!l) return;
+    const b = document.querySelector('[data-act="gl_abholen"]'); if(b) b.disabled = true;
+    const { data, error } = await sb.rpc('kp_gl_abholen', {p_id:l.id});
+    if(error){ toast(error.message); if(b) b.disabled = false; return; }
+    const rew = glBelohnung(data); rewGive(rew); S.glN = (S.glN || 0) + 1;
+    for(const u of data.uids || []){ const f = fpState().liste.find(x => x.uid === u); if(f){ f.zust = Math.max(5, f.zust - 10); f.km = (f.km || 0) + 2 * Math.round(lkKm(lkKoord() || [l.lat, l.lng], [l.lat, l.lng])); } }
+    save(); await glLoad(true); render();
+    document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="glrt"><div class="sheet advsheet"><div class="advbig">' + ((GL_TYP_I[l.typ] || {}).ic || '🎖️') + '</div><h2 id="glrt" style="margin:6px 0;text-align:center">Großlage abgeschlossen</h2>'
+      + '<p style="text-align:center">' + esc(l.titel) + '. Einsatzerfolg ' + Math.round(Number(data.ergebnis) * 100) + ' %. Deine ' + data.n + (data.n === 1 ? ' Fahrzeug' : ' Fahrzeuge') + ' sind zurück am Standort.</p>'
+      + '<div class="chips" style="justify-content:center">' + rewText(rew).split(', ').map(x => '<span class="chip">' + esc(x) + '</span>').join('') + '</div>'
+      + '<button class="btn wide" data-act="close" style="margin-top:14px">Wegtreten</button></div></div>';
+  },
+  gl_go(){ const m = document.getElementById('modalHost'); if(m) m.innerHTML = ''; goPage('lage'); render(); setTimeout(glScroll, 80); },
+  async adm_gl(min){ const r = await glRpc('admin_gl_vorspulen', {p_minuten:Number(min)}, 'Großlage ' + min + ' Min. vorgespult.'); },
+});
+
+// Band auf „Heute“
+function glBanner(){
+  const G0 = ONLINE.gl, l = G0 && G0.lage; if(!l || !ONLINE.kp) return '';
+  const t = GL_TYP_I[l.typ] || {ic:'⚠️'}, mine = (l.meine || []).length;
+  let a, b, k, rot = true;
+  if(l.status === 'alarm'){ a = 'Großlage: ' + l.titel; b = mine ? Math.round(Number(l.erfuellung) * 100) + ' % der Kräfte gemeldet, du bist dabei' : 'Die Kompanie braucht deine Fahrzeuge'; k = mine ? 'Ansehen' : 'Melden'; rot = !mine; }
+  else if(l.status === 'verlegung'){ a = 'Kompanie rückt aus'; b = l.titel; k = 'Ansehen'; rot = false; }
+  else if(l.status === 'einsatz'){
+    const i = glT(l.frage1_ab) <= glNow() ? 1 : 0, st = (l.stimmen || [])[i] || {};
+    if(st.ich == null){ a = 'Abstimmung: Entscheidung ' + (i + 1); b = l.titel; k = 'Abstimmen'; } else { a = 'Im Einsatz: ' + l.titel; b = 'Deine Stimme zählt, danke'; k = 'Ansehen'; rot = false; }
+  }
+  else if(l.status === 'fertig' && mine && !l.abgeholt){ a = 'Großlage abgeschlossen'; b = Math.round(Number(l.ergebnis) * 100) + ' % Erfolg · ' + l.titel; k = 'Abholen'; }
+  else return '';
+  return '<button class="glban' + (rot ? ' rot' : '') + '" data-act="gl_go"><span class="glbi" aria-hidden="true">' + t.ic + '</span><span class="ltbx"><b>' + esc(a) + '</b><span>' + esc(b) + '</span></span><span class="ltbg">' + k + ' ›</span></button>';
+}
+// Admin-Werkzeug zum Testen
+{ const _ra2 = renderAdmin; renderAdmin = function(){ const h = _ra2(); if(!h) return h; return h + '<div class="panel pad adm"><h3>Großlage testen</h3><p class="small muted">Spult die laufende Großlage deiner Kompanie vor (und die Pause danach). Gilt für alle Mitglieder.</p><div class="admrow">' + [15, 60, 180, 720].map(m => '<button class="btn ghost" data-act="adm_gl" data-id="' + m + '">+' + (m >= 60 ? m / 60 + ' Std.' : m + ' Min.') + '</button>').join('') + '</div></div>'; }; }
+// nach dem Laden der Kompanie
+{ const _lk = loadKompanie; loadKompanie = async function(){ await _lk.apply(this, arguments); if(ONLINE.kp) glLoad(true); else ONLINE.gl = null; }; }
+
 // ---------- Kompanieverzeichnis und Bewerbungen ----------
 const KPV_WAPPEN = {
   adler:   ['Adler',   '<path d="M12 6.2c-1.1 0-1.9.8-1.9 1.9L5 7c.8 3 2.4 4.6 5 5l-1.1 4.1L12 15l3.1 1.1L14 12c2.6-.4 4.2-2 5-5l-5.1 1.1c0-1.1-.8-1.9-1.9-1.9z" fill="currentColor"/>'],
@@ -8678,8 +8993,10 @@ function renderTruppe(){
     // Kassenbuch
     if(k.buchungen && k.buchungen.length){
       h += '<h2>Kassenbuch</h2><div class="panel"><ul class="rl">' + k.buchungen.map(b => {
-        const plus = b.art==='einzahlung' || b.art==='oberkommando';
-        const t = b.art==='oberkommando' ? 'Zuschuss vom Oberführungskommando für den Dienst von '+esc(b.von||'Ehemaliges Mitglied')
+        const plus = b.art==='einzahlung' || b.art==='oberkommando' || b.art==='grosslage';
+        const t = b.art==='grosslage' ? 'Großlage abgeschlossen: '+esc(b.notiz||'')
+          : b.art==='reserve' ? esc(b.von||'?')+' hat Reservisten angefordert ('+esc(b.notiz||'Großlage')+')'
+          : b.art==='oberkommando' ? 'Zuschuss vom Oberführungskommando für den Dienst von '+esc(b.von||'Ehemaliges Mitglied')
           : b.art==='einzahlung' ? esc(b.von||'Ehemaliges Mitglied')+' hat eingezahlt'
           : b.art==='auszahlung' ? esc(b.von||'?')+' hat an '+esc(b.an||'?')+' ausgezahlt'
           : esc(b.von||'?')+' hat den Ausbau '+esc(GEB_KP_I[b.notiz] ? GEB_KP_I[b.notiz].name : (b.notiz||''))+' gestartet';
