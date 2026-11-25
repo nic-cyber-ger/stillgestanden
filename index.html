@@ -804,6 +804,8 @@ body.navfest .chatfab{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .wkrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.wkt{display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;padding:10px 6px;border-radius:12px;background:var(--surface2,#1B2318);border:1.5px solid var(--line,#2B3626)}.wkt .small{line-height:1.3;min-height:2.6em}.wkt.jetzt{border-color:var(--gold,#E8B33A)}.wkt.ok{opacity:.7}.wks{font-size:12px;color:var(--muted,#A3AC97)}.wkt.ok .wks{color:var(--ok,#8FBF5A)}
 .kpvvr{display:flex;gap:10px;align-items:center;width:100%;padding:8px 0;border:0;border-top:1px solid var(--line,#2B3626);background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.kpvvn{flex:1;min-width:0}.kpvvg{flex:none;color:var(--gold,#E8B33A);font-weight:700;font-size:14px}
 .cmsys{display:flex;gap:8px;align-items:center;margin:8px auto;padding:8px 12px;max-width:92%;border-radius:12px;background:color-mix(in srgb,var(--gold,#E8B33A) 10%,transparent);border:1px dashed color-mix(in srgb,var(--gold,#E8B33A) 50%,transparent);font-size:14px}.cmsys>span:nth-child(2){flex:1}.cmsys.klein{margin:6px 0;max-width:none;font-size:13.5px}
+.kplog{padding-top:6px}.kplt{font:700 12px 'Barlow Condensed',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted,#A3AC97);margin:10px 0 4px}.kplz{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--line,#2B3626);font-size:14px;line-height:1.35}.kplz>span:nth-child(2){flex:1}.kpli{flex:none;width:20px;text-align:center}.kplz time{flex:none;font-size:12px;color:var(--muted,#A3AC97)}
+.kpf{padding:0;overflow:hidden}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -2110,7 +2112,7 @@ function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LAST
 function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === navOf(a[0])), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
   const f = {stube:renderStube, kaserne:renderKaserne, lage:renderLage, fuhrpark:renderFuhrpark, mini:renderMini, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
-    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null, kpliste: typeof renderKpListe === 'function' && USER ? renderKpListe : null, werben: typeof renderWerben === 'function' && USER ? renderWerben : null}[src];
+    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null, kpliste: typeof renderKpListe === 'function' && USER ? renderKpListe : null, kpfunk: typeof renderKpFunk === 'function' && USER ? renderKpFunk : null, werben: typeof renderWerben === 'function' && USER ? renderWerben : null}[src];
   return f ? f() : '';
 }
 function splitSecs(html){
@@ -4445,6 +4447,12 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:28, d:'25.11.2026', o:1, t:'Kompanie-Funk und Logbuch', p:[
+    'Neu: der Kompanie-Funk. Ein eigener Chat nur für deine Kompanie, unter Kaserne › Kompanie-Funk',
+    'Neue Nachrichten zeigt das Spiel mit Zähler und kurzem Funkspruch, auch wenn du gerade woanders bist',
+    'Neu auf der Kompanieseite: das Logbuch. Hier steht automatisch, was in der Kompanie passiert: Beitritte, Beförderungen, Einzahlungen, Ausbau und Großlagen',
+    'Chef und Spieß können Nachrichten im Kompanie-Funk löschen'
+  ]},
   {v:27, d:'25.11.2026', t:'Willkommen in der Truppe', p:[
     'Neue Spieler bekommen ein Startpaket über drei Tage: jeden Tag wartet auf „Heute“ eine Belohnung',
     'Wer nach der Grundausbildung noch keine Kompanie hat, sieht passende Kompanien, die gerade aufnehmen',
@@ -6481,7 +6489,7 @@ function renderNav(){
     + (id==='stube' && (S.pending.length || S.pakete || waReady()) ? '<span class="dot" aria-label="neue Meldung"></span>' : '')
     + (id==='dienst' && typeof lkFragen === 'function' && lkFragen().length ? '<span class="dot" aria-label="Entscheidung auf der Lagekarte"></span>' : '')
     + (id==='akte' && ((S.gaDone && (NEXT[S.rank] || []).some(x => G.promoReqs(x).every(r => r.ok))) || (ONLINE.admin && ONLINE.fb && ONLINE.fb.offen)) ? '<span class="dot" aria-label="Beförderung möglich"></span>' : '')
-    + (id==='kaserne' && typeof chatUnread === 'function' && chatUnread() ? '<span class="dot" aria-label="neue Nachrichten im Chat"></span>' : '')+'</button>').join('');
+    + (id==='kaserne' && typeof chatUnread === 'function' && (chatUnread() || (typeof kpfUnread === 'function' && kpfUnread())) ? '<span class="dot" aria-label="neue Nachrichten im Chat"></span>' : '')+'</button>').join('');
   if(typeof chatFabUpdate === 'function') chatFabUpdate();
 }
 
@@ -8033,7 +8041,7 @@ for(const k in CHAT_ACT) ACT[k] = CHAT_ACT[k];
 let CHAT_PING_ID = null, CHAT_PING_TS = 0;
 function chatFabUpdate(){
   let fab = document.getElementById('chatFab');
-  const zeigen = !!(S && USER && ONLINE.profile) && !chatOnPage() && !document.body.classList.contains('landing');
+  const zeigen = !!(S && USER && ONLINE.profile) && !chatOnPage() && !(typeof kpfOnPage === 'function' && kpfOnPage()) && !document.body.classList.contains('landing');
   if(!fab){
     if(!zeigen) return;
     fab = document.createElement('button'); fab.id = 'chatFab'; fab.className = 'chatfab'; fab.dataset.act = 'chat_go'; fab.setAttribute('aria-label', 'Funkkreis öffnen');
@@ -8860,6 +8868,148 @@ function chatNeuHtml(m, klein){
     const h = _ml(); if(!ONLINE.chatOk || !ONLINE.chat.slice(-3).some(m => m.art === 'neu')) return h;
     return ONLINE.chat.slice(-3).map(m => m.art === 'neu' ? chatNeuHtml(m, true) : (() => { const neu = new Date(m.created_at).getTime() > chatSeen() && m.user_id !== USER.id; return '<div class="cmm' + (neu ? ' neu' : '') + '"><b>' + esc(m.name) + '</b><time>' + chatZeit(m.created_at) + '</time><span>' + esc(m.text) + '</span></div>'; })()).join('');
   }; }
+
+/* ---------- Kompanie-Funk (interner Chat) und Kompanie-Logbuch ---------- */
+ONLINE.kpf = []; ONLINE.kpfOk = false; ONLINE.kplog = null;
+let KPF_SUB = null, KPF_KP = null, KPF_BUSY = false, KPF_PING = null;
+function kpfKey(){ return 'sg_kpf_' + (ONLINE.kp ? ONLINE.kp.id : ''); }
+function kpfSeen(){ try{ return Number(localStorage.getItem(kpfKey()) || 0); }catch(e){ return 0; } }
+function kpfMarkSeen(){ const l = ONLINE.kpf[ONLINE.kpf.length - 1]; if(!l) return; try{ localStorage.setItem(kpfKey(), String(Math.max(kpfSeen(), new Date(l.created_at).getTime()))); }catch(e){} }
+function kpfUnread(){ if(!ONLINE.kp || !USER) return 0; const s = kpfSeen(); return ONLINE.kpf.filter(m => new Date(m.created_at).getTime() > s && m.user_id !== USER.id).length; }
+function kpfOnPage(){ return tab === 'truppe' && (SUB.truppe || LASTSUB.truppe) === 'kpfunk'; }
+async function kpfLoad(){
+  if(!sb || !USER || !ONLINE.kp || KPF_BUSY) return;
+  KPF_BUSY = true;
+  const kp = ONLINE.kp.id;
+  const { data, error } = await sb.from('kp_funk').select('*').eq('kompanie_id', kp).order('created_at', {ascending:false}).limit(60);
+  KPF_BUSY = false;
+  if(!ONLINE.kp || ONLINE.kp.id !== kp) return;
+  if(error){ ONLINE.kpfErr = /kp_funk|relation|schema/i.test(error.message) ? 'Der Kompanie-Funk ist noch nicht eingerichtet.' : error.message; kpfUi(); return; }
+  const alt = ONLINE.kpf.length ? ONLINE.kpf[ONLINE.kpf.length - 1].id : null;
+  ONLINE.kpf = (data || []).reverse(); ONLINE.kpfOk = true; ONLINE.kpfErr = null;
+  const neu = ONLINE.kpf.length ? ONLINE.kpf[ONLINE.kpf.length - 1].id : null;
+  if(neu !== alt){ kpfUi(); if(alt !== null) kpfPing(ONLINE.kpf[ONLINE.kpf.length - 1]); }
+  kpfSubscribe();
+}
+function kpfSubscribe(){
+  if(!sb || !sb.channel || !ONLINE.kp) return;
+  if(KPF_SUB && KPF_KP === ONLINE.kp.id) return;
+  try{ if(KPF_SUB && sb.removeChannel) sb.removeChannel(KPF_SUB); }catch(e){}
+  KPF_KP = ONLINE.kp.id;
+  try{
+    KPF_SUB = sb.channel('kpfunk-' + KPF_KP)
+      .on('postgres_changes', {event:'INSERT', schema:'public', table:'kp_funk', filter:'kompanie_id=eq.' + KPF_KP}, p => {
+        const m = p.new; if(!m || ONLINE.kpf.some(x => x.id === m.id)) return;
+        ONLINE.kpf.push(m); ONLINE.kpf = ONLINE.kpf.slice(-80); kpfUi(); kpfPing(m);
+      })
+      .on('postgres_changes', {event:'DELETE', schema:'public', table:'kp_funk'}, p => { const id = p.old && p.old.id; ONLINE.kpf = ONLINE.kpf.filter(x => x.id !== id); kpfUi(); })
+      .subscribe();
+  }catch(e){ KPF_SUB = null; }
+}
+setInterval(() => { if(USER && ONLINE.kp && !document.hidden) kpfLoad(); }, 30000);
+function kpfListHtml(){
+  if(ONLINE.kpfErr) return '<p class="small muted" style="padding:12px">' + esc(ONLINE.kpfErr) + '</p>';
+  if(!ONLINE.kpfOk) return '<p class="small muted" style="padding:12px">Funkverbindung wird aufgebaut …</p>';
+  if(!ONLINE.kpf.length) return '<p class="small muted" style="padding:12px">Noch Funkstille in der Kompanie. Sag Moin!</p>';
+  const fuehrung = ONLINE.kp && ['chef', 'spiess'].includes(ONLINE.kp.rolle);
+  return ONLINE.kpf.map(m => {
+    const mine = USER && m.user_id === USER.id, rn = R[m.rang] ? rankNameFor(m.tsk || 'heer', m.rang) : '';
+    return '<div class="cm' + (mine ? ' mine' : '') + '"><div class="cmh"><button class="plink" data-act="profil" data-id="' + esc(m.name) + '">' + esc(m.name) + '</button>' + (rn ? '<span>' + esc(rn) + '</span>' : '') + '<time>' + chatZeit(m.created_at) + '</time></div>'
+      + '<div class="cmt">' + esc(m.text) + '</div>' + ((fuehrung || ONLINE.admin) && !mine ? '<div class="cma"><button class="linkbtn" data-act="kpf_del" data-id="' + m.id + '">Löschen</button></div>' : '') + '</div>';
+  }).join('');
+}
+function kpfUi(){
+  const box = document.getElementById('kpfList');
+  if(box){ const unten = box.scrollHeight - box.scrollTop - box.clientHeight < 60; box.innerHTML = kpfListHtml(); if(unten) box.scrollTop = box.scrollHeight; if(kpfOnPage() && !document.hidden) kpfMarkSeen(); }
+  const tb = document.querySelector('.subnav [data-id="kpfunk"]'); if(tb){ const n = kpfOnPage() ? 0 : kpfUnread(); tb.textContent = 'Kompanie-Funk' + (n ? ' (' + n + ')' : ''); }
+  if(typeof renderNav === 'function') renderNav();
+}
+function kpfPing(m){
+  if(!m || !USER || m.user_id === USER.id || kpfOnPage() || document.hidden || (S && S.chatPop === false)) return;
+  if(m.id === KPF_PING || Date.now() - new Date(m.created_at).getTime() > 600000) return;
+  KPF_PING = m.id;
+  let el = document.getElementById('kpfPing');
+  if(!el){ el = document.createElement('button'); el.id = 'kpfPing'; el.className = 'chatping'; el.dataset.act = 'kpf_go'; document.body.appendChild(el); }
+  el.innerHTML = '<span class="cpi" aria-hidden="true">🛡️</span><span class="cpt"><span class="cph"><b>' + esc(m.name) + '</b> im Kompanie-Funk</span><span>' + esc(String(m.text).slice(0, 90)) + (String(m.text).length > 90 ? ' …' : '') + '</span></span>';
+  el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 5000);
+}
+function renderKpFunk(){
+  if(!ONLINE.kp) return '<h2>Kompanie-Funk</h2><div class="panel pad"><p style="margin:0 0 10px">Der Kompanie-Funk ist nur für Mitglieder einer Kompanie.</p><button class="btn gold" data-act="kpv_go">Kompanie finden</button></div>';
+  if(!ONLINE.kpfOk && !ONLINE.kpfErr) setTimeout(kpfLoad, 0);
+  setTimeout(() => { const box = document.getElementById('kpfList'); if(box){ box.scrollTop = box.scrollHeight; kpfMarkSeen(); kpfUi(); } const i = document.getElementById('kpfIn'); if(i && !i._k){ i._k = 1; i.addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); ACT.kpf_send(); } }); i.addEventListener('input', () => { i.style.height = 'auto'; i.style.height = Math.min(110, i.scrollHeight) + 'px'; }); } }, 0);
+  return '<h2>Kompanie-Funk</h2><p class="small muted" style="margin-top:-4px">Nur für die Kompanie „' + esc(ONLINE.kp.name) + '“. Nachrichten bleiben 30 Tage sichtbar.</p>'
+    + '<div class="panel chat kpf"><div class="chatlist" id="kpfList" aria-live="polite">' + kpfListHtml() + '</div>'
+    + '<form class="chatform" onsubmit="return false"><label for="kpfIn" class="sr">Nachricht an die Kompanie</label><textarea id="kpfIn" rows="1" maxlength="300" placeholder="Nachricht an die Kompanie …" enterkeyhint="send"></textarea>'
+    + '<button class="btn gold" type="button" data-act="kpf_send" aria-label="Senden"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 12l16-8-6 16-3-7z"/></svg></button></form></div>';
+}
+// Logbuch
+async function kpLogLoad(){
+  if(!sb || !USER || !ONLINE.kp || ONLINE.kplogL) return;
+  ONLINE.kplogL = true;
+  const { data, error } = await sb.rpc('kp_logbuch_lesen');
+  ONLINE.kplogL = false; ONLINE.kplogTs = Date.now();
+  ONLINE.kplog = error ? {err:true} : (data || []);
+  if(tab === 'truppe') render();
+}
+const KPL_ROLLE = {chef:'Kompaniechef', spiess:'Spieß', zugfuehrer:'Zugführer'};
+function kpLogZeile(e){
+  const d = e.daten || {}, n = '<b>' + esc(d.name || 'Jemand') + '</b>', geb = g => (typeof GEB_KP_I !== 'undefined' && GEB_KP_I[g] ? GEB_KP_I[g].name : g || 'Gebäude');
+  const t = GL_TYP_I && d.typ && GL_TYP_I[d.typ] ? GL_TYP_I[d.typ].ic + ' ' : '';
+  switch(e.art){
+    case 'beitritt': return ['👋', n + ' ist der Kompanie beigetreten.'];
+    case 'austritt': return ['🚪', n + ' hat die Kompanie verlassen.'];
+    case 'befoerdert': return ['⭐', n + ' wurde befördert: ' + esc(R[d.rang] ? rankNameFor(d.tsk || 'heer', d.rang) : d.rang) + '.'];
+    case 'rolle': return ['🎖️', n + ' ist jetzt ' + esc(KPL_ROLLE[d.rolle] || d.rolle) + '.'];
+    case 'einzahlung': return ['💰', n + ' hat ' + eur(Number(d.betrag)) + ' in die Kasse eingezahlt.'];
+    case 'ausbau': return ['🏗️', n + ' hat den Ausbau ' + esc(geb(d.gebaeude)) + ' gestartet.'];
+    case 'ausbau_fertig': return ['🏗️', esc(geb(d.gebaeude)) + ' ist fertig: Stufe ' + d.stufe + '.'];
+    case 'gl_start': return ['🚨', 'Großlage angenommen: ' + t + esc(d.titel || '') + '.'];
+    case 'gl_ende': return ['🏅', 'Großlage abgeschlossen: ' + t + esc(d.titel || '') + ', ' + Math.round(Number(d.ergebnis || 0) * 100) + ' % Erfolg' + (d.kasse ? ', +' + eur(Number(d.kasse)) + ' für die Kasse' : '') + '.'];
+    case 'gl_abbruch': return ['⚠️', 'Großlage abgebrochen: ' + esc(d.titel || '') + '. Zu wenige Kräfte.'];
+    default: return ['•', esc(e.art)];
+  }
+}
+function kpLogHtml(){
+  if(!ONLINE.kp) return '';
+  if(!ONLINE.kplog || Date.now() - (ONLINE.kplogTs || 0) > 60000) setTimeout(kpLogLoad, 0);
+  const L = ONLINE.kplog;
+  if(!L || L.err) return '';
+  const tag = ts => { const d = new Date(ts), h = new Date(), g = new Date(); g.setDate(h.getDate() - 1); return d.toDateString() === h.toDateString() ? 'Heute' : d.toDateString() === g.toDateString() ? 'Gestern' : d.toLocaleDateString('de-DE', {weekday:'short', day:'numeric', month:'numeric'}); };
+  let h = '<h2>Logbuch</h2><div class="panel pad kplog">';
+  if(!L.length) return h + '<p class="small muted" style="margin:0">Noch keine Einträge. Hier steht künftig, was in der Kompanie passiert: Beförderungen, Einzahlungen, Ausbau und Großlagen.</p></div>';
+  let last = '';
+  for(const e of L.slice(0, 25)){
+    const g = tag(e.am); if(g !== last){ h += '<div class="kplt">' + g + '</div>'; last = g; }
+    const [ic, txt] = kpLogZeile(e);
+    h += '<div class="kplz"><span class="kpli" aria-hidden="true">' + ic + '</span><span>' + txt + '</span><time>' + new Date(e.am).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + '</time></div>';
+  }
+  return h + '</div>';
+}
+{ const _rt = renderTruppe; renderTruppe = function(){ const h = _rt(); const g = ONLINE.kp ? kpLogHtml() : ''; if(!g) return h; const i = h.indexOf('<h2>Kassenbuch</h2>'); return i >= 0 ? h.slice(0, i) + g + h.slice(i) : h + g; }; }
+{ const L0 = SUBS.truppe && SUBS.truppe.find(x => x.id === 'kompanie'); if(L0 && !L0.match.includes('Logbuch')) L0.match.push('Logbuch'); }
+{ const i = SUBS.truppe.findIndex(x => x.id === 'kompanie');
+  SUBS.truppe.splice(i + 1, 0, {id:'kpfunk', get label(){ const n = kpfOnPage() ? 0 : kpfUnread(); return 'Kompanie-Funk' + (n ? ' (' + n + ')' : ''); }, grp:'kp', frei:'kompanie', src:'kpfunk', match:['Kompanie-Funk']}); }
+{ const _kt = kTiles; kTiles = function(){ const l = _kt(); const n = kpfUnread();
+    if(n){ const t = l.find(x => x.go === 'truppe:kompanie'); if(t){ t.badge = (t.badge || 0) + n; t.info = n + (n === 1 ? ' neue Nachricht' : ' neue Nachrichten') + ' im Kompanie-Funk'; } }
+    if(ONLINE.kp){ const i = l.findIndex(x => x.go === 'truppe:kompanie'); if(i >= 0 && !l.some(x => x.go === 'truppe:kpfunk')) l.splice(i + 1, 0, {grp:'Kameraden', go:'truppe:kpfunk', label:'Kompanie-Funk', ok:true, ic:'<path d="M12 2.5l7.5 2.6v5.6c0 4.9-3.2 8.4-7.5 9.8-4.3-1.4-7.5-4.9-7.5-9.8V5.1z"/><path d="M8.5 10h7M8.5 13h4.5"/>', badge:n, info:(() => { const m = ONLINE.kpf[ONLINE.kpf.length - 1]; return m ? m.name + ': ' + m.text : 'Chat nur für ' + ONLINE.kp.name; })()}); }
+    return l; }; }
+{ const _lk2 = loadKompanie; loadKompanie = async function(){ const vor = ONLINE.kp ? ONLINE.kp.id : null; await _lk2.apply(this, arguments);
+    const jetzt = ONLINE.kp ? ONLINE.kp.id : null;
+    if(vor !== jetzt){ ONLINE.kpf = []; ONLINE.kpfOk = false; ONLINE.kplog = null; try{ if(KPF_SUB && sb.removeChannel) sb.removeChannel(KPF_SUB); }catch(e){} KPF_SUB = null; KPF_KP = null; }
+    if(jetzt) kpfLoad(); }; }
+Object.assign(ACT, {
+  kpf_go(){ const m = document.getElementById('modalHost'); if(m) m.innerHTML = ''; goPage('truppe'); SUB.truppe = 'kpfunk'; render(); window.scrollTo(0, 0); },
+  async kpf_send(){
+    const inp = document.getElementById('kpfIn'); if(!inp) return; const t = inp.value.trim(); if(!t) return;
+    const b = document.querySelector('[data-act="kpf_send"]'); if(b) b.disabled = true;
+    const { error } = await sb.rpc('kp_funk_senden', {p_text:t, p_tsk:S.tsk || 'heer'});
+    if(b) b.disabled = false;
+    if(error){ toast(/kp_funk_senden|function/i.test(error.message) ? 'Der Kompanie-Funk ist noch nicht eingerichtet.' : error.message); return; }
+    inp.value = ''; inp.style.height = 'auto'; await kpfLoad(); const box = document.getElementById('kpfList'); if(box) box.scrollTop = box.scrollHeight; inp.focus();
+  },
+  kpf_del(id){ ask('Diese Nachricht aus dem Kompanie-Funk löschen?', async () => { const { error } = await sb.rpc('kp_funk_loeschen', {p_id:Number(id)}); if(error){ toast(error.message); return; } ONLINE.kpf = ONLINE.kpf.filter(x => x.id !== Number(id)); kpfUi(); }, 'Löschen'); },
+});
 
 // ---------- Kompanieverzeichnis und Bewerbungen ----------
 const KPV_WAPPEN = {
