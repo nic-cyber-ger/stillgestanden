@@ -806,6 +806,13 @@ body.navfest .chatfab{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .cmsys{display:flex;gap:8px;align-items:center;margin:8px auto;padding:8px 12px;max-width:92%;border-radius:12px;background:color-mix(in srgb,var(--gold,#E8B33A) 10%,transparent);border:1px dashed color-mix(in srgb,var(--gold,#E8B33A) 50%,transparent);font-size:14px}.cmsys>span:nth-child(2){flex:1}.cmsys.klein{margin:6px 0;max-width:none;font-size:13.5px}
 .kplog{padding-top:6px}.kplt{font:700 12px 'Barlow Condensed',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted,#A3AC97);margin:10px 0 4px}.kplz{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--line,#2B3626);font-size:14px;line-height:1.35}.kplz>span:nth-child(2){flex:1}.kpli{flex:none;width:20px;text-align:center}.kplz time{flex:none;font-size:12px;color:var(--muted,#A3AC97)}
 .kpf{padding:0;overflow:hidden}
+.wkpi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.wkpi div{padding:10px;border-radius:12px;background:var(--surface2,#1B2318)}.wkpi b{display:block;font:700 20px 'Barlow Condensed',sans-serif;color:var(--gold,#E8B33A)}.wkpi span{font-size:12px;color:var(--muted,#A3AC97)}
+.wirt h4{margin:16px 0 6px;font:700 13px 'Barlow Condensed',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted,#A3AC97)}
+.wsum{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px}.plus{color:var(--ok,#8FBF5A)}.minus{color:var(--bad,#E05A4F)}
+.wcol{display:grid;grid-template-columns:1fr;gap:12px}@media(min-width:560px){.wcol{grid-template-columns:1fr 1fr}}
+.wbar{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.8fr) auto;gap:8px;align-items:center;font-size:13px;padding:4px 0}.wbar span{line-height:1.25}.wbar i{display:block;height:8px;border-radius:4px;background:var(--line2,#3A4632)}.wbar i.e{background:var(--ok,#8FBF5A)}.wbar i.a{background:var(--bad,#E05A4F)}.wbar i.g{background:var(--gold,#E8B33A)}.wbar b{font-size:13px;white-space:nowrap}
+.wrow{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;padding:4px 0;border-bottom:1px solid var(--line,#2B3626)}
+body.tippen .nav,body.tippen .chatfab,body.tippen .chatping{display:none!important}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4447,6 +4454,9 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:29, d:'25.11.2026', t:'Textfelder frei', p:[
+    'Beim Tippen am Handy blendet sich die Navigationsleiste aus und verdeckt kein Textfeld mehr, zum Beispiel im Kompanie-Funk'
+  ]},
   {v:28, d:'25.11.2026', o:1, t:'Kompanie-Funk und Logbuch', p:[
     'Neu: der Kompanie-Funk. Ein eigener Chat nur für deine Kompanie, unter Kaserne › Kompanie-Funk',
     'Neue Nachrichten zeigt das Spiel mit Zähler und kurzem Funkspruch, auch wenn du gerade woanders bist',
@@ -6310,7 +6320,11 @@ navArtApply();
 // Schutz vor Fehlklicks: Springt die Leiste (z. B. weil die Browserleiste am Handy ein- oder ausfährt)
 // und der Finger landet danach auf einem Knopf darunter, wird dieser Klick verworfen.
 (function(){
-  let navDown = 0, shift = 0, lastTop = null;
+  let navDown = 0, shift = 0, lastTop = null, feldZeit = 0;
+  // Tastatur auf- oder zuklappen verschiebt die Ansicht ebenfalls; das soll keine Klicks blockieren
+  const istFeld = el => el && el.matches && el.matches('input, textarea, select');
+  document.addEventListener('focusin', e => { if(istFeld(e.target)) feldZeit = Date.now(); });
+  document.addEventListener('focusout', e => { if(istFeld(e.target)) feldZeit = Date.now(); });
   const nav = () => document.getElementById('nav');
   const merke = () => { const n = nav(); if(!n) return; const t = Math.round(n.getBoundingClientRect().top); if(lastTop !== null && Math.abs(t - lastTop) > 2) shift = Date.now(); lastTop = t; };
   if(window.visualViewport){ visualViewport.addEventListener('resize', () => { shift = Date.now(); merke(); }); visualViewport.addEventListener('scroll', merke); }
@@ -6320,10 +6334,21 @@ navArtApply();
   document.addEventListener('click', e => {
     const inNav = e.target.closest && e.target.closest('#nav, .subnav');
     const tippte = navDown && Date.now() - navDown < 800;
-    if(!inNav && (tippte || Date.now() - shift < 400) && e.target.closest && e.target.closest('main [data-act], main button, main a')){
+    if(!inNav && (tippte || (Date.now() - shift < 400 && Date.now() - feldZeit > 1500)) && e.target.closest && e.target.closest('main [data-act], main button, main a')){
       e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); navDown = 0;
     }
   }, true);
+})();
+// Beim Tippen am Handy die Leiste ausblenden, damit sie über der Tastatur kein Textfeld verdeckt
+(function(){
+  const touch = () => window.matchMedia && matchMedia('(pointer: coarse)').matches;
+  const feld = el => el && el.matches && el.matches('input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=button]), textarea, select') && !el.closest('#nav');
+  document.addEventListener('focusin', e => {
+    if(!touch() || !feld(e.target)) return;
+    document.body.classList.add('tippen');
+    setTimeout(() => { try{ if(document.activeElement === e.target) e.target.scrollIntoView({block:'center', behavior:'smooth'}); }catch(x){} }, 350);
+  });
+  document.addEventListener('focusout', () => { setTimeout(() => { if(!feld(document.activeElement)) document.body.classList.remove('tippen'); }, 120); });
 })();
 function applyTheme(){
   const el = document.documentElement;
@@ -8791,6 +8816,80 @@ Object.assign(ACT, {
   },
 });
 { const _ra3 = renderAdmin; renderAdmin = function(){ const h = _ra3(); return h ? h + korAdminHtml() : h; }; }
+
+/* ---------- Wirtschaft: Geldfluss je Spieler aufzeichnen und für den Admin auswerten ---------- */
+let WIRT_ACT = {n:'', t:0};
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-act]'); if(b) WIRT_ACT = {n:b.dataset.act || '', t:Date.now()}; }, true);
+const WIRT_KAT = [
+  [/^(dienst|einsatz|dp_)/, 'Dienste'],
+  [/^(stat|lehrgang|fs|fsquiz|umschulung|dgtest|qz)/, 'Ausbildung und Lehrgänge'],
+  [/^promote$/, 'Beförderung (Einstand)'],
+  [/^(gear|buy|gar_up)$/, 'Ausrüstung und Stube'],
+  [/^pf_/, 'Leergut'],
+  [/^car_/, 'Schrauberecke'],
+  [/^(sl_|slm|sr_|lt|mg)/, 'Spielothek, Lotto, Übungsplatz'],
+  [/^(spar_|pflege|ntg)/, 'Vorsorge und Versicherung'],
+  [/^spende/, 'Weihnachtsspende'],
+  [/^(fp_|lk_|gl_)/, 'Fuhrpark und Lagekarte'],
+  [/^(kp_|kpv_|auf_|wb_)/, 'Kompanie'],
+  [/^(paket|advent|appell|wa|wk_hol|xfeier|event|choose|geloebnis|tut_|storybook|kurz)/, 'Belohnungen und Ereignisse'],
+  [/^(verpflichten|versetzen|verw|tsk_|standort|ausscheiden)/, 'Laufbahn'],
+];
+function wirtKat(n){ for(const [re, k] of WIRT_KAT) if(re.test(n)) return k; return 'Sonstiges'; }
+// Jede Änderung des Kontostands seit dem letzten Speichern wird gebucht: Zufluss oder Abfluss, mit Kategorie
+function wirtBuchen(){
+  if(!S || typeof S.money !== 'number' || !isFinite(S.money)) return;
+  const heute = dateStr();
+  let w = S.wirt;
+  if(!w || typeof w !== 'object' || typeof w.last !== 'number'){ S.wirt = {tag:heute, ein:{}, aus:{}, last:S.money, hist:[]}; return; }
+  if(w.tag !== heute){ w.hist = (Array.isArray(w.hist) ? w.hist : []).concat([{tag:w.tag, ein:w.ein, aus:w.aus}]).slice(-14); w.tag = heute; w.ein = {}; w.aus = {}; }
+  const d = Math.round(S.money - w.last); w.last = S.money;
+  if(!d) return;
+  const kat = Date.now() - WIRT_ACT.t < 4000 ? wirtKat(WIRT_ACT.n) : 'Laufend (Dienstende, Aufträge, Zinsen)';
+  const z = d > 0 ? w.ein : w.aus; z[kat] = (z[kat] || 0) + Math.abs(d);
+}
+{ const _sv = save; save = function(){ try{ wirtBuchen(); }catch(e){} return _sv.apply(this, arguments); }; }
+{ const _nl2 = wbNachLogin; wbNachLogin = async function(){ await _nl2(); try{ sb.rpc('wirtschaft_tagesstand').then(() => {}, () => {}); }catch(e){} }; }
+
+function wirtAdminHtml(){
+  const W = ONLINE.wirt;
+  let h = '<div class="panel pad adm wirt"><h3>Wirtschaft</h3>';
+  if(!W) return h + '<p class="small muted">Geldmenge, Verteilung und Geldfluss im ganzen Spiel.</p><button class="btn ghost" data-act="adm_wirt">Auswertung laden</button></div>';
+  if(W.err) return h + '<p class="small">' + esc(W.err) + '</p><button class="btn ghost" data-act="adm_wirt">Nochmal versuchen</button></div>';
+  const n = v => Math.round(Number(v) || 0), gesamt = n(W.geld) + n(W.spar) + n(W.kassen);
+  h += '<div class="wkpi"><div><b>' + eur(gesamt) + '</b><span>Geldmenge gesamt</span></div><div><b>' + eur(W.spieler ? (n(W.geld) + n(W.spar)) / W.spieler : 0) + '</b><span>Ø je Spieler</span></div><div><b>' + eur(n(W.median)) + '</b><span>Median der Aktiven</span></div><div><b>' + W.aktive + ' / ' + W.spieler + '</b><span>aktiv (7 Tage) / alle</span></div></div>'
+    + '<p class="small muted" style="margin:6px 0 0">Konten ' + eur(n(W.geld)) + ' · Sparkonten ' + eur(n(W.spar)) + ' · Kompaniekassen ' + eur(n(W.kassen)) + '</p>';
+  // Geldfluss der letzten 7 Tage
+  const ein = {}, aus = {};
+  for(const f of W.fluss || []) (f.r === 'ein' ? ein : aus)[f.kat] = ((f.r === 'ein' ? ein : aus)[f.kat] || 0) + n(f.summe);
+  const sE = Object.values(ein).reduce((a, b) => a + b, 0), sA = Object.values(aus).reduce((a, b) => a + b, 0), max = Math.max(1, ...Object.values(ein), ...Object.values(aus));
+  const liste = (o, cls) => Object.entries(o).sort((a, b) => b[1] - a[1]).map(([k, v]) => '<div class="wbar"><span>' + esc(k) + '</span><i class="' + cls + '" style="width:' + Math.max(2, v / max * 100) + '%"></i><b>' + eur(v) + '</b></div>').join('') || '<p class="small muted" style="margin:0">Noch keine Daten.</p>';
+  h += '<h4>Geldfluss, letzte 7 Tage</h4>'
+    + '<div class="wsum"><span>Zufluss <b class="plus">+' + eur(sE) + '</b></span><span>Abfluss <b class="minus">−' + eur(sA) + '</b></span><span>Netto <b class="' + (sE - sA >= 0 ? 'plus' : 'minus') + '">' + (sE - sA >= 0 ? '+' : '−') + eur(Math.abs(sE - sA)) + '</b></span></div>'
+    + (sE ? '<p class="small" style="margin:6px 0 10px">' + Math.round(sA / sE * 100) + ' % des neuen Geldes fließt wieder ab. ' + (sA / sE < .6 ? '<b>Es entsteht deutlich mehr Geld als verschwindet: Inflation.</b>' : sA / sE > 1.05 ? 'Es verschwindet mehr Geld als entsteht.' : 'Zufluss und Abfluss sind ungefähr im Gleichgewicht.') + '</p>' : '')
+    + '<div class="wcol"><div><b class="small">Woher das Geld kommt</b>' + liste(ein, 'e') + '</div><div><b class="small">Wohin es geht</b>' + liste(aus, 'a') + '</div></div>'
+    + '<p class="small muted" style="margin:8px 0 0">Wird seit dem Update vom 25.11. aufgezeichnet, je Spieler beim Speichern. Näherung: Mehrere Buchungen zwischen zwei Speicherungen werden verrechnet.</p>';
+  // Verlauf
+  const v = W.verlauf || [];
+  if(v.length){
+    const vm = Math.max(1, ...v.map(x => n(x.geldmenge) + n(x.spar) + n(x.kassen)));
+    h += '<h4>Geldmenge je Tag</h4>' + v.map((x, i) => { const g = n(x.geldmenge) + n(x.spar) + n(x.kassen), p = i ? n(v[i - 1].geldmenge) + n(v[i - 1].spar) + n(v[i - 1].kassen) : null, d = p === null ? null : g - p;
+      return '<div class="wbar"><span>' + new Date(x.tag + 'T12:00:00').toLocaleDateString('de-DE', {weekday:'short', day:'numeric', month:'numeric'}) + '</span><i class="g" style="width:' + Math.max(2, g / vm * 100) + '%"></i><b>' + eur(g) + (d === null ? '' : ' <span class="' + (d >= 0 ? 'plus' : 'minus') + '">' + (d >= 0 ? '+' : '−') + eur(Math.abs(d)) + '</span>') + '</b></div>'; }).join('')
+      + (v.length < 3 ? '<p class="small muted" style="margin:4px 0 0">Der Verlauf füllt sich ab heute Tag für Tag.</p>' : '');
+  }
+  // Verteilung
+  h += '<h4>Verteilung</h4><div class="wcol"><div><b class="small">Reichste Spieler</b>' + (W.top || []).map(x => '<div class="wrow"><span>' + esc(x.name) + '</span><b>' + eur(n(x.geld) + n(x.spar)) + '</b></div>').join('') + '</div>'
+    + '<div><b class="small">Ø nach Laufbahn (aktive)</b>' + (W.gruppen || []).map(x => '<div class="wrow"><span>' + esc(x.gruppe) + ' (' + x.n + ')</span><b>' + eur(n(x.schnitt)) + '</b></div>').join('') + '</div></div>';
+  return h + '<button class="btn ghost" data-act="adm_wirt" style="margin-top:12px">Aktualisieren</button></div>';
+}
+Object.assign(ACT, {
+  async adm_wirt(){
+    const { data, error } = await sb.rpc('admin_wirtschaft');
+    ONLINE.wirt = error ? {err:/admin_wirtschaft|function/i.test(error.message) ? 'Bitte zuerst stillgestanden_wirtschaft.sql in Supabase ausführen.' : error.message} : data;
+    render();
+  },
+});
+{ const _ra4 = renderAdmin; renderAdmin = function(){ const h = _ra4(); return h ? h + wirtAdminHtml() : h; }; }
 
 /* ---------- Neue Spieler halten: Startpaket über 3 Tage, Kompanie-Vorschlag, Moin im Funkkreis ---------- */
 const WK = [
