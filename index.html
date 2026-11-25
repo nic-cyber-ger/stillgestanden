@@ -796,6 +796,11 @@ body.hasfab{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 .glerg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;text-align:center}.glerg div{padding:10px;border-radius:12px;background:var(--surface2,#1B2318)}.glerg b{display:block;font:700 22px 'Barlow Condensed',sans-serif;color:var(--gold,#E8B33A)}.glerg span{font-size:12.5px;color:var(--muted,#A3AC97)}
 .glang{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line,#2B3626)}
 .glban{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:8px 12px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--gold,#E8B33A) 60%,transparent);background:color-mix(in srgb,var(--gold,#E8B33A) 9%,var(--bg,#0B0F0A));color:var(--ink,#EEF1E6);font:inherit;text-align:left;cursor:pointer}.glban.rot{border-color:#E05A4F;background:linear-gradient(90deg,#3A1A16,var(--surface,#141A12))}.glbi{flex:none;font-size:22px}.glban.rot .glbi{animation:spPuls 1.2s ease-in-out infinite}
+body.navfest .nav{left:0;right:0;bottom:0;border-radius:0;border-width:1px 0 0;padding:4px max(6px,calc(50% - 320px)) calc(4px + env(safe-area-inset-bottom,0px));box-shadow:none;background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}
+body.navfest .chatfab{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+.kobox{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--surface2,#1B2318)}.kogrid{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin-top:8px;font-size:14px}.kogrid span{color:var(--muted,#A3AC97)}
+.koform{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.koform label,.kocheck{font-size:13px;color:var(--muted,#A3AC97)}.koform input{display:block;width:100%;margin-top:3px;box-sizing:border-box}.kocheck{display:flex;gap:8px;align-items:center;margin-top:8px}
+.kolist{margin-top:12px}.kolist>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line,#2B3626)}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -2079,7 +2084,7 @@ const FOLD_HINT = {
   'Standort': () => S.standort ? S.standort.ort : 'noch offen',
   'Pflegepflichtversicherung': () => S.pflege ? 'abgeschlossen' : pflegePflicht() ? 'Pflicht, fehlt noch!' : 'freiwillig',
   'Anwartschaftsversicherung': () => S.spar ? S.spar.rate + ' % je Verdienst' : 'freiwillig',
-  'Einstellungen': () => 'Darstellung, Konto',
+  'Einstellungen': () => 'Darstellung, Leiste, Konto',
 };
 function foldWrap(x, html){
   if(!x.fold) return html;
@@ -4437,6 +4442,11 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:26, d:'25.11.2026', t:'Feste Navigationsleiste', p:[
+    'Neu in den Einstellungen (Akte › Mehr): Navigationsleiste „Fest unten“. Die Leiste sitzt dann fest am Bildschirmrand',
+    'Schutz vor Fehlklicks: Springt die Leiste am Handy beim Antippen, wird ein versehentlicher Klick auf den Knopf darunter ignoriert',
+    'Auszahlungen aus der Kameraden-Vorsorge fragen jetzt vorher nach'
+  ]},
   {v:25, d:'24.11.2026', o:1, t:'Großlagen der Kompanie', p:[
     'Neu auf der Lagekarte: Großlagen für die ganze Kompanie. Chef oder Spieß nehmen eine Lage an, zum Beispiel Schneechaos, Hochwasser oder Zugunglück',
     'Alle Mitglieder werden alarmiert und melden Fahrzeuge aus ihrem Fuhrpark. Fehlt etwas, gibt es Reservisten aus der Kompaniekasse',
@@ -6273,6 +6283,28 @@ function toast(msg){
   clearTimeout(toast._t); toast._t = setTimeout(()=>host.innerHTML='', 2800);
 }
 
+// Navigationsleiste: schwebend oder fest unten (pro Gerät gespeichert)
+function navArt(){ try{ return localStorage.getItem('sg_nav') || 'schwebend'; }catch(e){ return 'schwebend'; } }
+function navArtApply(){ document.body.classList.toggle('navfest', navArt() === 'fest'); }
+navArtApply();
+// Schutz vor Fehlklicks: Springt die Leiste (z. B. weil die Browserleiste am Handy ein- oder ausfährt)
+// und der Finger landet danach auf einem Knopf darunter, wird dieser Klick verworfen.
+(function(){
+  let navDown = 0, shift = 0, lastTop = null;
+  const nav = () => document.getElementById('nav');
+  const merke = () => { const n = nav(); if(!n) return; const t = Math.round(n.getBoundingClientRect().top); if(lastTop !== null && Math.abs(t - lastTop) > 2) shift = Date.now(); lastTop = t; };
+  if(window.visualViewport){ visualViewport.addEventListener('resize', () => { shift = Date.now(); merke(); }); visualViewport.addEventListener('scroll', merke); }
+  window.addEventListener('resize', () => { shift = Date.now(); merke(); });
+  window.addEventListener('scroll', merke, {passive:true});
+  document.addEventListener('pointerdown', e => { merke(); navDown = e.target.closest && e.target.closest('#nav') ? Date.now() : 0; }, true);
+  document.addEventListener('click', e => {
+    const inNav = e.target.closest && e.target.closest('#nav, .subnav');
+    const tippte = navDown && Date.now() - navDown < 800;
+    if(!inNav && (tippte || Date.now() - shift < 400) && e.target.closest && e.target.closest('main [data-act], main button, main a')){
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); navDown = 0;
+    }
+  }, true);
+})();
 function applyTheme(){
   const el = document.documentElement;
   seasonApply();
@@ -6525,6 +6557,8 @@ function renderStube(){
   h += '<h2>Einstellungen</h2><div class="panel pad"><button class="btn ghost wide" data-act="changelog" data-id="alle" style="margin-bottom:14px">Was ist neu? Alle Updates</button>'
     + '<p style="margin-bottom:6px"><b>Darstellung</b></p><div class="seg" role="group" aria-label="Darstellung">'
     + [['system','System'],['light','Hell'],['dark','Dunkel']].map(([v,l])=>'<button data-act="theme" data-id="'+v+'" aria-pressed="'+(S.theme===v)+'">'+l+'</button>').join('')
+    + '</div><p style="margin:16px 0 6px"><b>Navigationsleiste</b></p><p class="small muted" style="margin:0 0 6px">„Fest unten“ verankert die Leiste am Bildschirmrand. Hilft, wenn sie am Handy beim Antippen springt.</p><div class="seg" role="group" aria-label="Navigationsleiste">'
+    + [['schwebend','Schwebend'],['fest','Fest unten']].map(([v,l])=>'<button data-act="navart" data-id="'+v+'" aria-pressed="'+(navArt()===v)+'">'+l+'</button>').join('')
     + '</div><p style="margin:16px 0 6px"><b>Benachrichtigungen</b></p><p class="small muted">Meldet sich, wenn Dienste, Ausbildungen oder Lehrgänge fertig sind, solange das Spiel im Hintergrund geöffnet ist.</p><button class="btn ghost" data-act="notif">'+(S.notify && window.Notification && Notification.permission === 'granted' ? 'Benachrichtigungen ausschalten' : 'Benachrichtigungen einschalten')+'</button><p style="margin:16px 0 6px"><b>Einführung</b></p><button class="btn ghost" data-act="tut_restart">Einführung noch mal ansehen</button>'+(TESTMODE || ONLINE.admin ? '<p style="margin:16px 0 6px"><b>Testmodus</b></p><p class="small muted">Alle Zeiten laufen schneller. Nur zum Ausprobieren, nicht zum echten Spielen.</p>'
     + '<div class="seg" role="group" aria-label="Testmodus">'
     + [[1,'Aus'],[10,'10×'],[100,'100×']].map(([v,l])=>'<button data-act="speed" data-id="'+v+'" aria-pressed="'+(S.speed===v)+'">'+l+'</button>').join('')
@@ -6963,8 +6997,11 @@ const ACT = {
     if(now() < sparNext()){ toast('Die nächste Auszahlung ist erst in '+fmtRest(sparNext()-now())+' möglich.'); return; }
     const v = p === 100 ? Math.floor(S.spar.bal) : Math.floor(S.spar.bal * p / 100);
     if(v < 1){ toast('Auf dem Konto ist noch nichts.'); return; }
-    S.spar.bal -= v; if(p === 100) S.spar.bal = 0; S.spar.lastOut = now(); S.money += v; save();
-    toast(eur(v)+' ausgezahlt.'); render();
+    ask((p === 100 ? 'Das ganze Sparkonto auflösen und ' : p + ' % vom Sparkonto, also ') + eur(v) + ' auszahlen? Die nächste Auszahlung ist dann erst nach der Sperrfrist möglich.', () => {
+      if(!S.spar) return;
+      S.spar.bal -= v; if(p === 100) S.spar.bal = 0; S.spar.lastOut = now(); S.money += v; save();
+      toast(eur(v)+' ausgezahlt.'); render();
+    }, eur(v) + ' auszahlen');
   },
   spar_end(_, ok){
     if(!S.spar) return;
@@ -6985,6 +7022,7 @@ const ACT = {
     save(); toast('Abflug nach '+E.ort); tab='stube'; render();
   },
   theme(v){ S.theme=v; save(); render(); },
+  navart(v){ try{ localStorage.setItem('sg_nav', v === 'fest' ? 'fest' : 'schwebend'); }catch(e){} navArtApply(); render(); },
   speed(v){ if(!TESTMODE && !ONLINE.admin) return; S.speed=Number(v); save(); render(); },
   reset(_, ok){
     if(!ok) return ask('Wirklich neu anfangen? Dein Spielstand wird gelöscht.', ()=>ACT.reset(null, true), 'Löschen');
@@ -8626,6 +8664,94 @@ function glBanner(){
 { const _ra2 = renderAdmin; renderAdmin = function(){ const h = _ra2(); if(!h) return h; return h + '<div class="panel pad adm"><h3>Großlage testen</h3><p class="small muted">Spult die laufende Großlage deiner Kompanie vor (und die Pause danach). Gilt für alle Mitglieder.</p><div class="admrow">' + [15, 60, 180, 720].map(m => '<button class="btn ghost" data-act="adm_gl" data-id="' + m + '">+' + (m >= 60 ? m / 60 + ' Std.' : m + ' Min.') + '</button>').join('') + '</div></div>'; }; }
 // nach dem Laden der Kompanie
 { const _lk = loadKompanie; loadKompanie = async function(){ await _lk.apply(this, arguments); if(ONLINE.kp) glLoad(true); else ONLINE.gl = null; }; }
+
+/* ---------- Korrekturen durch die Spielleitung ---------- */
+function korZeilen(a){
+  const z = [], pm = n => (n > 0 ? '+' : '−');
+  if(a.geld) z.push(pm(a.geld) + eur(Math.abs(a.geld)) + ' Kontostand');
+  if(a.spar) z.push(pm(a.spar) + eur(Math.abs(a.spar)) + ' Sparkonto');
+  if(a.pakete) z.push('+' + a.pakete + (a.pakete === 1 ? ' Feldpost-Paket' : ' Feldpost-Pakete'));
+  if(a.punkte) z.push(pm(a.punkte) + Math.abs(a.punkte) + ' Punkte');
+  if(a.ausdauer) z.push('Ausdauer aufgefüllt');
+  return z;
+}
+async function korAbholen(){
+  if(!sb || !USER || !S || !ONLINE.profile || ONLINE.korLaed) return;
+  ONLINE.korLaed = true;
+  const { data, error } = await sb.rpc('korrekturen_abholen');
+  ONLINE.korLaed = false;
+  if(error || !Array.isArray(data) || !data.length) return;
+  const msg = [];
+  for(const k of data){
+    const a = k.aenderung || {};
+    if(a.geld) S.money = Math.max(0, S.money + Number(a.geld));
+    if(a.spar){ if(S.spar) S.spar.bal = Math.max(0, (S.spar.bal || 0) + Number(a.spar)); else S.money = Math.max(0, S.money + Number(a.spar)); }
+    if(a.pakete) S.pakete = Math.min(9, (S.pakete || 0) + Number(a.pakete));
+    if(a.punkte) S.log.push({ts:now(), p:Number(a.punkte)});
+    if(a.ausdauer){ S.stamina = G.maxStamina(); S.staminaTs = now(); }
+    msg.push({grund:k.grund, z:korZeilen(a).map(x => !S.spar && /Sparkonto/.test(x) ? x.replace('Sparkonto', 'Kontostand (kein Sparvertrag)') : x)});
+  }
+  save(); cloudPush(true); render();
+  const host = document.getElementById('modalHost'); if(!host) return;
+  const zeig = () => { host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="kot"><div class="sheet advsheet"><div class="advbig" aria-hidden="true">✉️</div><h2 id="kot" style="margin:6px 0;text-align:center">Nachricht der Spielleitung</h2>'
+    + msg.map(m => '<p style="text-align:center;margin:8px 0 4px">' + esc(m.grund) + '</p><div class="chips" style="justify-content:center">' + m.z.map(x => '<span class="chip">' + esc(x) + '</span>').join('') + '</div>').join('<hr style="border:0;border-top:1px solid var(--line);margin:12px 0">')
+    + '<button class="btn wide" data-act="close" style="margin-top:14px">Verstanden</button></div></div>'; };
+  if(host.innerHTML.trim()) setTimeout(() => { if(!host.innerHTML.trim()) zeig(); else toast('Die Spielleitung hat deinen Spielstand korrigiert.'); }, 4000); else zeig();
+}
+setInterval(() => { if(USER && S && !document.hidden) korAbholen(); }, 5 * 60000);
+document.addEventListener('visibilitychange', () => { if(!document.hidden && USER && S) korAbholen(); });
+{ const _nl = wbNachLogin; wbNachLogin = async function(){ await _nl(); korAbholen(); }; }
+
+function korAdminHtml(){
+  const I = ONLINE.korInfo, n = v => v == null ? '–' : Number(v).toLocaleString('de-DE');
+  let h = '<div class="panel pad adm"><h3>Spieler korrigieren</h3><p class="small muted">Spielstand ansehen und eine Korrektur schicken. Der Spieler bekommt sie beim nächsten Öffnen, zusammen mit deinem Grund als Nachricht.</p>'
+    + '<div class="admrow"><input id="admKoName" maxlength="20" placeholder="Spielername" value="' + esc(ONLINE.korName || '') + '"><button class="btn ghost" data-act="adm_ko_suche">Suchen</button></div>';
+  if(I){
+    h += '<div class="kobox"><b>' + esc(I.name) + '</b> · ' + esc(R[I.rang] ? rankNameFor(I.tsk || 'heer', I.rang) : I.rang) + (I.kompanie ? ' · ' + esc(I.kompanie) : '')
+      + '<div class="kogrid"><span>Kontostand</span><b>' + n(I.geld) + ' €</b><span>Sparkonto</span><b>' + (I.spar == null ? 'kein Vertrag' : n(Math.floor(I.spar)) + ' €') + '</b><span>Feldpost-Pakete</span><b>' + n(I.pakete) + '</b><span>Punkte (Rangliste)</span><b>' + n(I.punkte) + '</b><span>Dienste</span><b>' + n(I.dienste) + '</b></div>'
+      + '<p class="small muted" style="margin:6px 0 0">Stand der letzten Speicherung: ' + (I.gespeichert ? new Date(I.gespeichert).toLocaleString('de-DE', {dateStyle:'short', timeStyle:'short'}) : 'unbekannt') + '</p></div>'
+      + '<div class="koform"><label>Kontostand ± €<input id="admKoGeld" type="number" inputmode="numeric" placeholder="z. B. -5000"></label><label>Sparkonto ± €<input id="admKoSpar" type="number" inputmode="numeric" placeholder="z. B. 5000"></label>'
+      + '<label>Feldpost-Pakete +<input id="admKoPak" type="number" min="0" max="9" inputmode="numeric" placeholder="0"></label><label>Punkte ±<input id="admKoPkt" type="number" inputmode="numeric" placeholder="0"></label></div>'
+      + '<label class="kocheck"><input id="admKoAus" type="checkbox"> Ausdauer auffüllen</label>'
+      + '<label style="display:block;margin-top:8px">Grund (sieht der Spieler)<input id="admKoGrund" maxlength="300" style="display:block;width:100%;box-sizing:border-box;margin-top:3px" placeholder="z. B. Sparkonto durch Fehlklick geleert, zurückgebucht"></label>'
+      + '<p class="small muted" style="margin:6px 0 0">Tipp für versehentliche Auszahlungen: Sparkonto + Betrag und Kontostand − Betrag, dann bleibt alles stimmig.</p>'
+      + '<button class="btn gold" data-act="adm_ko_senden" style="margin-top:10px">Korrektur senden</button>';
+    if(I.korrekturen && I.korrekturen.length) h += '<div class="kolist"><b>Letzte Korrekturen</b>' + I.korrekturen.map(k => '<div><span class="small">' + esc(korZeilen(k.aenderung || {}).join(', ')) + '<br><span class="muted">' + esc(k.grund) + '</span></span>'
+      + (k.angewendet ? '<span class="small muted">abgeholt ' + new Date(k.angewendet).toLocaleDateString('de-DE') + '</span>' : '<button class="btn mini ghost" data-act="adm_ko_zurueck" data-id="' + k.id + '">Zurücknehmen</button>') + '</div>').join('') + '</div>';
+  }
+  return h + '</div>';
+}
+Object.assign(ACT, {
+  async adm_ko_suche(){
+    const name = ((document.getElementById('admKoName') || {}).value || '').trim(); if(!name){ toast('Bitte einen Spielernamen eingeben.'); return; }
+    ONLINE.korName = name;
+    const { data, error } = await sb.rpc('admin_spieler_info', {p_name:name});
+    if(error){ ONLINE.korInfo = null; toast(/admin_spieler_info|function/i.test(error.message) ? 'Bitte zuerst stillgestanden_korrektur.sql in Supabase ausführen.' : error.message); render(); return; }
+    ONLINE.korInfo = data; render();
+  },
+  adm_ko_senden(){
+    const I = ONLINE.korInfo; if(!I) return;
+    const num = id => { const v = ((document.getElementById(id) || {}).value || '').replace(/[.\s€]/g, '').replace(',', '.'); return v === '' ? 0 : Math.round(Number(v)); };
+    const a = {}, geld = num('admKoGeld'), spar = num('admKoSpar'), pak = num('admKoPak'), pkt = num('admKoPkt');
+    if([geld, spar, pak, pkt].some(x => !Number.isFinite(x))){ toast('Bitte nur Zahlen eintragen.'); return; }
+    if(geld) a.geld = geld; if(spar) a.spar = spar; if(pak) a.pakete = pak; if(pkt) a.punkte = pkt;
+    if((document.getElementById('admKoAus') || {}).checked) a.ausdauer = true;
+    const grund = ((document.getElementById('admKoGrund') || {}).value || '').trim();
+    if(!Object.keys(a).length){ toast('Keine Änderung eingetragen.'); return; }
+    if(grund.length < 3){ toast('Bitte einen Grund angeben, der Spieler sieht ihn.'); return; }
+    ask('Korrektur an ' + I.name + ' schicken? ' + korZeilen(a).join(', ') + '.', async () => {
+      const { data, error } = await sb.rpc('admin_korrektur', {p_name:I.name, p_aenderung:a, p_grund:grund});
+      if(error){ toast(error.message); return; }
+      ONLINE.korInfo = data; toast('Korrektur verschickt. ' + I.name + ' bekommt sie beim nächsten Öffnen.'); render();
+    }, 'Senden');
+  },
+  async adm_ko_zurueck(id){
+    const { error } = await sb.rpc('admin_korrektur_zurueck', {p_id:Number(id)});
+    if(error){ toast(error.message); return; }
+    toast('Korrektur zurückgenommen.'); await ACT.adm_ko_suche();
+  },
+});
+{ const _ra3 = renderAdmin; renderAdmin = function(){ const h = _ra3(); return h ? h + korAdminHtml() : h; }; }
 
 // ---------- Kompanieverzeichnis und Bewerbungen ----------
 const KPV_WAPPEN = {
