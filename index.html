@@ -801,6 +801,9 @@ body.navfest .chatfab{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .kobox{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--surface2,#1B2318)}.kogrid{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin-top:8px;font-size:14px}.kogrid span{color:var(--muted,#A3AC97)}
 .koform{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.koform label,.kocheck{font-size:13px;color:var(--muted,#A3AC97)}.koform input{display:block;width:100%;margin-top:3px;box-sizing:border-box}.kocheck{display:flex;gap:8px;align-items:center;margin-top:8px}
 .kolist{margin-top:12px}.kolist>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line,#2B3626)}
+.wkrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.wkt{display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;padding:10px 6px;border-radius:12px;background:var(--surface2,#1B2318);border:1.5px solid var(--line,#2B3626)}.wkt .small{line-height:1.3;min-height:2.6em}.wkt.jetzt{border-color:var(--gold,#E8B33A)}.wkt.ok{opacity:.7}.wks{font-size:12px;color:var(--muted,#A3AC97)}.wkt.ok .wks{color:var(--ok,#8FBF5A)}
+.kpvvr{display:flex;gap:10px;align-items:center;width:100%;padding:8px 0;border:0;border-top:1px solid var(--line,#2B3626);background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.kpvvn{flex:1;min-width:0}.kpvvg{flex:none;color:var(--gold,#E8B33A);font-weight:700;font-size:14px}
+.cmsys{display:flex;gap:8px;align-items:center;margin:8px auto;padding:8px 12px;max-width:92%;border-radius:12px;background:color-mix(in srgb,var(--gold,#E8B33A) 10%,transparent);border:1px dashed color-mix(in srgb,var(--gold,#E8B33A) 50%,transparent);font-size:14px}.cmsys>span:nth-child(2){flex:1}.cmsys.klein{margin:6px 0;max-width:none;font-size:13.5px}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1981,8 +1984,8 @@ function notifyEvents(ev){
 const SUBS = {
   stube: [
     {id:'uebersicht', label:'Heute', src:'stube', rest:true, fold:true,
-     open:['Meldungen','Zu erledigen','Funkkreis','Grundausbildung','Prüfungen','Weihnachtsevent','Weihnachtsspende','Adventskalender','Weihnachtsfeier','Auslandseinsatz','Tageslage','Dienstzeitende'],
-     match:['Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Zu erledigen','Funkkreis','Weihnachtsevent','Weihnachtsspende','Adventskalender','Weihnachtsfeier','Tageslage']},
+     open:['Willkommen in der Truppe','Finde deine Kompanie','Meldungen','Zu erledigen','Funkkreis','Grundausbildung','Prüfungen','Weihnachtsevent','Weihnachtsspende','Adventskalender','Weihnachtsfeier','Auslandseinsatz','Tageslage','Dienstzeitende'],
+     match:['Willkommen in der Truppe','Finde deine Kompanie','Grundausbildung','Dienstzeitende','Meldungen','Prüfungen','Wochenaufträge','Stubenfunk','Auslandseinsatz','Zu erledigen','Funkkreis','Weihnachtsevent','Weihnachtsspende','Adventskalender','Weihnachtsfeier','Tageslage']},
   ],
   dienst: [
     {id:'plan', label:'Dienstplan', src:'dienst', rest:true, match:['Dienstplan']},
@@ -4442,6 +4445,13 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:27, d:'25.11.2026', t:'Willkommen in der Truppe', p:[
+    'Neue Spieler bekommen ein Startpaket über drei Tage: jeden Tag wartet auf „Heute“ eine Belohnung',
+    'Wer nach der Grundausbildung noch keine Kompanie hat, sieht passende Kompanien, die gerade aufnehmen',
+    'Neue Kameraden werden im Funkkreis angekündigt. Mit einem Tipp sagst du Moin',
+    'Weihnachtsevent: Zum Start der Spendenaktion am 1. Dezember gibt es einmal ein Fenster „Es geht los“',
+    'Weihnachtsfeier: Das Ziel richtet sich jetzt nach den aktiven Mitgliedern. Die Belohnung kann bis 6. Januar abgeholt werden'
+  ]},
   {v:26, d:'25.11.2026', t:'Feste Navigationsleiste', p:[
     'Neu in den Einstellungen (Akte › Mehr): Navigationsleiste „Fest unten“. Die Leiste sitzt dann fest am Bildschirmrand',
     'Schutz vor Fehlklicks: Springt die Leiste am Handy beim Antippen, wird ein versehentlicher Klick auf den Knopf darunter ignoriert',
@@ -5181,8 +5191,10 @@ const ADVENT = [
 ];
 // Türchen-Anordnung wie bei einem echten Kalender durcheinander
 const ADV_ORDER = [7, 15, 2, 21, 11, 18, 4, 23, 9, 13, 1, 19, 16, 6, 24, 10, 3, 20, 12, 22, 5, 17, 8, 14];
-function advState(){ const y = xmasJahr(); if(!S.adv || S.adv.y !== y) S.adv = {y, open:{}}; return S.adv; }
-function advCount(){ return S && S.adv && S.adv.y === xmasJahr() ? Object.keys(S.adv.open).length : 0; }
+// Im Weihnachts-Test (Admin) eigener Kalender, damit der echte im Dezember unberührt bleibt
+function advJahr(){ return xmasTestTag() ? 'test' : xmasJahr(); }
+function advState(){ const y = advJahr(); if(!S.adv || S.adv.y !== y) S.adv = {y, open:{}}; return S.adv; }
+function advCount(){ return S && S.adv && S.adv.y === advJahr() ? Object.keys(S.adv.open).length : 0; }
 function adventCard(){
   const tag = xmasTag(); if(!tag || tag > 24) return '';
   const a = advState(), heute = !a.open[tag];
@@ -6528,7 +6540,7 @@ function renderStube(){
     h += '<h2>Grundausbildung</h2><div class="panel pad"><p class="small">Bevor es richtig losgeht: Grundausbildung. Etwa eine Stunde, und jeder Schritt wird sofort belohnt. Am Ende steht das feierliche Gelöbnis mit '+eur(5*G.rank().sold)+' Prämie.</p>'
       + reqList(req) + (S.dgOk ? '' : '<button class="btn ghost wide" data-act="dgtest" style="margin-bottom:8px">Dienstgradtest ablegen</button>') + '<button class="btn wide" data-act="geloebnis" '+(ok?'':'disabled')+'>Gelöbnis ablegen</button></div>';
   }
-  h += todoList() + (typeof chatMiniHtml === 'function' ? chatMiniHtml() : '');
+  h += (typeof wkCard === 'function' ? wkCard() : '') + todoList() + (typeof kpvVorschlagCard === 'function' ? kpvVorschlagCard() : '') + (typeof chatMiniHtml === 'function' ? chatMiniHtml() : '');
   h += xcdCard() + spendeHeute() + adventCard() + (typeof feierCard === 'function' ? feierCard() : '');
   h += appellCard() + rekrutCard();
   h += renderWA();
@@ -7783,7 +7795,7 @@ async function xmasFlush(){
   ONLINE.xmasTs = 0; xmasLoad();
 }
 async function xmasLoad(){
-  if(!sb || !USER || !xmasTag() || Date.now() - ONLINE.xmasTs < 60000) return;
+  if(!sb || !USER || !xmasLook() || Date.now() - ONLINE.xmasTs < 60000) return;
   ONLINE.xmasTs = Date.now();
   const { data, error } = await sb.rpc('xmas_status');
   ONLINE.xmas = error ? {err:error.message} : data;
@@ -7791,10 +7803,12 @@ async function xmasLoad(){
 }
 setInterval(() => { if(USER && S) xmasFlush(); }, 60000);
 function feierCard(){
-  if(!xmasTag() || xmasTag() > 31) return '';
+  // Dezember: immer; bis 6. Januar nur, solange eine erreichte Feier noch abgeholt werden kann
+  if(!xmasTag() && !xmasLook()) return '';
   const X = ONLINE.xmas;
   if(!X){ setTimeout(xmasLoad, 0); return ''; }
   if(X.err) return '';
+  if(!xmasTag() && (!X.kompanie || X.punkte < X.ziel || X.abgeholt)) return '';
   if(!X.kompanie) return '<h2>Weihnachtsfeier</h2><div class="panel pad advent"><p style="margin:0">Im Dezember sammelt jede Kompanie gemeinsam Dienste für ihre Weihnachtsfeier. Wer das Ziel erreicht, bekommt eine Belohnung und eine Auszeichnung.</p><button class="btn ghost" data-act="tab" data-id="truppe" style="margin-top:10px">Kompanie suchen</button></div>';
   const pct = Math.min(100, X.punkte / X.ziel * 100), fertig = X.punkte >= X.ziel;
   let h = '<h2>Weihnachtsfeier</h2><div class="panel pad advent"><p class="small" style="margin:0 0 8px">Jeder beendete Dienst im Dezember zählt für die Weihnachtsfeier deiner Kompanie. Ziel: ' + X.ziel + ' Dienste.</p>'
@@ -7925,7 +7939,7 @@ function chatOnPage(){ return tab === 'truppe' && (SUB.truppe || LASTSUB.truppe)
 async function loadChat(){
   if(!sb || !USER || chatBusy) return;
   chatBusy = true;
-  const { data, error } = await sb.from('chat_nachrichten').select('id,user_id,name,rang,tsk,text,created_at').order('created_at', {ascending:false}).limit(60);
+  const { data, error } = await sb.from('chat_nachrichten').select('*').order('created_at', {ascending:false}).limit(60);
   chatBusy = false;
   if(error){ ONLINE.chatErr = error.message; return; }
   const alt = ONLINE.chat.length ? ONLINE.chat[ONLINE.chat.length-1].id : null;
@@ -8041,7 +8055,7 @@ function chatPing(m){
   CHAT_PING_ID = m.id; CHAT_PING_TS = Date.now();
   let el = document.getElementById('chatPing');
   if(!el){ el = document.createElement('button'); el.id = 'chatPing'; el.className = 'chatping'; el.dataset.act = 'chat_go'; document.body.appendChild(el); }
-  el.innerHTML = '<span class="cpi" aria-hidden="true">📻</span><span class="cpt"><span class="cph"><b>' + esc(m.name) + '</b> im Funkkreis</span><span>' + esc(String(m.text).slice(0, 90)) + (String(m.text).length > 90 ? ' …' : '') + '</span></span>';
+  el.innerHTML = '<span class="cpi" aria-hidden="true">' + (m.art === 'neu' ? '🎖️' : '📻') + '</span><span class="cpt"><span class="cph"><b>' + esc(m.name) + '</b> ' + (m.art === 'neu' ? 'ist neu in der Truppe' : 'im Funkkreis') + '</span><span>' + (m.art === 'neu' ? 'Sag Moin im Funkkreis!' : '') + esc(m.art === 'neu' ? '' : String(m.text).slice(0, 90)) + (String(m.text).length > 90 ? ' …' : '') + '</span></span>';
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 5000);
 }
@@ -8266,10 +8280,27 @@ function spendeInfo(){
 function spendeAuto(){
   const s = ONLINE.spende; if(!s || !S || !USER || (typeof tutOn === 'function' && tutOn())) return;
   if(s.phase !== 'vorher' && s.phase !== 'laeuft') return;
-  try{ if(localStorage.getItem('sg_spende_info')) return; }catch(e){ return; }
   const host = document.getElementById('modalHost'); if(!host || host.innerHTML.trim()) return;
-  if(s.phase === 'laeuft'){ try{ localStorage.setItem('sg_spende_info', '1'); }catch(e){} }
+  // Zum Start der Aktion einmal „Es geht los“, auch für alle, die die Vorab-Info schon kannten
+  if(s.phase === 'laeuft'){
+    try{ if(localStorage.getItem('sg_spende_los')) return; localStorage.setItem('sg_spende_los', '1'); localStorage.setItem('sg_spende_info', '1'); }catch(e){ return; }
+    spendeLos(); return;
+  }
+  try{ if(localStorage.getItem('sg_spende_info')) return; }catch(e){ return; }
   spendeInfo();
+}
+function spendeLos(){
+  const s = ONLINE.spende, host = document.getElementById('modalHost'); if(!s || !host) return;
+  const ende = new Date(s.ende).toLocaleDateString('de-DE', {day:'numeric', month:'long'}), ab = S && G.rank().t >= 1;
+  host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="splt"><div class="sheet spinfo">'
+    + '<div class="sph2" aria-hidden="true"><svg width="44" height="44" viewBox="0 0 24 24" fill="#E05A4F"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg></div>'
+    + '<h2 id="splt" style="margin:6px 0 4px;text-align:center">Die Weihnachtsspende läuft!</h2>'
+    + '<p style="text-align:center;margin:0 0 12px">Ab heute bis ' + esc(ende) + ' zählt jede Spende. Stand jetzt: <b>' + s.euro + ' € echte Spende</b> fürs ' + esc(s.organisation) + ', ' + s.spender + (s.spender === 1 ? ' Spender' : ' Spender') + '.</p>'
+    + '<ul class="spil"><li>' + (ab ? 'Zahl auf „Heute“ in der Spendenkarte Spielgeld ein. Ab ' + eur(s.min_betrag) + ' zählst du als Spender.' : 'Nach der Grundausbildung, ab Gefreiter, kannst du mitspenden.') + '</li>'
+    + '<li>Je mehr Spender, desto mehr echtes Geld geht ans Soldatenhilfswerk.</li><li>Jeder neue Kamerad hilft mit. Teil deinen Einladungslink!</li></ul>'
+    + '<button class="btn gold wide" data-act="spende_info" style="margin-top:14px">' + (ab ? 'Jetzt mitspenden' : 'Zur Spendenkarte') + '</button>'
+    + (typeof renderWerben === 'function' && USER ? '<button class="btn ghost wide" data-act="wb_go" style="margin-top:8px">Kameraden einladen</button>' : '')
+    + '<button class="linkbtn" data-act="close" style="display:block;margin:10px auto 0">Später</button></div></div>';
 }
 ACT.spende_info = () => spendeInfo();
 
@@ -8752,6 +8783,83 @@ Object.assign(ACT, {
   },
 });
 { const _ra3 = renderAdmin; renderAdmin = function(){ const h = _ra3(); return h ? h + korAdminHtml() : h; }; }
+
+/* ---------- Neue Spieler halten: Startpaket über 3 Tage, Kompanie-Vorschlag, Moin im Funkkreis ---------- */
+const WK = [
+  {t:'Tag 1', txt:'Kaffee, Sold-Vorschuss und volle Ausdauer', r:{money:3, st:true}},
+  {t:'Tag 2', txt:'Feldpost von zu Hause', r:{paket:1, money:4}},
+  {t:'Tag 3', txt:'Großes Startpaket vom Spieß', r:{paket:2, money:5, bp:10}},
+];
+function wkTag(){ return S && S.start ? daysBetween(dateStr(new Date(S.start)), dateStr()) : 99; }
+function wkAktiv(){ if(!S || !S.start || !S.gaDone) return false; const w = S.wk || {}; return wkTag() <= 7 && WK.some((_, i) => !w[i]); }
+function wkCard(){
+  if(!wkAktiv()) return '';
+  const w = S.wk || {}, tag = wkTag();
+  const naechst = WK.findIndex((_, i) => !w[i]);
+  let h = '<h2>Willkommen in der Truppe</h2><div class="panel pad wk"><p class="small" style="margin:0 0 10px">Komm an drei Tagen vorbei und hol dir dein Startpaket. Jeden Tag wartet etwas Neues.</p><div class="wkrow">';
+  h += WK.map((x, i) => {
+    const hat = !!w[i], kann = !hat && tag >= i, gesperrt = !hat && !kann;
+    return '<div class="wkt' + (hat ? ' ok' : kann ? ' jetzt' : '') + '"><b>' + x.t + '</b><span class="small">' + esc(rewText(x.r)) + '</span>'
+      + (hat ? '<span class="wks">✓ abgeholt</span>' : kann ? '<button class="btn mini gold" data-act="wk_hol" data-id="' + i + '">Abholen</button>' : '<span class="wks">' + (i - tag === 1 ? 'ab morgen' : 'in ' + (i - tag) + ' Tagen') + '</span>') + '</div>';
+  }).join('');
+  h += '</div>';
+  if(naechst > 0 && tag < naechst) h += '<p class="small muted" style="margin:10px 0 0">Morgen wartet ' + WK[naechst].t + ': ' + esc(WK[naechst].txt) + '.</p>';
+  return h + '</div>';
+}
+function kpvVorschlagCard(){
+  if(!USER || !S || !S.gaDone || ONLINE.kp || typeof frei !== 'function' || !frei('kompanie') || typeof kpvWappen !== 'function') return '';
+  try{ const t = Number(localStorage.getItem('sg_kpv_spaeter') || 0); if(Date.now() - t < 3 * 864e5) return ''; }catch(e){}
+  if((ONLINE.meineBew || []).some(b => b.status === 'offen')) return '';
+  if(!ONLINE.kpvTop && !ONLINE.kpvTopL){
+    ONLINE.kpvTopL = 1;
+    sb.rpc('kompanien_liste', {p_q:'', p_sort:'offen'}).then(({data}) => { ONLINE.kpvTopL = 0; ONLINE.kpvTop = data || []; ONLINE.kpvTopTs = Date.now(); if(tab === 'stube') render(); });
+    return '';
+  }
+  if(!ONLINE.kpvTop) return '';
+  if(Date.now() - (ONLINE.kpvTopTs || 0) > 10 * 60000) ONLINE.kpvTop = null;
+  const me = G.rank().t;
+  const l = (ONLINE.kpvTop || []).filter(k => k.aufnahme !== 'geschlossen' && (k.zahlen || {}).mitglieder < 30 && (k.mindest_rang || 0) <= me)
+    .sort((a, b) => ((b.zahlen || {}).aktiv || 0) - ((a.zahlen || {}).aktiv || 0)).slice(0, 3);
+  let h = '<h2>Finde deine Kompanie</h2><div class="panel pad kpvv"><p class="small" style="margin:0 0 8px">Mit Kameraden spielt es sich besser: gemeinsame Kasse, Großlagen auf der Lagekarte und im Dezember die Weihnachtsfeier.</p>';
+  h += l.length ? l.map(k => { const z = k.zahlen || {};
+      return '<button class="kpvvr" data-act="kpv_profil" data-id="' + esc(k.id) + '">' + kpvWappen(k.wappen, k.farbe, 36) + '<span class="kpvvn"><b>' + esc(k.name) + '</b> <span class="muted">' + esc(k.kuerzel) + '</span><br><span class="small muted">' + (z.aktiv || 0) + ' aktiv · ' + (z.mitglieder || 0) + ' Mitglieder · ' + (k.aufnahme === 'offen' ? 'sofort dabei' : 'mit Bewerbung') + '</span></span><span class="kpvvg">Ansehen ›</span></button>'; }).join('')
+    : '<p class="small muted" style="margin:0">Gerade nimmt keine Kompanie auf. Gründe doch deine eigene!</p>';
+  return h + '<div class="glbtns"><button class="btn ghost" data-act="kpv_go">' + (l.length ? 'Alle Kompanien' : 'Kompanie gründen') + '</button><button class="btn ghost" data-act="kpv_spaeter">Später</button></div></div>';
+}
+Object.assign(ACT, {
+  wk_hol(i){
+    i = Number(i); if(!wkAktiv() || !WK[i] || (S.wk || {})[i] || wkTag() < i) return;
+    S.wk = S.wk || {}; S.wk[i] = Date.now(); const r = WK[i].r; rewGive(r); save(); render();
+    const fertig = WK.every((_, j) => S.wk[j]);
+    document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="wkt"><div class="sheet advsheet"><div class="advbig">' + (i + 1) + '</div><h2 id="wkt" style="margin:6px 0;text-align:center">Startpaket ' + WK[i].t + '</h2>'
+      + '<p style="text-align:center">' + esc(WK[i].txt) + '.</p><div class="chips" style="justify-content:center">' + rewText(r).split(', ').map(x => '<span class="chip">' + esc(x) + '</span>').join('') + '</div>'
+      + '<p class="small muted" style="text-align:center;margin:12px 0 0">' + (fertig ? 'Startpaket komplett. Willkommen in der Truppe, Kamerad!' : (() => { const n = WK.findIndex((_, j) => !S.wk[j]); return wkTag() >= n ? WK[n].t + ' kannst du gleich abholen.' : 'Morgen wartet ' + WK[n].t + '. Nicht vergessen!'; })()) + '</p>'
+      + '<button class="btn wide" data-act="close" style="margin-top:14px">Wegtreten</button></div></div>';
+  },
+  kpv_spaeter(){ try{ localStorage.setItem('sg_kpv_spaeter', String(Date.now())); }catch(e){} render(); },
+  async chat_moin(name){
+    const { error } = await sb.rpc('chat_senden', {p_text:'Moin ' + name + ', willkommen in der Truppe! 🫡', p_tsk:S.tsk || 'heer'});
+    if(error){ toast(error.message || 'Senden fehlgeschlagen.'); return; }
+    toast('Moin gesagt!'); try{ localStorage.setItem('sg_moin_' + name, '1'); }catch(e){} await loadChat(); chatList(); chatMini();
+  },
+});
+// Funkkreis: Neulinge als eigene Zeile mit „Moin sagen“
+function chatNeuHtml(m, klein){
+  const ich = USER && m.user_id === USER.id;
+  let schon = false; try{ schon = !!localStorage.getItem('sg_moin_' + m.name); }catch(e){}
+  return '<div class="cmsys' + (klein ? ' klein' : '') + '"><span aria-hidden="true">🎖️</span><span><b>' + esc(m.name) + '</b> ' + (ich ? 'ist neu in der Truppe. Das bist du! Sag Moin.' : 'ist neu in der Truppe.') + '</span>'
+    + (!ich && !schon ? '<button class="btn mini gold" data-act="chat_moin" data-id="' + esc(m.name) + '">Moin sagen</button>' : '') + '</div>';
+}
+{ const _cl = chatList; chatList = function(){
+    _cl();
+    const box = CHATWRAP && CHATWRAP.querySelector('#chatList'); if(!box || !ONLINE.chat.some(m => m.art === 'neu')) return;
+    const nodes = box.querySelectorAll('.cm'); let i = 0;
+    for(const m of ONLINE.chat){ const el = nodes[i++]; if(m.art === 'neu' && el) el.outerHTML = chatNeuHtml(m); }
+  }; }
+{ const _ml = chatMiniListe; chatMiniListe = function(){
+    const h = _ml(); if(!ONLINE.chatOk || !ONLINE.chat.slice(-3).some(m => m.art === 'neu')) return h;
+    return ONLINE.chat.slice(-3).map(m => m.art === 'neu' ? chatNeuHtml(m, true) : (() => { const neu = new Date(m.created_at).getTime() > chatSeen() && m.user_id !== USER.id; return '<div class="cmm' + (neu ? ' neu' : '') + '"><b>' + esc(m.name) + '</b><time>' + chatZeit(m.created_at) + '</time><span>' + esc(m.text) + '</span></div>'; })()).join('');
+  }; }
 
 // ---------- Kompanieverzeichnis und Bewerbungen ----------
 const KPV_WAPPEN = {
