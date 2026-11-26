@@ -4454,6 +4454,11 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:30, d:'26.11.2026', o:1, t:'Großlagen: nächste Lage immer sichtbar', p:[
+    'Fehler behoben: Solange die Belohnung der letzten Großlage nicht abgeholt war, sah die Kompanieführung keine neuen Angebote',
+    'Die letzte Lage und die nächsten Angebote stehen jetzt untereinander auf der Lagekarte',
+    'Chef und Spieß sehen auf „Heute“ einen Hinweis, sobald eine neue Großlage angenommen werden kann'
+  ]},
   {v:29, d:'25.11.2026', t:'Textfelder frei', p:[
     'Beim Tippen am Handy blendet sich die Navigationsleiste aus und verdeckt kein Textfeld mehr, zum Beispiel im Kompanie-Funk'
   ]},
@@ -8568,9 +8573,13 @@ function glHtml(){
   if(G0.err) return '<h2>Großlage</h2><div class="panel pad"><p class="small muted" style="margin:0">' + esc(G0.err) + '</p></div>';
   glLoad();
   const l = G0.lage;
-  if(!l || (l.status === 'abgebrochen' && glT(l.alarm_bis) < glNow() - 6 * 3600000) || (l.status === 'fertig' && (l.abgeholt || !(l.meine || []).length) && glT(l.ende_at) < glNow() - 6 * 3600000)) return glStartHtml(G0);
+  if(!l) return glStartHtml(G0);
+  // Beendete Lage: Ergebnis zeigen (solange Belohnung offen oder frisch), darunter immer die nächste Lage
+  const vorbei = !['alarm', 'verlegung', 'einsatz'].includes(l.status);
+  const offen = l.status === 'fertig' && (l.meine || []).length && !l.abgeholt;
+  if(vorbei && !offen && glT(l.ende_at || l.alarm_bis) < glNow() - 6 * 3600000) return glStartHtml(G0);
   const t = GL_TYP_I[l.typ] || {ic:'⚠️', txt:'', fragen:[]};
-  let h = '<h2>Großlage</h2><div class="panel pad gl gl-' + l.status + '"><div class="glkopf"><span class="glic" aria-hidden="true">' + t.ic + '</span><div><div class="glst">' + GL_ST[l.status] + '</div><div class="glti">' + esc(l.titel) + '</div></div></div>';
+  let h = '<h2>' + (vorbei ? 'Letzte Großlage' : 'Großlage') + '</h2><div class="panel pad gl gl-' + l.status + '"><div class="glkopf"><span class="glic" aria-hidden="true">' + t.ic + '</span><div><div class="glst">' + GL_ST[l.status] + '</div><div class="glti">' + esc(l.titel) + '</div></div></div>';
   if(t.txt) h += '<p class="small" style="margin:8px 0 0">' + esc(glText(t.txt, l.ort)) + '</p>';
   // Zeitleiste
   const step = ['alarm', 'verlegung', 'einsatz', 'fertig'], idx = l.status === 'abgebrochen' ? -1 : step.indexOf(l.status);
@@ -8618,7 +8627,7 @@ function glHtml(){
     else h += '<p class="small muted" style="margin:10px 0 0">Du hattest diesmal keine Fahrzeuge dabei.</p>';
   }
   if(l.status === 'abgebrochen') h += '<p class="small" style="margin:10px 0 0">Zu wenige Kräfte gemeldet. Die Lage hat eine andere Einheit übernommen. Beim nächsten Mal mehr Fahrzeuge melden!</p>';
-  return h + '</div>';
+  return h + '</div>' + (vorbei ? glStartHtml(G0).replace('<h2>Großlage</h2>', '<h2>Nächste Großlage</h2>') : '');
 }
 function glStartHtml(G0){
   let h = '<h2>Großlage</h2><div class="panel pad gl">';
@@ -8635,7 +8644,7 @@ function glStartHtml(G0){
 }
 // in die Lagekarte einhängen
 { const _rl = renderLage; renderLage = function(){ const h = _rl(); const g = typeof glHtml === 'function' ? glHtml() : ''; if(!g) return h; const i = h.indexOf('<h2>Laufende Aufträge</h2>'), j = h.indexOf('<h2>Offene Aufträge</h2>'); const k = i >= 0 ? i : j; return k >= 0 ? h.slice(0, k) + g + h.slice(k) : h + g; }; }
-{ const L0 = SUBS.dienst && SUBS.dienst.find(x => x.id === 'lage'); if(L0 && !L0.match.includes('Großlage')) L0.match.push('Großlage'); }
+{ const L0 = SUBS.dienst && SUBS.dienst.find(x => x.id === 'lage'); if(L0) for(const m of ['Großlage', 'Letzte Großlage', 'Nächste Großlage']) if(!L0.match.includes(m)) L0.match.push(m); }
 
 // Fahrzeuge melden
 let GL_SEL = new Set();
@@ -8711,7 +8720,10 @@ Object.assign(ACT, {
 
 // Band auf „Heute“
 function glBanner(){
-  const G0 = ONLINE.gl, l = G0 && G0.lage; if(!l || !ONLINE.kp) return '';
+  const G0 = ONLINE.gl, l = G0 && G0.lage; if(!G0 || G0.err || !ONLINE.kp) return '';
+  const frei = (!l || !['alarm', 'verlegung', 'einsatz'].includes(l.status)) && !(l && l.status === 'fertig' && (l.meine || []).length && !l.abgeholt) && glT(G0.naechste_ab) <= glNow();
+  if(frei && glFuehrung()) return '<button class="glban" data-act="gl_go"><span class="glbi" aria-hidden="true">🚨</span><span class="ltbx"><b>Neue Großlage verfügbar</b><span>Wähle eine Lage, dann wird die Kompanie alarmiert</span></span><span class="ltbg">Annehmen ›</span></button>';
+  if(!l) return '';
   const t = GL_TYP_I[l.typ] || {ic:'⚠️'}, mine = (l.meine || []).length;
   let a, b, k, rot = true;
   if(l.status === 'alarm'){ a = 'Großlage: ' + l.titel; b = mine ? Math.round(Number(l.erfuellung) * 100) + ' % der Kräfte gemeldet, du bist dabei' : 'Die Kompanie braucht deine Fahrzeuge'; k = mine ? 'Ansehen' : 'Melden'; rot = !mine; }
