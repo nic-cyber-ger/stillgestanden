@@ -813,6 +813,13 @@ body.navfest .chatfab{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .wbar{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.8fr) auto;gap:8px;align-items:center;font-size:13px;padding:4px 0}.wbar span{line-height:1.25}.wbar i{display:block;height:8px;border-radius:4px;background:var(--line2,#3A4632)}.wbar i.e{background:var(--ok,#8FBF5A)}.wbar i.a{background:var(--bad,#E05A4F)}.wbar i.g{background:var(--gold,#E8B33A)}.wbar b{font-size:13px;white-space:nowrap}
 .wrow{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;padding:4px 0;border-bottom:1px solid var(--line,#2B3626)}
 body.tippen .nav,body.tippen .chatfab,body.tippen .chatping{display:none!important}
+.hhkopf{display:flex;justify-content:space-between;align-items:center;gap:8px}.hhph{font:700 11.5px 'Barlow',sans-serif;color:#14180E;border-radius:999px;padding:3px 10px}
+.hhk{font:800 42px/1.05 'Barlow Condensed',sans-serif;color:var(--gold,#E8B33A);margin-top:4px}.hhk.minus{color:var(--bad,#E05A4F)}
+.hhkurve{display:block;width:100%;height:100px;margin-top:10px;font-family:'Barlow',sans-serif}
+.hhzahlen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0 0}.hhzahlen div{background:var(--surface,#141A12);border:1px solid var(--line,#2B3626);border-radius:12px;padding:8px 4px;text-align:center}.hhzahlen b{display:block;font:800 17px 'Barlow Condensed',sans-serif}.hhzahlen span{font-size:11px;color:var(--muted,#A3AC97)}
+.hhst{display:flex;gap:4px}.hhst span{flex:1;text-align:center;padding:6px 2px;border-radius:8px;font:700 12px 'Barlow',sans-serif;background:var(--surface2,#1B2318);color:var(--muted,#A3AC97)}.hhst span.an{color:#14180E}
+.hhreg{margin:10px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:5px;line-height:1.4}
+.hhf{font-size:13px;color:var(--muted,#A3AC97)}.hhf input{display:block;width:100%;box-sizing:border-box;margin:3px 0 2px}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -2119,7 +2126,7 @@ function onPage(id){ const a = pageOf(id); return tab === a[0] && (!a[1] || LAST
 function subLabel(id){ const a = pageOf(id), m = TABS.find(t => t[0] === navOf(a[0])), sb = a[1] && (SUBS[a[0]] || []).find(x => x.id === a[1]); return (m ? m[1] : '') + (sb ? ' › ' + sb.label : ''); }
 function pageSrc(src){
   const f = {stube:renderStube, kaserne:renderKaserne, lage:renderLage, fuhrpark:renderFuhrpark, mini:renderMini, akte:renderAkte, raum:renderRaum, dienst:renderDienst, ausb:renderAusb, laufbahn:renderLaufbahn, feier:renderFeier,
-    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null, kpliste: typeof renderKpListe === 'function' && USER ? renderKpListe : null, kpfunk: typeof renderKpFunk === 'function' && USER ? renderKpFunk : null, werben: typeof renderWerben === 'function' && USER ? renderWerben : null}[src];
+    truppe: typeof renderTruppe === 'function' ? renderTruppe : null, lotto: typeof renderLotto === 'function' && USER ? renderLotto : null, admin: typeof renderAdmin === 'function' && USER ? renderAdmin : null, chat: typeof renderChat === 'function' && USER ? renderChat : null, suche: typeof renderSuche === 'function' && USER ? renderSuche : null, kpliste: typeof renderKpListe === 'function' && USER ? renderKpListe : null, kpfunk: typeof renderKpFunk === 'function' && USER ? renderKpFunk : null, haushalt: typeof renderHaushalt === 'function' && USER ? renderHaushalt : null, werben: typeof renderWerben === 'function' && USER ? renderWerben : null}[src];
   return f ? f() : '';
 }
 function splitSecs(html){
@@ -4454,6 +4461,13 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:31, d:'26.11.2026', o:1, t:'Haushalt der Truppe', p:[
+    'Neu: der Haushalt der Truppe unter Kaserne › Haushalt. Alles, was ihr ausgebt, fließt in den Haushalt, und der zahlt euren Sold, Dienstlohn und Prämien',
+    'Neues Geld kommt nur noch über den täglichen Bundeszuschuss ins Spiel, abhängig von der Zahl aktiver Soldaten',
+    'Die Haushaltslage wirkt sich aus: Bei Überschuss gibt es Sondervermögen (Fahrzeuge 20 % günstiger, Großlagen +20 %), bei Haushaltssperre wird Ausbildung teurer',
+    'Am Monatsende gibt es einen Überschuss-Bonus für alle, wenn der Haushalt gut gefüllt ist',
+    'Sold und Dienstlohn werden nie gekürzt'
+  ]},
   {v:30, d:'26.11.2026', o:1, t:'Großlagen: nächste Lage immer sichtbar', p:[
     'Fehler behoben: Solange die Belohnung der letzten Großlage nicht abgeholt war, sah die Kompanieführung keine neuen Angebote',
     'Die letzte Lage und die nächsten Angebote stehen jetzt untereinander auf der Lagekarte',
@@ -6558,7 +6572,7 @@ function renderStube(){
   const prevN = note < 5 ? noteMin(note) : 0;
   const pct = nextN ? Math.min(100,(pts-prevN)/(nextN-prevN)*100) : 100;
   const gs = gsFortschritt();
-  let h = xcdBanner() + (typeof spendeBanner === 'function' ? spendeBanner() : '') + (typeof glBanner === 'function' ? glBanner() : '') + (typeof ltBanner === 'function' ? ltBanner() : '') + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
+  let h = xcdBanner() + (typeof spendeBanner === 'function' ? spendeBanner() : '') + (typeof glBanner === 'function' ? glBanner() : '') + (typeof hhBanner === 'function' ? hhBanner() : '') + (typeof ltBanner === 'function' ? ltBanner() : '') + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
     + '<div><div class="small muted">'+esc(GROUPS[r.g])+'</div><div class="rank">'+esc(r.name)+'</div>'
     + '<div class="name">'+esc(S.name)+(S.verw ? ' · '+esc(VERW[S.verw].name) : '')+'</div>'
     + '<div class="small muted">Tagessold '+eur(r.sold)+(S.standort ? ' · '+esc(S.standort.ort) : '')+'</div>'
@@ -8843,8 +8857,8 @@ const WIRT_KAT = [
   [/^(spar_|pflege|ntg)/, 'Vorsorge und Versicherung'],
   [/^spende/, 'Weihnachtsspende'],
   [/^(fp_|lk_|gl_)/, 'Fuhrpark und Lagekarte'],
-  [/^(kp_|kpv_|auf_|wb_)/, 'Kompanie'],
-  [/^(paket|advent|appell|wa|wk_hol|xfeier|event|choose|geloebnis|tut_|storybook|kurz)/, 'Belohnungen und Ereignisse'],
+  [/^(kp_|kpv_|auf_)/, 'Kompanie'],
+  [/^(paket|advent|appell|wa|wk_hol|xfeier|event|choose|geloebnis|tut_|storybook|kurz|wb_|hh_bonus)/, 'Belohnungen und Ereignisse'],
   [/^(verpflichten|versetzen|verw|tsk_|standort|ausscheiden)/, 'Laufbahn'],
 ];
 function wirtKat(n){ for(const [re, k] of WIRT_KAT) if(re.test(n)) return k; return 'Sonstiges'; }
@@ -8902,6 +8916,116 @@ Object.assign(ACT, {
   },
 });
 { const _ra4 = renderAdmin; renderAdmin = function(){ const h = _ra4(); return h ? h + wirtAdminHtml() : h; }; }
+
+/* ---------- Haushalt der Truppe: Kreislauf, Regler, Konjunktur, Überschuss-Bonus ---------- */
+const HH_PHASE = {
+  schulden:   {name:'Schulden', farbe:'#E05A4F', band:'Haushalt im Minus: Lehrgänge und Ausbildung 20 % teurer', txt:'Der Haushalt ist im Minus. Ausbildung, Lehrgänge und Führerscheine kosten 20 % mehr, bis wieder Geld in der Kasse ist.', kosten:1.2},
+  knapp:      {name:'Knapp', farbe:'#E8B33A', band:'Haushaltssperre: Lehrgänge und Ausbildung 10 % teurer', txt:'Haushaltssperre! Das Ministerium spart. Ausbildung, Lehrgänge und Führerscheine kosten 10 % mehr.', kosten:1.1},
+  normal:     {name:'Normal', farbe:'#8FBF5A', band:'', txt:'Alles im Rahmen. Beschaffungsamt und Ausbildung zu Normalpreisen.', kosten:1},
+  ueberschuss:{name:'Überschuss', farbe:'#6FA8DC', band:'Sondervermögen: Fahrzeuge 20 % günstiger, Großlagen +20 %', txt:'Sondervermögen! Der Haushalt ist gut gefüllt. Fahrzeuge beim Beschaffungsamt sind 20 % günstiger, Großlagen bringen 20 % mehr.', kosten:1},
+};
+const HH_KAT = {'Laufend (Dienstende, Aufträge, Zinsen)':'Sold, Dienstlohn und Aufträge'};
+function hhKat(k){ return HH_KAT[k] || k; }
+function hhPhase(){ const H = ONLINE.hh; return H && HH_PHASE[H.phase] ? H.phase : 'normal'; }
+function hhKosten(){ return HH_PHASE[hhPhase()].kosten; }
+async function hhLoad(force){
+  if(!sb || !USER || ONLINE.hhL) return;
+  if(!force && Date.now() - (ONLINE.hhTs || 0) < 10 * 60000) return;
+  ONLINE.hhL = true; ONLINE.hhTs = Date.now();
+  const vorher = hhPhase();
+  const { data, error } = await sb.rpc('haushalt_status');
+  ONLINE.hhL = false;
+  ONLINE.hh = error ? {err:/haushalt_status|function/i.test(error.message) ? 'Der Haushalt ist noch nicht eingerichtet.' : error.message} : data;
+  if(tab === 'stube' || (tab === 'truppe' && SUB.truppe === 'haushalt') || hhPhase() !== vorher) render();
+}
+setInterval(() => { if(USER && S && !document.hidden) hhLoad(); }, 10 * 60000);
+{ const _nl3 = wbNachLogin; wbNachLogin = async function(){ await _nl3(); hhLoad(true); }; }
+// Konjunktur wirkt auf Preise und Prämien
+{ const _sc = G.statCost; G.statCost = function(id){ return Math.round(_sc.call(G, id) * hhKosten()); }; }
+{ const _lc = lgCost; lgCost = function(l){ return Math.round(_lc(l) * hhKosten()); }; }
+{ const _fc = fsCost; fsCost = function(x){ return Math.round(_fc(x) * hhKosten()); }; }
+{ const _fp = fpPreis; fpPreis = function(typ){ return Math.round(_fp(typ) * (hhPhase() === 'ueberschuss' ? .8 : 1)); }; }
+{ const _gb = glBelohnung; glBelohnung = function(e){ const r = _gb(e); if(hhPhase() === 'ueberschuss'){ r.money = Math.round(r.money * 1.2 * 10) / 10; r.bp = Math.round(r.bp * 1.2); } return r; }; }
+// Überschuss-Bonus am Monatsende
+function hhBonusOffen(){ const H = ONLINE.hh, b = H && H.bonus; return !!(b && S && !(S.hhBonus || {})[b.monat]); }
+function hhBonusText(){ const b = ONLINE.hh.bonus, d = new Date(b.monat + '-15'); return d.toLocaleDateString('de-DE', {month:'long'}); }
+// Band auf „Heute“
+function hhBanner(){
+  const H = ONLINE.hh; if(!H || H.err || !S) return '';
+  const ic = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/></svg>';
+  if(hhBonusOffen()) return '<button class="glban hhban" data-act="hh_bonus"><span class="glbi" style="color:#6FA8DC" aria-hidden="true">' + ic + '</span><span class="ltbx"><b>Überschuss-Bonus für ' + esc(hhBonusText()) + '</b><span>Der Haushalt hat Geld übrig: ' + H.bonus.tagessold + ' Tagessold für dich</span></span><span class="ltbg">Abholen ›</span></button>';
+  const p = HH_PHASE[hhPhase()]; if(!p.band) return '';
+  return '<button class="glban hhban" data-act="hh_go" style="border-color:' + p.farbe + '"><span class="glbi" style="color:' + p.farbe + '" aria-hidden="true">' + ic + '</span><span class="ltbx"><b>' + esc(p.band.split(':')[0]) + '</b><span>' + esc(p.band.split(':').slice(1).join(':').trim()) + '</span></span><span class="ltbg">Haushalt ›</span></button>';
+}
+// Seite „Haushalt der Truppe“
+function renderHaushalt(){
+  const H = ONLINE.hh;
+  if(!H){ hhLoad(true); return '<h2>Haushalt der Truppe</h2><div class="panel pad"><p class="muted" style="margin:0">Wird geladen …</p></div>'; }
+  if(H.err) return '<h2>Haushalt der Truppe</h2><div class="panel pad"><p style="margin:0">' + esc(H.err) + '</p></div>';
+  hhLoad();
+  const n = v => Math.round(Number(v) || 0), p = HH_PHASE[hhPhase()], soll = Math.max(1, n(H.soll)), kasse = n(H.kasse);
+  const proz = Math.round(kasse / soll * 100), tageAus = (H.verlauf || []).length ? (H.verlauf.slice(-7).reduce((a, x) => a + n(x.aus), 0) / Math.min(7, H.verlauf.length)) : 0;
+  let h = '<h2>Haushalt der Truppe</h2><div class="panel pad hh"><div class="hhkopf"><span class="small muted">Kassenstand</span><span class="hhph" style="background:' + p.farbe + '">Haushaltslage: ' + p.name + '</span></div>'
+    + '<div class="hhk' + (kasse < 0 ? ' minus' : '') + '">' + (kasse < 0 ? '−' : '') + eur(Math.abs(kasse)) + '</div>'
+    + '<div class="small muted">' + proz + ' % der Sollreserve (' + eur(soll) + ')' + (tageAus > 0 && kasse > 0 ? ' · reicht für ' + (kasse / tageAus).toLocaleString('de-DE', {maximumFractionDigits:1}) + ' Tage Ausgaben' : '') + '</div>';
+  // Verlauf als Kurve
+  const v = (H.verlauf || []).map(x => ({t:x.tag, k:n(x.kasse), s:n(x.soll)}));
+  v.push({t:H.heute, k:kasse, s:soll});
+  if(v.length >= 2){
+    const W = 320, Hh = 84, mx = Math.max(...v.map(x => Math.max(x.k, x.s))) * 1.1, mn = Math.min(0, ...v.map(x => x.k));
+    const X = i => (i * W / (v.length - 1)).toFixed(1), Y = y => (Hh - (y - mn) / Math.max(1, mx - mn) * Hh).toFixed(1);
+    const pfad = v.map((x, i) => (i ? 'L' : 'M') + X(i) + ' ' + Y(x.k)).join(' '), sp = v.map((x, i) => (i ? 'L' : 'M') + X(i) + ' ' + Y(x.s)).join(' ');
+    h += '<svg class="hhkurve" viewBox="0 0 ' + W + ' ' + (Hh + 16) + '" preserveAspectRatio="none" role="img" aria-label="Kassenstand der letzten Tage"><path d="' + sp + '" fill="none" stroke="#E8B33A" stroke-width="1.5" stroke-dasharray="5 5"/><path d="' + pfad + ' L' + X(v.length - 1) + ' ' + Hh + ' L0 ' + Hh + ' Z" fill="rgba(143,191,90,.12)"/><path d="' + pfad + '" fill="none" stroke="#8FBF5A" stroke-width="2.5" stroke-linejoin="round"/>'
+      + '<text x="0" y="' + (Hh + 13) + '" font-size="11" fill="#A3AC97">' + new Date(v[0].t + 'T12:00').toLocaleDateString('de-DE', {day:'numeric', month:'numeric'}) + '</text><text x="' + W + '" y="' + (Hh + 13) + '" font-size="11" fill="#A3AC97" text-anchor="end">heute</text></svg>'
+      + '<p class="small muted" style="margin:2px 0 0"><span style="color:#8FBF5A">━</span> Kassenstand <span style="color:#E8B33A">┅</span> Sollreserve</p>';
+  }
+  h += '</div><div class="hhzahlen"><div><b class="plus">+' + eur(n(H.heute_ein)) + '</b><span>Einnahmen heute</span></div><div><b class="minus">−' + eur(n(H.heute_aus)) + '</b><span>Ausgaben heute</span></div><div><b style="color:#6FA8DC">+' + eur(n(H.zuschuss)) + '</b><span>Bundeszuschuss gestern</span></div></div>';
+  // Woher und wohin, letzte 7 Tage (plus heute)
+  const sum = (a, b) => { const o = Object.assign({}, a); for(const k in b) o[k] = (o[k] || 0) + n(b[k]); return o; };
+  const ein = sum((H.woche || {}).ein || {}, (H.heute_fluss || {}).ein || {}), aus = sum((H.woche || {}).aus || {}, (H.heute_fluss || {}).aus || {});
+  const mx2 = Math.max(1, ...Object.values(ein), ...Object.values(aus));
+  const liste = (o, cls) => Object.entries(o).filter(([, b]) => n(b) > 0).sort((a, b) => b[1] - a[1]).map(([k, b]) => '<div class="wbar"><span>' + esc(hhKat(k)) + '</span><i class="' + cls + '" style="width:' + Math.max(2, b / mx2 * 100) + '%"></i><b>' + eur(n(b)) + '</b></div>').join('') || '<p class="small muted" style="margin:0">Noch keine Daten.</p>';
+  h += '<h2>Woher das Geld kommt</h2><div class="panel pad"><p class="small muted" style="margin:0 0 8px">Alles, was ihr für Ausbildung, Einstand, Fahrzeuge und Co. ausgebt, fließt in den Haushalt. Letzte 7 Tage.</p>' + liste(ein, 'e') + '</div>'
+    + '<h2>Wohin es geht</h2><div class="panel pad"><p class="small muted" style="margin:0 0 8px">Davon zahlt der Haushalt euren Sold, Dienstlohn und Prämien.</p>' + liste(aus, 'a') + '</div>';
+  // Lage und Regeln
+  h += '<h2>Haushaltslage</h2><div class="panel pad"><div class="hhst">' + ['schulden', 'knapp', 'normal', 'ueberschuss'].map(k => '<span class="' + (k === hhPhase() ? 'an' : '') + '" style="' + (k === hhPhase() ? 'background:' + HH_PHASE[k].farbe : '') + '">' + HH_PHASE[k].name + '</span>').join('') + '</div>'
+    + '<p class="small" style="margin:10px 0 0">' + esc(p.txt) + '</p>'
+    + '<ul class="hhreg small"><li><b>Überschuss</b> ab 150 % der Sollreserve: Fahrzeuge 20 % günstiger, Großlagen +20 %.</li><li><b>Knapp</b> unter 50 %: Haushaltssperre, Ausbildung 10 % teurer.</li><li><b>Schulden</b> im Minus: Ausbildung 20 % teurer. Sold und Dienstlohn werden nie gekürzt.</li><li><b>Monatsende:</b> Liegt die Kasse über 120 % der Sollreserve, gibt es einen Überschuss-Bonus für alle.</li><li><b>Bundeszuschuss:</b> Neues Geld kommt nur hier ins Spiel, abhängig von der Zahl aktiver Soldaten und davon, wie weit die Kasse unter dem Soll liegt.</li></ul></div>';
+  return h;
+}
+// Admin-Steuerung
+function hhAdminHtml(){
+  const P = ONLINE.hhParam;
+  let h = '<div class="panel pad adm"><h3>Haushalt steuern</h3>';
+  if(!P){ return h + '<p class="small muted">Bundeszuschuss, Sollreserve und Startkasse einstellen.</p><button class="btn ghost" data-act="adm_hh_laden">Einstellungen laden</button></div>'; }
+  const f = (id, lab, val, hint) => '<label class="hhf">' + lab + '<input id="' + id + '" type="number" step="any" inputmode="decimal" value="' + (val == null ? '' : val) + '"><span class="small muted">' + hint + '</span></label>';
+  return h + '<div class="koform">' + f('admHhStart', 'Startkasse €', P.startkasse, 'gilt nur bis zum ersten Tagesabschluss') + f('admHhSoll', 'Sollreserve in Tagen', P.soll_tage, 'Standard 3') + f('admHhGrund', 'Grundzuschuss je aktivem Spieler €', P.grund_spieler, 'pro Tag') + f('admHhFaktor', 'Ausgleich (0 bis 1)', P.faktor, 'Anteil der Lücke zum Soll pro Tag')
+    + f('admHhMax', 'Höchstzuschuss € pro Tag', P.zuschuss_max, '') + f('admHhFix', 'Fester Zuschuss € (leer = Regler)', P.zuschuss_fix, 'überschreibt den Regler') + '</div>'
+    + '<button class="btn ghost" data-act="adm_hh_speichern" style="margin-top:10px">Speichern</button><p class="small muted" style="margin:8px 0 0">Änderungen wirken ab dem nächsten Tagesabschluss (beim ersten Aufruf nach Mitternacht).</p></div>';
+}
+{ const _ra5 = renderAdmin; renderAdmin = function(){ const h = _ra5(); return h ? h + hhAdminHtml() : h; }; }
+Object.assign(ACT, {
+  hh_go(){ const m = document.getElementById('modalHost'); if(m) m.innerHTML = ''; goPage('truppe'); SUB.truppe = 'haushalt'; render(); window.scrollTo(0, 0); },
+  hh_bonus(){
+    if(!hhBonusOffen()) return; const b = ONLINE.hh.bonus;
+    S.hhBonus = S.hhBonus || {}; S.hhBonus[b.monat] = Date.now(); const r = {money:Number(b.tagessold)}; rewGive(r); save(); render();
+    document.getElementById('modalHost').innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="hhbt"><div class="sheet advsheet"><div class="advbig">€</div><h2 id="hhbt" style="margin:6px 0;text-align:center">Überschuss-Bonus</h2><p style="text-align:center">Der Haushalt der Truppe hat im ' + esc(hhBonusText()) + ' gut gewirtschaftet. Ihr habt fleißig ausgebildet, jetzt bekommt jeder etwas zurück.</p><div class="chips" style="justify-content:center"><span class="chip">' + esc(rewText(r)) + '</span></div><button class="btn wide" data-act="close" style="margin-top:14px">Wegtreten</button></div></div>';
+  },
+  async adm_hh_laden(){ const { data, error } = await sb.rpc('admin_haushalt_param'); if(error){ toast(/admin_haushalt|function/i.test(error.message) ? 'Bitte zuerst stillgestanden_haushalt.sql ausführen.' : error.message); return; } ONLINE.hhParam = data; render(); },
+  async adm_hh_speichern(){
+    const g = id => { const v = ((document.getElementById(id) || {}).value || '').replace(',', '.').trim(); return v === '' ? null : Number(v); };
+    const a = {p_startkasse:g('admHhStart'), p_soll_tage:g('admHhSoll'), p_grund:g('admHhGrund'), p_faktor:g('admHhFaktor'), p_max:g('admHhMax'), p_fix:g('admHhFix')};
+    if(['p_startkasse', 'p_soll_tage', 'p_grund', 'p_faktor', 'p_max'].some(k => a[k] == null || !isFinite(a[k]))){ toast('Bitte alle Felder außer „Fester Zuschuss“ ausfüllen.'); return; }
+    const { data, error } = await sb.rpc('admin_haushalt_setzen', a); if(error){ toast(error.message); return; } ONLINE.hhParam = data; toast('Haushalt gespeichert.'); render();
+  },
+});
+// Einbindung: Reiter, Kachel, Band
+{ const i = SUBS.truppe.findIndex(x => x.id === 'verzeichnis'); SUBS.truppe.splice(i + 1, 0, {id:'haushalt', label:'Haushalt', src:'haushalt', match:['Haushalt der Truppe', 'Woher das Geld kommt', 'Wohin es geht', 'Haushaltslage']}); }
+{ const _kt2 = kTiles; kTiles = function(){ const l = _kt2(); const H = ONLINE.hh;
+    const i = l.findIndex(x => x.go === 'truppe:rang');
+    const t = {grp:'Kameraden', go:'truppe:haushalt', label:'Haushalt der Truppe', ok:!!USER, ic:'<path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18"/>', badge:hhBonusOffen() ? 1 : 0,
+      info:H && !H.err ? eur(Math.round(Number(H.kasse) || 0)) + ' · ' + HH_PHASE[hhPhase()].name : 'Kasse, Einnahmen, Ausgaben'};
+    if(i >= 0) l.splice(i, 0, t); else l.push(t); return l; }; }
 
 /* ---------- Neue Spieler halten: Startpaket über 3 Tage, Kompanie-Vorschlag, Moin im Funkkreis ---------- */
 const WK = [
