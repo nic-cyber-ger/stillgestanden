@@ -4461,6 +4461,9 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:32, d:'26.11.2026', t:'Lagekarte: faire Belohnung', p:[
+    'Lagekarte: Die Belohnung hängt jetzt nur noch vom Auftrag ab. Schnellere Fahrzeuge verkürzen die Zeit und kosten weniger Ausdauer, bringen aber nicht mehr weniger Geld'
+  ]},
   {v:31, d:'26.11.2026', o:1, t:'Haushalt der Truppe', p:[
     'Neu: der Haushalt der Truppe unter Kaserne › Haushalt. Alles, was ihr ausgebt, fließt in den Haushalt, und der zahlt euren Sold, Dienstlohn und Prämien',
     'Neues Geld kommt nur noch über den täglichen Bundeszuschuss ins Spiel, abhängig von der Zahl aktiver Soldaten',
@@ -5452,13 +5455,15 @@ function lkDauer(a, fzUids){
   const v = Math.min(...fz.map(f => f.t.v * (f.f && f.f.zust < 50 ? .85 : 1))), weg = a.km * (fz.some(f => f.t.cap.includes('luft') || f.t.cap.includes('jet')) && fz.every(f => f.t.cap.includes('luft') || f.t.cap.includes('jet')) ? 1 : 1.3);
   const fahrt = Math.min(120, 4 + weg / v * 60 * .6); // Minuten einfach, im Spiel etwas gerafft
   const m = lkMod(a), work = t.work * (m ? m.zeit : 1);
-  return {fahrt, work, total:fahrt * 2 + work};
+  // Richtwert für die Belohnung: feste Bezugsgeschwindigkeit, damit ein schnelleres Fahrzeug nur Zeit spart und nicht weniger einbringt
+  const ref = Math.min(120, 4 + a.km * 1.3 / 45 * 60 * .6) * 2 + work;
+  return {fahrt, work, total:fahrt * 2 + work, ref};
 }
-function lkLohn(a, total){
-  const t = LK_TYP.find(x => x.id === a.typ), n = t.v[a.vi].length;
-  const m = lkMod(a), pay = Math.round(total * 2.9 * t.f * (1 + .15 * (n - 1)) * G.payMult() * (m ? m.pay : 1) * (mst('fuehrung', 60) ? 1.1 : 1));
+function lkLohn(a, total, ref){
+  const t = LK_TYP.find(x => x.id === a.typ), n = t.v[a.vi].length, basis = ref || total;
+  const m = lkMod(a), pay = Math.round(basis * 2.9 * t.f * (1 + .15 * (n - 1)) * G.payMult() * (m ? m.pay : 1) * (mst('fuehrung', 60) ? 1.1 : 1));
   const sprit = Math.round(a.km * 2 * .35 * n * (1 - .15 * fpBau('tank')));
-  return {pay, sprit, bp:Math.round(total / 6 * t.f * (m ? m.bp : 1)), st:Math.round((6 + total / 6) * (typeof rekrut === 'function' && rekrut() ? .7 : 1) * (mst('fitness', 50) ? .75 : 1))};
+  return {pay, sprit, bp:Math.round(basis / 6 * t.f * (m ? m.bp : 1)), st:Math.round((6 + total / 6) * (typeof rekrut === 'function' && rekrut() ? .7 : 1) * (mst('fitness', 50) ? .75 : 1))};
 }
 function lkTick(events){
   if(!S || !S.standort) return false;
@@ -5493,7 +5498,7 @@ function lkStart(id, uids){
   const mit = !lkMitAktiv() && !S.dienst && !S.einsatz;
   if(!mit && !['F','O','G'].includes(G.rank().g) && !fpBau('bereit')) return S.dienst ? 'Du bist gerade im Dienst.' : 'Du bist schon mit einem Auftrag unterwegs.';
   if(G.dzOver()) return 'Dienstzeitende.';
-  const d = lkDauer(a, uids), l = lkLohn(a, d.total);
+  const d = lkDauer(a, uids), l = lkLohn(a, d.total, d.ref);
   if(mit && S.stamina < l.st) return 'Zu wenig Ausdauer (' + l.st + ' nötig).';
   if(mit){ S.stamina -= l.st; S.staminaTs = now(); }
   const t0 = now(), ms = m => m * 60000 / S.speed;
@@ -5596,7 +5601,7 @@ function lkOpen(id){
   const frei = lkFuhrpark().filter(f => !lkBelegt().has(f.uid) && f.t.cap.some(c => needs.includes(c))).sort((x, y) => y.t.v - x.t.v || y.f.zust - x.f.zust);
   if(!LK_SEL || LK_SEL.id !== id) LK_SEL = {id, uids:lkMatch(needs, frei) || []};
   const ok = LK_SEL.uids.length === needs.length && lkMatch(needs, frei.filter(f => LK_SEL.uids.includes(f.uid)));
-  const d = ok ? lkDauer(a, LK_SEL.uids) : null, l = d ? lkLohn(a, d.total) : null;
+  const d = ok ? lkDauer(a, LK_SEL.uids) : null, l = d ? lkLohn(a, d.total, d.ref) : null;
   const zuGross = needs.length > bef.fz;
   let h = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="lkt"><div class="sheet ev" style="text-align:left;max-height:88vh;overflow:auto"><div class="lkhead"><span class="lkbig">' + t.ic + '</span><div><div class="evname" id="lkt">' + esc(t.name) + '</div><div class="small muted">' + esc(a.ort) + ' · ' + a.km + ' km · offen noch ' + fmtLeft(a.bis - now()) + '</div></div></div>'
     + '<p class="evtext">' + esc(lkText(a)) + '</p>' + (lkMod(a) ? '<p class="small lkmodp"><span class="lkmod">' + esc(lkMod(a).name) + '</span> ' + esc(lkMod(a).txt) + '</p>' : '')
