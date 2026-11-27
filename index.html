@@ -97,6 +97,7 @@ p{margin:0 0 10px}
 .active .head{display:flex;justify-content:space-between;gap:12px;font-weight:600}
 
 .note{display:flex;align-items:baseline;gap:12px}
+.ntage{display:flex;gap:4px;margin-top:8px;height:26px}.ntage span{flex:1;background:var(--surface2);border-radius:4px;position:relative;overflow:hidden}.ntage span.h{outline:1px solid var(--signal)}.ntage i{position:absolute;left:0;right:0;bottom:0;background:var(--signal)}
 .note .big{font-family:'Black Ops One',Impact,sans-serif;font-size:44px;line-height:1}
 .quote{border-left:3px solid var(--signal);padding:4px 0 4px 12px;font-style:italic;margin:16px 0}
 
@@ -2517,9 +2518,14 @@ const LEHRGAENGE = [
 const L = Object.fromEntries(LEHRGAENGE.map(l=>[l.id,l]));
 
 const NOTES = ['', 'sehr gut', 'gut', 'befriedigend', 'ausreichend', 'mangelhaft'];
-const NOTE_MIN = [0, 120, 70, 35, 12, 0]; // Punkte der letzten 7 Tage, Grundwert
-// Höhere Dienstgrade bekommen mehr Punkte pro Dienst, also steigen auch die Anforderungen
-function noteMin(n){ return Math.round(NOTE_MIN[n] * (1 + .12 * ((S && R[S.rank]) ? R[S.rank].t : 0))); }
+const NOTE_MIN = [0, 120, 70, 35, 12, 0]; // Punkte der letzten 7 Tage, Grundwert (gilt für Note 3 und 4)
+// Note 1 und 2: Vielfaches des Tagessolls. Pro Tag zählen Punkte bis zum Tagessoll voll, darüber nur zu 20 %.
+// Wer die Woche über dranbleibt, wird besser beurteilt als jemand, der an einem Abend durchspielt.
+const NOTE_TAGE = [0, 6, 3.5];
+const NOTE_REST = .2;
+function noteTag(){ return Math.round(60 * (1 + .15 * ((S && R[S.rank]) ? R[S.rank].t : 0))); }
+function noteMin(n){ if(n <= 2) return Math.round(NOTE_TAGE[n] * noteTag()); return Math.round(NOTE_MIN[n] * (1 + .12 * ((S && R[S.rank]) ? R[S.rank].t : 0))); }
+function noteTagKey(ts){ const off = -new Date(ts).getTimezoneOffset() * 6e4; return Math.floor((ts + off) / (864e5 / (S.speed || 1))); }
 
 const SPIESS = [
   'Pünktlichkeit ist fünf Minuten vor der Zeit. Alles andere ist Urlaub auf Bewährung.',
@@ -4461,6 +4467,11 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:34, d:'27.11.2026', t:'Strengere Beurteilung', p:[
+    'Die Noten „sehr gut“ und „gut“ sind deutlich schwerer. Pro Tag zählen Punkte bis zum Tagessoll voll, alles darüber nur zu 20 %',
+    'Für die Bestnote musst du die ganze Woche dranbleiben, ein langer Abend reicht nicht mehr. „Befriedigend“ und schlechter bleiben wie bisher',
+    'In der Beurteilung siehst du jetzt deine letzten 7 Tage und wie weit du das Tagessoll erfüllt hast'
+  ]},
   {v:33, d:'26.11.2026', t:'Realistischer Spritverbrauch', p:[
     'Lagekarte: Jedes Fahrzeug verbraucht jetzt unterschiedlich viel Sprit. Der Wolf ist sparsam, Unimog und Lkw liegen in der Mitte, Panzer, Hubschrauber, Flugzeuge und die Fregatte schlucken deutlich mehr',
     'Die Spritkosten je Kilometer stehen im Fuhrpark und bei der Fahrzeugauswahl. Fahrzeuge in schlechtem Zustand verbrauchen 10 % mehr',
@@ -6139,8 +6150,15 @@ const G = {
   points(){
     const cut = now() - 7*864e5/S.speed;
     S.log = S.log.filter(x => x.ts >= cut);
-    return Math.round(S.log.reduce((a,x)=>a+x.p,0)*10)/10;
+    const cap = noteTag(), tage = {};
+    for(const x of S.log){ const k = noteTagKey(x.ts); tage[k] = (tage[k] || 0) + x.p; }
+    const eff = Object.values(tage).reduce((a, v) => a + (v > cap ? cap + (v - cap) * NOTE_REST : v), 0);
+    return Math.round(eff*10)/10;
   },
+  pointsRoh(){ G.points(); return Math.round(S.log.reduce((a,x)=>a+x.p,0)*10)/10; },
+  pointsTage(){ G.points(); const cap = noteTag(), heute = noteTagKey(now()), out = [];
+    for(let i = 6; i >= 0; i--){ const k = heute - i, v = S.log.filter(x => noteTagKey(x.ts) === k).reduce((a, x) => a + x.p, 0); out.push({v:Math.round(v), q:Math.max(0, Math.min(1, v / cap)), heute:i === 0}); }
+    return out; },
   note(){ const p = G.points(); for(let n=1;n<=4;n++) if(p >= noteMin(n)) return n; return 5; },
   dienstLock(d){
     const r = G.rank();
@@ -6624,8 +6642,10 @@ function renderStube(){
            : '<div class="panel pad"><p>Gerade nichts zu tun. Das fällt auf.</p><button class="btn" data-act="tab" data-id="dienst">Dienst antreten</button></div>';
 
   h += '<h2>Beurteilung</h2><div class="panel pad"><div class="note"><span class="big">'+note+'</span><span><b>'+NOTES[note]+'</b><br><span class="small muted">'
-    + pts.toLocaleString('de-DE')+' Punkte in den letzten 7 Tagen</span></span></div>'
+    + pts.toLocaleString('de-DE')+' Wertungspunkte in 7 Tagen'+(G.pointsRoh() > pts + .5 ? ' <span title="gesammelte Punkte">('+Math.round(G.pointsRoh()).toLocaleString('de-DE')+' gesammelt)</span>' : '')+'</span></span></div>'
     + '<div class="prog"><i style="width:'+pct+'%"></i></div>'
+    + '<div class="ntage" aria-label="Tagessoll der letzten 7 Tage">' + G.pointsTage().map(d => '<span class="'+(d.heute ? 'h' : '')+'" title="'+d.v+' Punkte"><i style="height:'+Math.round(d.q*100)+'%"></i></span>').join('') + '</div>'
+    + '<p class="small muted" style="margin:6px 0 0">Tagessoll '+noteTag()+' Punkte. Bis dahin zählt alles voll, darüber nur zu 20 %. Wer jeden Tag dranbleibt, wird besser beurteilt.</p>'
     + '<p class="small muted" style="margin:8px 0 0">'+(nextN ? 'Für „'+NOTES[note-1]+'“ brauchst du '+nextN+' Punkte. Punkte gibt es für Dienste, Ausbildungen und Lehrgänge.' : 'Bestnote. Der Spieß ist misstrauisch.')+'</p></div>';
 
   h += '<h2>Werte</h2><div class="panel">' + STATS.map(s =>
