@@ -862,6 +862,12 @@ body.tippen .nav,body.tippen .chatfab,body.tippen .chatping{display:none!importa
 .kphoch{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--surface2)}.kphoch b{font-size:22px}
 .kpbiet{display:flex;gap:8px;margin-top:10px}.kpbiet input{flex:1;min-width:0;font:inherit;font-size:17px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink)}
 .kpreg{margin:10px 0 0;padding-top:8px;border-top:1px dashed var(--line)}
+
+/* Feierabend-Übersicht */
+.fbgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
+.fbk{display:flex;gap:10px;align-items:center;text-align:left;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
+.fbk.an{border-color:var(--signal);background:color-mix(in srgb,var(--signal) 10%,var(--surface))}.fbk[disabled]{opacity:.55;cursor:default}
+.fbk .fbic{font-size:28px;line-height:1}.fbk>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px}.fbk .mkgo{font-size:22px;color:var(--muted)}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4508,6 +4514,13 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:39, d:'27.11.2026', t:'Aufgeräumt: Feierabend und Kameraden', p:[
+    'Leergut und Schrauberecke sind jetzt ein gemeinsamer Feierabend-Bereich mit Übersicht. Eine Kachel statt zwei',
+    'Neue Seite „Kameraden“: Steckbrief, Personensuche und Ranglisten an einem Ort',
+    'Die Nebentätigkeitsgenehmigung entfällt: Autos aus der Schrauberecke darf jetzt jeder ohne Antrag verkaufen',
+    'Die Pflegepflichtversicherung entfällt. Keine Beiträge und keine Säumniszuschläge mehr',
+    'Der gemeinsame Standortausbau entfällt. Die Standortkarte bleibt'
+  ]},
   {v:38, d:'27.11.2026', o:1, t:'Kioskpacht', p:[
     'Neu: Ihr könnt den Kasernenkiosk pachten. Die Pacht für die nächste Woche wird versteigert, das Höchstgebot gewinnt',
     'Der Pächter bekommt 30 % von jedem Kiosk-Verkauf an andere Spieler, darf die Preise um bis zu 20 % ändern und ein Angebot der Woche festlegen',
@@ -7643,7 +7656,7 @@ async function loadLotto(){
   const banVor = tab === 'stube' && typeof ltBanner === 'function' ? ltBanner() : '';
   const { data, error } = await sb.rpc('lotto_status');
   ONLINE.ltLoading = false; ONLINE.ltTs = Date.now();
-  if(error){ ONLINE.ltErr = error.message || 'Serverfehler'; }
+  if(error || !data){ ONLINE.ltErr = error ? error.message || 'Serverfehler' : 'Keine Daten'; }
   else {
     ONLINE.lotto = data; ONLINE.ltErr = null;
     if(data.offen > 0 && !ONLINE.ltHinweis){ ONLINE.ltHinweis = true; toast('Lottogewinn wartet: ' + eur(data.offen) + '. Abholen unter Kaserne → Soldatenlotto.'); }
@@ -11206,6 +11219,88 @@ Object.assign(ACT, {
   },
 });
 if(typeof WIRT_KAT !== 'undefined') WIRT_KAT.unshift([/^(kioskpacht|kpacht_)/, 'Kiosk-Pacht']);
+
+
+/* =========================================================
+   AUFRÄUMEN (Version vom 27.11.)
+   Raus: Pflegepflichtversicherung, Nebentätigkeitsgenehmigung, Standortausbau.
+   Zusammengefasst: Leergut und Schrauberecke zum Feierabend,
+   Steckbrief, Personensuche und Ranglisten zur Seite „Kameraden“.
+   Spielstände bleiben gültig; alte Daten werden einfach nicht mehr benutzt.
+   ========================================================= */
+// --- Pflegepflichtversicherung: keine Pflicht, keine Beiträge, kein Bonus mehr ---
+pflegePflicht = () => false;
+pflegeBonus = () => 0;
+renderPflege = () => '';
+{ const _tA = G.tick; G.tick = function(){ if(S){ if(S.pflege) S.pflege = null; if(S.pflegeFrist) delete S.pflegeFrist; } return _tA.apply(G, arguments); }; }
+delete ACT.pflege; delete ACT.pflege_end;
+{ const m = SUBS.akte.find(x => x.id === 'mehr'); if(m) m.match = m.match.filter(t => t !== 'Pflegepflichtversicherung'); }
+if(typeof FOLD_HINT !== 'undefined') delete FOLD_HINT['Pflegepflichtversicherung'];
+
+// --- Nebentätigkeit: Autos darf jeder verkaufen, ohne Antrag ---
+darfVerkaufen = () => true;
+ntgTick = () => {};
+delete ACT.ntg;
+
+// --- Standortausbau (nur online): Karte bleibt, Ausbau und Boni entfallen ---
+if(typeof kStufe === 'function') kStufe = () => 0;
+{ const s = (SUBS.truppe || []).find(x => x.id === 'kaserne'); if(s) s.match = ['Standortkarte']; }
+if(typeof renderTruppe === 'function'){ const _rtA = renderTruppe; renderTruppe = function(){ const h = _rtA.apply(this, arguments); return typeof h === 'string' ? h.split(/(?=<h2>)/).filter(x => !x.startsWith('<h2>Standortausbau')).join('') : h; }; }
+
+// --- Feierabend: Leergut und Schrauberecke auf einer Seite ---
+{ const l = SUBS.feier, i = l.findIndex(x => x.id === 'leergut');
+  if(i >= 0){ l[i] = {id:'leergut', label:'Feierabend', src:'feier', rest:true, match:['Was steht an?', 'Leergut', 'Schrauben', 'Kleinanzeigen', 'Garage']}; }
+  const j = l.findIndex(x => x.id === 'schrauben'); if(j >= 0) l.splice(j, 1); }
+{ const f = FREI.find(x => x.id === 'schrauben'); if(f) f.go = 'feier:leergut'; }
+function fbUebersicht(){
+  if(S.einsatz) return '';
+  const lag = typeof pfStock === 'function' ? pfStock() : 0, cap = S.pfand && PF_LAGER[S.pfand.lager] ? PF_LAGER[S.pfand.lager].cap : 0;
+  const autos = S.garage && S.garage.cars ? S.garage.cars.length : 0, schr = frei('schrauben');
+  const lauf = S.fa ? (S.fa.type === 'pfand' ? 'pfand' : 'fix') : '';
+  const karte = (id, ic, name, txt, an, gesperrt) => '<button class="fbk' + (an ? ' an' : '') + '" data-act="fb_zu" data-id="' + id + '"' + (gesperrt ? ' disabled' : '') + '><span class="fbic" aria-hidden="true">' + ic + '</span><span><b>' + name + '</b><span class="small muted">' + txt + '</span></span><span class="mkgo">›</span></button>';
+  return '<h2>Was steht an?</h2><div class="fbgrid">'
+    + karte('Leergut', '🍾', 'Leergut', lauf === 'pfand' ? 'Du bist gerade unterwegs.' : 'Lager ' + lag + ' von ' + cap + ' Flaschen · ' + eur2(typeof pfWert === 'function' ? pfWert() : 0), lauf === 'pfand')
+    + karte('Schrauben', '🔧', 'Schrauberecke', !schr ? 'Nach der Grundausbildung' : lauf === 'fix' ? 'Du schraubst gerade.' : autos ? autos + (autos === 1 ? ' Auto' : ' Autos') + ' in der Garage' : 'Gebrauchte Autos kaufen, reparieren, verkaufen', lauf === 'fix', !schr)
+    + '</div><p class="small muted" style="margin:6px 0 0">Feierabend kostet keine Ausdauer. Solange du hier beschäftigt bist, kannst du keinen Dienst antreten.</p>';
+}
+{ const _rfA = renderFeier; renderFeier = function(){
+    let h = _rfA.apply(this, arguments);
+    // Hinweis zur alten Genehmigung entfernen
+    const a = h.indexOf('<div class="panel pad"><p style="margin:0 0 6px"><b>Nebentätigkeit:</b>'), b = a >= 0 ? h.indexOf('<p class="small muted" style="margin-top:12px">Deine Stellplätze', a) : -1;
+    if(a >= 0 && b > a) h = h.slice(0, a) + h.slice(b);
+    // Schrauberecke erst nach der Freischaltung
+    if(!frei('schrauben')) h = h.split(/(?=<h2>)/).filter(x => !/^<h2>(Schrauben|Kleinanzeigen|Garage)<\/h2>/.test(x)).join('');
+    const i = h.indexOf('<h2>Leergut</h2>');
+    return i >= 0 ? h.slice(0, i) + fbUebersicht() + h.slice(i) : h;
+  }; }
+
+// --- Kameraden (nur online): Steckbrief, Personensuche und Ranglisten auf einer Seite ---
+if(typeof renderSuche === 'function'){
+  const l = SUBS.truppe;
+  for(const id of ['suche', 'rang']){ const k = l.findIndex(x => x.id === id); if(k >= 0) l.splice(k, 1); }
+  const w = l.findIndex(x => x.id === 'werben');
+  l.splice(w >= 0 ? w : l.length, 0, {id:'kamerad', label:'Kameraden', srcs:['akte', 'suche', 'truppe'], match:['Steckbrief', 'Personensuche', 'Ranglisten']});
+}
+{ const _ktA = kTiles; kTiles = function(){
+    let l = _ktA();
+    // Feierabend-Kachel statt Leergut und Schrauberecke
+    const i = l.findIndex(x => x.go === 'feier:leergut');
+    l = l.filter(x => x.go !== 'feier:schrauben');
+    if(i >= 0){ const t = l.find(x => x.go === 'feier:leergut');
+      if(t){ t.label = 'Feierabend'; t.ic = '<path d="M8 3h8l-1 7a3 3 0 0 1-6 0z"/><path d="M12 13v6M8 21h8"/>';
+        t.info = S && S.fa ? (S.fa.type === 'pfand' ? 'Unterwegs: Leergut' : 'Läuft: Schrauberecke') : 'Leergut und Schrauberecke'; } }
+    // Kameraden-Kachel statt Rangliste und Personensuche
+    if(typeof renderSuche === 'function'){
+      const r = l.findIndex(x => x.go === 'truppe:rang' || x.go === 'truppe:suche');
+      l = l.filter(x => x.go !== 'truppe:rang' && x.go !== 'truppe:suche');
+      const t = {grp:'Kameraden', go:'truppe:kamerad', label:'Kameraden', ok:!!USER, ic:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.5a3 3 0 0 1 0 6M18 14c2 .7 3 3 3 6"/>', info:'Steckbriefe, Suche und Ranglisten'};
+      if(USER) l.splice(r >= 0 ? Math.min(r, l.length) : l.length, 0, t);
+    }
+    const st = l.find(x => x.go === 'truppe:kaserne'); if(st) st.info = 'Karte aller Standorte';
+    return l; }; }
+Object.assign(ACT, {
+  fb_zu(t){ const h = [...document.querySelectorAll('main h2')].find(x => x.textContent.trim().startsWith(t)); if(h){ const y = h.getBoundingClientRect().top + scrollY - ((document.getElementById('top') || {}).offsetHeight || 0) - 12; window.scrollTo({top:y, behavior:'smooth'}); } },
+});
 
 /* =========================================================
    START
