@@ -846,6 +846,22 @@ body.tippen .nav,body.tippen .chatfab,body.tippen .chatping{display:none!importa
 .minopt{display:flex;flex-direction:column;gap:4px;width:100%;text-align:left;margin:0 0 8px;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);font:inherit;cursor:pointer}
 .minopt.an{border-color:var(--signal);background:color-mix(in srgb,var(--signal) 12%,var(--surface2))}.minoptk{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.minfav{font-size:12px;padding:1px 8px;border-radius:999px;background:var(--line);color:var(--muted)}
 .minbar{display:block;height:6px;border-radius:3px;background:var(--line);overflow:hidden}.minbar i{display:block;height:100%;background:var(--signal)}
+
+/* Push-Benachrichtigungen */
+.pushban{display:flex;gap:10px;align-items:flex-start;width:100%;margin:0 0 12px;padding:10px 12px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--signal) 60%,transparent);background:color-mix(in srgb,var(--signal) 8%,var(--surface))}
+.pushban .pushbi{font-size:24px;line-height:1.2}.pushban .mkbx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.pushban .mkbx>span{font-size:14px;color:var(--muted)}.pushban .pushbb{display:flex;gap:8px;margin-top:8px}
+.pushhint{margin:0 0 10px;padding:10px 12px;border-radius:10px;background:var(--surface2);border-left:3px solid var(--signal);font-size:15px}
+.pushst{display:flex;justify-content:space-between;align-items:center;font-size:16px;margin-bottom:4px}.pushbtns{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+.pushk{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px dashed var(--line);cursor:pointer}.pushk input{width:20px;height:20px;margin-top:2px;accent-color:var(--signal);flex:none}.pushk>span{display:flex;flex-direction:column}
+
+/* Kioskpacht */
+.mkang{display:inline-block;margin:3px 0 0;padding:1px 8px;border-radius:999px;background:var(--stamp);color:#fff;font-size:12px;font-weight:700;width:max-content}
+.kpw .kpwer{display:flex;gap:12px;align-items:center;margin-top:8px}.kpic{font-size:30px;line-height:1}.kpchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.kpchips span{padding:3px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);font-size:14px}
+.kpsteuer{border:1.5px solid var(--signal)}.kpzahl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.kpzahl>div{background:var(--surface2);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column}.kpzahl b{font-size:19px}.kpzahl span{font-size:13px;color:var(--muted)}
+.kpseg{display:flex;flex-wrap:wrap}.kpang{display:flex;flex-wrap:wrap;gap:6px}.kpang button{font:inherit;font-size:14px;padding:6px 10px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);cursor:pointer}.kpang button[aria-pressed="true"]{border-color:var(--signal);background:color-mix(in srgb,var(--signal) 18%,var(--surface2))}
+.kphoch{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--surface2)}.kphoch b{font-size:22px}
+.kpbiet{display:flex;gap:8px;margin-top:10px}.kpbiet input{flex:1;min-width:0;font:inherit;font-size:17px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink)}
+.kpreg{margin:10px 0 0;padding-top:8px;border-top:1px dashed var(--line)}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4492,6 +4508,18 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:38, d:'27.11.2026', o:1, t:'Kioskpacht', p:[
+    'Neu: Ihr könnt den Kasernenkiosk pachten. Die Pacht für die nächste Woche wird versteigert, das Höchstgebot gewinnt',
+    'Der Pächter bekommt 30 % von jedem Kiosk-Verkauf an andere Spieler, darf die Preise um bis zu 20 % ändern und ein Angebot der Woche festlegen',
+    'Überbotene Gebote gibt es nach dem Wochenwechsel automatisch zurück. Höchstens zwei Wochen am Stück',
+    'Die Pacht fließt in den Haushalt der Truppe. Zu finden unter Kaserne › Kasernenkiosk'
+  ]},
+  {v:37, d:'27.11.2026', o:1, t:'Benachrichtigungen aufs Handy', p:[
+    'Neu: Benachrichtigungen aufs Handy, wenn dein Dienst oder deine Ausbildung fertig ist, die Ausdauer wieder voll ist oder deine Kräfte auf der Lagekarte vor Ort sind',
+    'Dazu Großlagen-Alarm, Kompanie-Funk, Erinnerung vor dem Stubendurchgang und neue Erlasse des Ministers',
+    'Einschalten unter Akte › Mehr › Benachrichtigungen. Dort wählst du auch, worüber du benachrichtigt wirst',
+    'iPhone: Das Spiel muss dafür als App auf dem Home-Bildschirm liegen'
+  ]},
   {v:36, d:'27.11.2026', o:1, t:'Das Verteidigungsministerium', p:[
     'Neu unter Kaserne › Verteidigungsministerium: ein Bundesminister mit eigener Linie, vom Sparfuchs bis zum Aufrüster',
     'Jeden Montag und Donnerstag um 6 Uhr tritt ein neuer Erlass in Kraft, der im Spiel wirkt: günstigere Fahrzeuge, teurerer Kiosk, mehr Punkte, Zulagen und manchmal auch nur eine Faxpflicht',
@@ -6640,7 +6668,7 @@ function renderStube(){
   const prevN = note < 5 ? noteMin(note) : 0;
   const pct = nextN ? Math.min(100,(pts-prevN)/(nextN-prevN)*100) : 100;
   const gs = gsFortschritt();
-  let h = xcdBanner() + (typeof spendeBanner === 'function' ? spendeBanner() : '') + (typeof glBanner === 'function' ? glBanner() : '') + (typeof hhBanner === 'function' ? hhBanner() : '') + (typeof mkBanner === 'function' ? mkBanner() : '') + (typeof minBanner === 'function' ? minBanner() : '') + (typeof ltBanner === 'function' ? ltBanner() : '') + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
+  let h = xcdBanner() + (typeof spendeBanner === 'function' ? spendeBanner() : '') + (typeof glBanner === 'function' ? glBanner() : '') + (typeof hhBanner === 'function' ? hhBanner() : '') + (typeof mkBanner === 'function' ? mkBanner() : '') + (typeof minBanner === 'function' ? minBanner() : '') + (typeof pushFrageBanner === 'function' ? pushFrageBanner() : '') + (typeof ltBanner === 'function' ? ltBanner() : '') + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
     + '<div><div class="small muted">'+esc(GROUPS[r.g])+'</div><div class="rank">'+esc(r.name)+'</div>'
     + '<div class="name">'+esc(S.name)+(S.verw ? ' · '+esc(VERW[S.verw].name) : '')+'</div>'
     + '<div class="small muted">Tagessold '+eur(r.sold)+(S.standort ? ' · '+esc(S.standort.ort) : '')+'</div>'
@@ -9007,7 +9035,7 @@ async function hhLoad(force){
   const vorher = hhPhase();
   const { data, error } = await sb.rpc('haushalt_status');
   ONLINE.hhL = false;
-  ONLINE.hh = error ? {err:/haushalt_status|function/i.test(error.message) ? 'Der Haushalt ist noch nicht eingerichtet.' : error.message} : data;
+  ONLINE.hh = error || !data ? {err:error && !/haushalt_status|function/i.test(error.message) ? error.message : 'Der Haushalt ist noch nicht eingerichtet.'} : data;
   if(tab === 'stube' || (tab === 'truppe' && SUB.truppe === 'haushalt') || hhPhase() !== vorher) render();
 }
 setInterval(() => { if(USER && S && !document.hidden) hhLoad(); }, 10 * 60000);
@@ -10680,7 +10708,7 @@ async function minLoad(force){
   ONLINE.minL = true; ONLINE.minTs = Date.now();
   const { data, error } = await sb.rpc('minister_status');
   ONLINE.minL = false;
-  ONLINE.min = error ? {err:/minister_status|function/i.test(error.message) ? 'Das Ministerium ist noch nicht eingerichtet.' : error.message} : data;
+  ONLINE.min = error || !data || !data.periode ? {err:error && !/minister_status|function/i.test(error.message) ? error.message : 'Das Ministerium ist noch nicht eingerichtet.'} : data;
   if(tab === 'stube' || tab === 'kaserne' || (tab === 'truppe' && SUB.truppe === 'ministerium')) render();
 }
 setInterval(() => { if(USER && S && !document.hidden) minLoad(); }, 60000);
@@ -10876,6 +10904,308 @@ Object.assign(ACT, {
       info:M && !M.err && M.periode && MIN_ERL[M.periode.erlass] ? 'Erlass: ' + MIN_ERL[M.periode.erlass].n : 'Minister, Erlass, Abstimmung'};
     if(i >= 0) l.splice(i + 1, 0, t); else l.push(t); return l; }; }
 if(typeof WIRT_KAT !== 'undefined') WIRT_KAT.unshift([/^min_/, 'Belohnungen und Ereignisse']);
+
+
+/* =========================================================
+   PUSH-BENACHRICHTIGUNGEN
+   Das Spiel meldet dem Server seine anstehenden Zeitpunkte (Dienst fertig,
+   Ausdauer voll, Lagekarte …). Der Server schickt sie zur richtigen Zeit ans Handy,
+   dazu Großlagen, Kompanie-Funk und neue Erlasse. Wer das Spiel offen hat,
+   bekommt keine Benachrichtigung, sondern sieht es direkt im Spiel.
+   ========================================================= */
+const PUSH_VAPID = 'BGnPyp31sVGlUX0vU6xSIei-bWXyt5OgLS07Yj7DUYY3VOPlnXL1GDrt-B8Iaqtmxk-3I_oZgw4-998OQl8fheo';
+const PUSH_KATS = [
+  ['dienst', 'Dienst und Ausbildung fertig', 'Dienste, Ausbildung, Lehrgänge, Fahrschule, Feierabend'],
+  ['lage', 'Lagekarte und Fuhrpark', 'Kräfte vor Ort, Auftrag erledigt, Lieferung da'],
+  ['ausdauer', 'Ausdauer wieder voll', 'Wenn du wieder voll einsatzbereit bist'],
+  ['kontrolle', 'Stubendurchgang', '45 Minuten vor Ablauf der Frist'],
+  ['kompanie', 'Großlagen', 'Alarm, Erinnerung vor dem Ausrücken, Einsatzende'],
+  ['funk', 'Kompanie-Funk', 'Neue Nachrichten, höchstens alle 15 Minuten'],
+  ['ministerium', 'Verteidigungsministerium', 'Neuer Erlass und Abstimmung'],
+];
+function pushKann(){ return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && location.protocol === 'https:'; }
+function pushIOS(){ return /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+function pushApp(){ return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; }
+function pushB64(s){ const p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); }
+async function pushReg(){ if(!pushKann()) return null; return (await navigator.serviceWorker.getRegistration()) || navigator.serviceWorker.register('sw.js'); }
+async function pushAbo(){ try{ const r = await pushReg(); return r ? await r.pushManager.getSubscription() : null; }catch(e){ return null; } }
+// Stand laden: Server (Abos, Kategorien) und dieses Gerät
+async function pushLoad(){
+  if(!sb || !USER) return;
+  const [{ data, error }, abo] = await Promise.all([sb.rpc('push_status'), pushAbo()]);
+  ONLINE.push = error ? {err:/push_status|function/i.test(error.message) ? 'nicht eingerichtet' : error.message} : Object.assign({}, data, {hier:!!abo});
+  if(abo && ONLINE.push && !ONLINE.push.err){ const j = abo.toJSON(); sb.rpc('push_abo_speichern', {p_endpoint:j.endpoint, p_p256dh:j.keys.p256dh, p_auth:j.keys.auth, p_geraet:pushGeraet()}).then(() => {}, () => {}); }
+  if(pushAn()) pushSync(true);
+  if(tab === 'akte' || tab === 'stube') render();
+}
+function pushAn(){ const P = ONLINE.push; return !!(P && !P.err && Number(P.abos) > 0); }
+function pushGeraet(){ const u = navigator.userAgent; return (/iPhone/.test(u) ? 'iPhone' : /iPad/.test(u) ? 'iPad' : /Android/.test(u) ? 'Android' : /Windows/.test(u) ? 'Windows' : /Mac/.test(u) ? 'Mac' : 'Browser') + (pushApp() ? ' (App)' : ''); }
+async function pushAktivieren(){
+  if(!pushKann()){ toast(pushIOS() && !pushApp() ? 'Auf dem iPhone zuerst das Spiel zum Home-Bildschirm hinzufügen und von dort öffnen.' : 'Dieser Browser unterstützt keine Benachrichtigungen.'); return; }
+  let perm = Notification.permission;
+  if(perm === 'default') perm = await Notification.requestPermission();
+  if(perm !== 'granted'){ toast('Benachrichtigungen sind blockiert. Erlaube sie in den Einstellungen deines Browsers bzw. Handys.'); render(); return; }
+  try{
+    const r = await pushReg(); await navigator.serviceWorker.ready;
+    let abo = await r.pushManager.getSubscription();
+    if(!abo) abo = await r.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:pushB64(PUSH_VAPID)});
+    const j = abo.toJSON();
+    const { error } = await sb.rpc('push_abo_speichern', {p_endpoint:j.endpoint, p_p256dh:j.keys.p256dh, p_auth:j.keys.auth, p_geraet:pushGeraet()});
+    if(error){ toast(/push_abo|function/i.test(error.message) ? 'Benachrichtigungen sind auf dem Server noch nicht eingerichtet.' : error.message); return; }
+    try{ localStorage.setItem('sg_push_frage', '1'); }catch(e){}
+    toast('Benachrichtigungen sind aktiv.'); await pushLoad(); pushSync(true);
+  }catch(e){ toast('Aktivieren hat nicht geklappt: ' + (e && e.message || e)); }
+}
+async function pushDeaktivieren(){
+  const abo = await pushAbo();
+  if(abo){ const ep = abo.endpoint; try{ await abo.unsubscribe(); }catch(e){} await sb.rpc('push_abo_loeschen', {p_endpoint:ep}); }
+  toast('Auf diesem Gerät gibt es keine Benachrichtigungen mehr.'); await pushLoad();
+}
+
+/* ---------- Anstehende Zeitpunkte aus dem Spielstand ---------- */
+function pushPlan(){
+  if(!S) return [];
+  const l = [], t = now(), real = ms => Math.round(ms - t + Date.now()), add = (k, kat, at, ti, b) => { if(at && at > t + 30000) l.push({k, kat, at:real(at), t:ti, b}); };
+  if(S.dienst && D[S.dienst.id]) add('dienst', 'dienst', S.dienst.end, 'Dienst beendet', D[S.dienst.id].name + ' ist vorbei. Der nächste Dienst wartet schon.');
+  if(S.ausb && S.ausb.type === 'stat' && typeof STAT_NAME !== 'undefined') add('ausb', 'dienst', S.ausb.end, 'Ausbildung abgeschlossen', STAT_NAME[S.ausb.id] + ' jetzt auf Stufe ' + (S.stats[S.ausb.id] + 1) + '. Gleich die nächste starten?');
+  if(S.lg && S.lg.cps && L[S.lg.id]){
+    if(S.lg.next < S.lg.cps.length) add('lg', 'dienst', S.lg.cps[S.lg.next], L[S.lg.id].name, 'Neue Lage im Lehrgang. Krüger wartet auf deine Entscheidung.');
+    if(!S.lg.exam) add('lgx', 'dienst', S.lg.end, L[S.lg.id].name + ': Prüfung', 'Die Abschlussprüfung wartet. Viel Erfolg!');
+  }
+  if(S.fs && typeof FS_I !== 'undefined' && FS_I[S.fs.id]) add('fs', 'dienst', S.fs.end, 'Fahrschule', FS_I[S.fs.id].name + ': Die Ausbildung ist durch. Weiter zur Prüfung!');
+  if(S.fa) add('fa', 'dienst', S.fa.end, 'Feierabend', S.fa.type === 'pfand' ? 'Die Leergut-Runde ist fertig. Pfand abholen!' : 'Das Auto in der Schrauberecke ist fertig.');
+  if(S.einsatz && S.einsatz.cps && S.einsatz.next < S.einsatz.cps.length) add('ein', 'dienst', S.einsatz.cps[S.einsatz.next], 'Auslandseinsatz', 'Neue Lage im Einsatz. Deine Entscheidung ist gefragt.');
+  // Lagekarte und Fuhrpark
+  if(S.lk){
+    for(const a of (S.lk.aktiv || []).slice(0, 6)){
+      const ty = LK_TYP.find(x => x.id === a.typ), n = ty ? ty.name : 'Auftrag';
+      if(!a.gefragt) add('lkan_' + a.id, 'lage', a.tAn, 'Lagekarte: vor Ort in ' + a.ort, n + ': Deine Kräfte sind angekommen. Entscheidung gefragt!');
+      add('lkend_' + a.id, 'lage', a.tEnd, 'Auftrag erledigt', n + ' in ' + a.ort + ' abgeschlossen. Neue Aufträge warten.');
+    }
+    const fp = S.lk.fp;
+    if(fp){
+      const lief = fp.liste.filter(f => f.liefer).sort((a, b) => a.liefer - b.liefer)[0]; if(lief) add('fpl', 'lage', lief.liefer, 'Lieferung eingetroffen', lkFzT(lief.uid).name + ' steht in deiner Halle.');
+      const ws = fp.liste.filter(f => f.ws).sort((a, b) => a.ws - b.ws)[0]; if(ws) add('fpw', 'lage', ws.ws, 'Aus der Werkstatt zurück', lkFzT(ws.uid).name + ' ist wieder einsatzbereit.');
+      if(fp.baut && FP_BAU_I[fp.baut.id]) add('fpb', 'lage', fp.baut.ende, 'Ausbau fertig', FP_BAU_I[fp.baut.id].name + ' ist fertig ausgebaut.');
+    }
+  }
+  // Ausdauer voll (nur wenn es sich lohnt)
+  try{
+    G.normStamina(); const max = G.maxStamina();
+    if(S.stamina < max - 10){ const ab = Math.max(t, S.dienst && S.dienst.end > t ? S.dienst.end : t); add('voll', 'ausdauer', ab + (max - S.stamina) * G.regenMs(), 'Ausdauer wieder voll 💪', 'Du bist wieder voll einsatzbereit. Ab in den Dienst!'); }
+  }catch(e){}
+  // Stubendurchgang
+  if(typeof koOffen === 'function' && koOffen()) add('ko', 'kontrolle', S.mk.ko.bis - 45 * 60000, 'Stubendurchgang in 45 Minuten!', 'Brockmann ist gleich da. Bring deinen Spind in Ordnung, sonst gibt es eine Disziplinarbuße.');
+  return l;
+}
+let PUSH_LAST = '', PUSH_TS = 0, PUSH_TIMER = 0;
+async function pushSync(sofort){
+  if(!pushAn() || !S) return;
+  clearTimeout(PUSH_TIMER);
+  const run = async () => {
+    const plan = pushPlan(), sig = JSON.stringify(plan.map(x => [x.k, Math.round(x.at / 60000)]));
+    if(sig === PUSH_LAST && Date.now() - PUSH_TS < 10 * 60000) return;
+    const { error } = await sb.rpc('push_sync', {p_liste:plan});
+    if(!error){ PUSH_LAST = sig; PUSH_TS = Date.now(); }
+  };
+  if(sofort) run(); else PUSH_TIMER = setTimeout(run, 3000);
+}
+{ const _sv2 = save; save = function(){ const r = _sv2.apply(this, arguments); try{ pushSync(false); }catch(e){} return r; }; }
+document.addEventListener('visibilitychange', () => { if(document.hidden) try{ pushSync(true); }catch(e){} });
+{ const _nl5 = wbNachLogin; wbNachLogin = async function(){ await _nl5(); pushLoad(); }; }
+// Antippen einer Benachrichtigung: passende Seite öffnen
+function pushZiel(kat){
+  const z = {dienst:'dienst:plan', lage:'dienst:lage', ausdauer:'dienst:plan', kontrolle:'stube:uebersicht', kompanie:'truppe:kompanie', funk:'truppe:kpfunk', ministerium:'truppe:ministerium'}[kat];
+  if(!z || !S) return;
+  try{ const m = document.getElementById('modalHost'); if(m && !m.querySelector('.mg')) m.innerHTML = ''; ACT.ktile(z); }catch(e){}
+}
+if('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if(e.data && 'push' in e.data) pushZiel(e.data.push); });
+{ const q = new URLSearchParams(location.search); if(q.get('von') === 'push'){ const k = q.get('kat'); try{ history.replaceState(null, '', location.pathname); }catch(e){} setTimeout(() => pushZiel(k), 2500); } }
+
+/* ---------- Ansicht ---------- */
+function pushFrageBanner(){
+  if(!USER || !S || !S.gaDone || !pushKann() && !(pushIOS() && !pushApp())) return '';
+  const P = ONLINE.push; if(!P || P.err || P.hier) return '';
+  if(typeof Notification !== 'undefined' && Notification.permission === 'denied') return '';
+  try{ if(localStorage.getItem('sg_push_frage')) return ''; }catch(e){ return ''; }
+  return '<div class="pushban"><span class="pushbi" aria-hidden="true">🔔</span><span class="mkbx"><b>Nichts mehr verpassen</b><span>Benachrichtigung aufs Handy, wenn dein Dienst fertig ist, die Ausdauer voll ist oder die Kompanie ausrückt.</span>'
+    + '<span class="pushbb"><button class="btn mini" data-act="push_an">Aktivieren</button><button class="btn mini ghost" data-act="push_nein">Später</button></span></span></div>';
+}
+function pushHtml(){
+  const P = ONLINE.push;
+  let h = '<h2>Benachrichtigungen</h2><div class="panel pad pushset">';
+  if(!USER) return h + '<p style="margin:0">Benachrichtigungen gibt es nur in der Online-Version mit Anmeldung.</p></div>';
+  if(!P){ pushLoad(); return h + '<p class="muted" style="margin:0">Wird geladen …</p></div>'; }
+  if(P.err) return h + '<p style="margin:0">Benachrichtigungen sind noch nicht eingerichtet.</p></div>';
+  if(pushIOS() && !pushApp()) h += '<p class="pushhint"><b>iPhone und iPad:</b> Benachrichtigungen gehen nur, wenn das Spiel als App auf dem Home-Bildschirm liegt. In Safari auf Teilen ↑ tippen, dann „Zum Home-Bildschirm“, und das Spiel von dort öffnen.</p>';
+  else if(!pushKann()) h += '<p class="pushhint">Dieser Browser unterstützt keine Benachrichtigungen. Am Handy klappt es mit Chrome (Android) oder als App auf dem Home-Bildschirm (iPhone).</p>';
+  else if(typeof Notification !== 'undefined' && Notification.permission === 'denied') h += '<p class="pushhint">Benachrichtigungen sind für diese Seite blockiert. Erlaube sie in den Website-Einstellungen deines Browsers bzw. in den Mitteilungen deines Handys.</p>';
+  h += '<div class="pushst"><span>Dieses Gerät</span><b class="' + (P.hier ? 'plus' : '') + '">' + (P.hier ? 'aktiv' : 'aus') + '</b></div>'
+    + (Number(P.abos) > (P.hier ? 1 : 0) ? '<p class="small muted" style="margin:2px 0 8px">Auf ' + (Number(P.abos) - (P.hier ? 1 : 0)) + ' weiteren Gerät' + (Number(P.abos) - (P.hier ? 1 : 0) > 1 ? 'en' : '') + ' aktiv.</p>' : '')
+    + (pushKann() ? (P.hier ? '<div class="pushbtns"><button class="btn ghost" data-act="push_test">Testmeldung schicken</button><button class="btn ghost danger" data-act="push_aus">Auf diesem Gerät ausschalten</button></div>'
+                            : '<button class="btn wide" data-act="push_an" style="margin:6px 0 4px">Benachrichtigungen aktivieren</button>') : '');
+  const kats = P.kats || [];
+  h += '<p style="margin:14px 0 6px"><b>Worüber du benachrichtigt wirst</b></p>' + PUSH_KATS.map(([k, n, d]) =>
+    '<label class="pushk"><input type="checkbox" data-pushkat="' + k + '"' + (kats.includes(k) ? ' checked' : '') + (pushAn() ? '' : ' disabled') + '><span><b>' + esc(n) + '</b><span class="small muted">' + esc(d) + '</span></span></label>').join('')
+    + '<p class="small muted" style="margin:10px 0 0">Solange du das Spiel geöffnet hast, kommt keine Benachrichtigung. Du siehst es dann direkt im Spiel.</p></div>';
+  return h;
+}
+{ const _ra7 = renderAkte; renderAkte = function(){ return _ra7.apply(this, arguments) + (USER ? pushHtml() : ''); }; }
+{ const m = SUBS.akte.find(x => x.id === 'mehr'); if(m && !m.match.includes('Benachrichtigungen')) m.match.push('Benachrichtigungen'); }
+FOLD_HINT['Benachrichtigungen'] = () => { const P = ONLINE.push; return !P || P.err ? '' : P.hier ? 'aktiv' : Number(P.abos) > 0 ? 'auf anderem Gerät' : 'aus'; };
+document.addEventListener('change', async e => {
+  const el = e.target; if(!el || !el.dataset || !el.dataset.pushkat) return;
+  const kats = [...document.querySelectorAll('[data-pushkat]')].filter(x => x.checked).map(x => x.dataset.pushkat);
+  const { error } = await sb.rpc('push_einst_setzen', {p_kats:kats});
+  if(error){ toast(error.message); el.checked = !el.checked; return; }
+  if(ONLINE.push) ONLINE.push.kats = kats; PUSH_LAST = ''; pushSync(true);
+});
+Object.assign(ACT, {
+  push_an(){ pushAktivieren(); },
+  push_aus(){ pushDeaktivieren(); },
+  push_nein(){ try{ localStorage.setItem('sg_push_frage', '1'); }catch(e){} toast('Kein Problem. Du findest das jederzeit unter Akte › Mehr › Benachrichtigungen.'); render(); },
+  async push_test(){
+    const { error } = await sb.rpc('push_test'); if(error){ toast(error.message); return; }
+    toast('Testmeldung ist unterwegs. Sie kommt innerhalb einer Minute.');
+  },
+});
+
+
+/* =========================================================
+   KIOSK-PACHT
+   Jede Woche betreibt ein Spieler den Kasernenkiosk. Die Pacht wird in der
+   Vorwoche versteigert (Gebot geht in den Haushalt), der Pächter bekommt einen
+   Anteil an jedem Verkauf, darf die Preise um ±20 % ändern und ein Angebot
+   der Woche festlegen. Käufe laufen über den Server, damit der Anteil stimmt.
+   ========================================================= */
+const KP_ANGEBOT = .8;   // Angebot der Woche: 20 % günstiger
+function kpAktiv(){ const K = ONLINE.kiosk; return K && !K.err && K.woche && Date.now() < new Date(K.woche.bis).getTime() ? K.woche : null; }
+async function kpLoad(force){
+  if(!sb || !USER || ONLINE.kpL) return;
+  const K = ONLINE.kiosk;
+  if(!force && Date.now() - (ONLINE.kpTs || 0) < 5 * 60000 && !(K && K.woche && Date.now() >= new Date(K.woche.bis).getTime())) return;
+  ONLINE.kpL = true; ONLINE.kpTs = Date.now();
+  const { data, error } = await sb.rpc('kiosk_status');
+  ONLINE.kpL = false;
+  ONLINE.kiosk = error || !data || !data.woche ? {err:error && !/kiosk_status|function/i.test(error.message) ? error.message : 'nicht eingerichtet'} : data;
+  if(ONLINE.kiosk && !ONLINE.kiosk.err && Number(ONLINE.kiosk.guthaben) > 0) await kpAbholen();
+  if(tab === 'zuhause' || tab === 'kaserne') render();
+}
+// Anteile und zurückgegebene Gebote automatisch gutschreiben
+async function kpAbholen(){
+  const { data, error } = await sb.rpc('kiosk_abholen');
+  if(error || !data) return;
+  const b = Math.round(Number(data.betrag) || 0), a = Math.round(Number(data.anteil) || 0); if(b <= 0) return;
+  mkBuchen('kioskpacht', () => { S.money += b; }); save();
+  if(ONLINE.kiosk) ONLINE.kiosk.guthaben = 0;
+  toast(a >= b ? 'Kiosk-Einnahmen gutgeschrieben: +' + eur(b) : a > 0 ? 'Kiosk: +' + eur(a) + ' Anteil und ' + eur(b - a) + ' zurückgegebenes Gebot' : 'Dein Kiosk-Gebot wurde überboten: ' + eur(b) + ' zurück aufs Konto');
+  renderRes();
+}
+setInterval(() => { if(USER && S && !document.hidden) kpLoad(); }, 60000);
+{ const _nl6 = wbNachLogin; wbNachLogin = async function(){ await _nl6(); kpLoad(true); }; }
+// Preise des Pächters
+{ const _p2 = mkPreis; mkPreis = function(w){ const W = kpAktiv(); if(!W) return _p2(w); return Math.max(2, Math.round(_p2(w) * (Number(W.faktor) || 1) * (W.angebot === w.id ? KP_ANGEBOT : 1))); }; }
+// Kauf über den Server festhalten (Anteil für den Pächter), danach wie gewohnt buchen
+function kpPruefen(id){
+  const w = MK_I[id]; if(!w) return 'Gibt es hier nicht.';
+  if(!S.gaDone) return 'Der Kasernenkiosk öffnet nach der Grundausbildung.';
+  if(!mkRest(w)) return 'Für heute ausverkauft. Morgen wieder.';
+  if(S.money < mkPreis(w)) return 'Dafür reicht dein Geld nicht.';
+  if(w.st){ G.normStamina(); if(S.stamina >= G.maxStamina()) return 'Deine Ausdauer ist schon voll.'; }
+  return null;
+}
+let KP_BUSY = false;
+{ const _mk = ACT.mk_kauf; ACT.mk_kauf = async function(id){
+    if(!USER || !sb || !ONLINE.kiosk || ONLINE.kiosk.err) return _mk.call(ACT, id);
+    if(KP_BUSY) return; const e = kpPruefen(id); if(e){ toast(e); render(); return; }
+    KP_BUSY = true;
+    const { error } = await sb.rpc('kiosk_kaufen', {p_ware:id, p_betrag:mkPreis(MK_I[id])});
+    KP_BUSY = false;
+    if(error && !/kiosk_kaufen|function/i.test(error.message)){ toast(error.message); return; }
+    _mk.call(ACT, id);
+    if(ONLINE.kiosk && ONLINE.kiosk.woche) ONLINE.kiosk.woche.verkaeufe = (Number(ONLINE.kiosk.woche.verkaeufe) || 0) + 1;
+  }; }
+
+/* ---------- Ansicht ---------- */
+function kpDatum(t){ const d = new Date(t); return d.toLocaleDateString('de-DE', {weekday:'short', day:'numeric', month:'numeric'}) + ', ' + d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + ' Uhr'; }
+function kpRang(p){ return p && p.rang ? (typeof rankNameFor === 'function' ? rankNameFor(p.tsk, p.rang) : (R[p.rang] ? R[p.rang].name : '')) + ' ' : ''; }
+function kpHtml(){
+  const K = ONLINE.kiosk;
+  if(!USER) return '';
+  if(!K){ kpLoad(true); return '<h2>Kioskpacht</h2><div class="panel pad"><p class="muted" style="margin:0">Wird geladen …</p></div>'; }
+  if(K.err) return '';
+  kpLoad();
+  const W = K.woche, A = K.auktion, P = K.param || {}, f = Number(W.faktor) || 1, proz = Math.round((f - 1) * 100), anteil = Math.round((Number(P.anteil) || .3) * 100);
+  let h = '<h2>Kioskpacht</h2>';
+  // Laufende Woche
+  h += '<div class="panel pad kpw"><div class="small muted">Diese Woche bis ' + kpDatum(W.bis) + '</div>';
+  if(W.paechter) h += '<div class="kpwer"><span class="kpic" aria-hidden="true">🏪</span><div><b>' + esc(kpRang(W.paechter) + W.paechter.name) + '</b><div class="small muted">betreibt den Kasernenkiosk' + (W.ich ? ' (das bist du)' : '') + ' · Pacht ' + eur(Number(W.gebot) || 0) + '</div></div></div>'
+    + '<div class="kpchips"><span>Preise ' + (proz ? (proz > 0 ? '+' : '−') + Math.abs(proz) + ' %' : 'normal') + '</span>' + (W.angebot && MK_I[W.angebot] ? '<span>Angebot: ' + MK_I[W.angebot].ic + ' ' + esc(MK_I[W.angebot].name) + ' −20 %</span>' : '') + '<span>' + (Number(W.verkaeufe) || 0) + ' Verkäufe</span></div>';
+  else h += '<div class="kpwer"><span class="kpic" aria-hidden="true">🏛️</span><div><b>Der Bund betreibt den Kiosk</b><div class="small muted">Diese Woche hat niemand gepachtet. Normale Preise.</div></div></div>';
+  h += '</div>';
+  // Steuerung für den Pächter
+  if(W.ich){
+    h += '<div class="panel pad kpsteuer"><b>Dein Kiosk</b><div class="kpzahl"><div><b>' + eur(Number(W.umsatz) || 0) + '</b><span>Umsatz diese Woche</span></div><div><b class="plus">+' + eur(Number(W.mein_anteil) || 0) + '</b><span>dein Anteil (' + anteil + ' %)</span></div></div>'
+      + '<p style="margin:12px 0 6px"><b>Preise</b> <span class="small muted">gelten sofort für alle</span></p><div class="seg kpseg">' + [-20, -10, 0, 10, 20].map(v => '<button data-act="kpacht_faktor" data-id="' + (1 + v / 100) + '" aria-pressed="' + (proz === v) + '">' + (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + ' %</button>').join('') + '</div>'
+      + '<p class="small muted" style="margin:6px 0 0">Teurer heißt mehr Anteil pro Verkauf, aber vielleicht weniger Käufer. Für deine eigenen Einkäufe bekommst du keinen Anteil.</p>'
+      + '<p style="margin:14px 0 6px"><b>Angebot der Woche</b> <span class="small muted">20 % günstiger, wird hervorgehoben</span></p><div class="kpang">' + MK_WAREN.map(w => '<button data-act="kpacht_angebot" data-id="' + w.id + '" aria-pressed="' + (W.angebot === w.id) + '">' + w.ic + ' ' + esc(w.name) + '</button>').join('')
+      + '<button data-act="kpacht_angebot" data-id="" aria-pressed="' + (!W.angebot) + '">Kein Angebot</button></div></div>';
+  }
+  // Versteigerung für die nächste Woche
+  const hoch = A.hoechst, mein = Number(A.mein) || 0, min = Number(A.min) || 0;
+  h += '<div class="panel pad kpauk"><b>Versteigerung: Pacht für die nächste Woche</b><div class="small muted" style="margin-top:2px">' + kpDatum(A.ziel_ab) + ' bis ' + kpDatum(A.ziel_bis) + ' · Gebote bis zum Wochenwechsel, noch <span data-mkend="' + new Date(A.ziel_ab).getTime() + '">' + fmtLeft(new Date(A.ziel_ab).getTime() - Date.now()) + '</span></div>'
+    + '<div class="kphoch">' + (hoch ? '<span class="small muted">Höchstgebot</span><b>' + eur(Number(hoch.betrag)) + '</b><span class="small">' + (hoch.ich ? 'von dir 🎉' : 'von ' + esc(kpRang(hoch) + hoch.name)) + '</span>' : '<span class="small muted">Noch kein Gebot</span><b>ab ' + eur(min) + '</b>') + '<span class="small muted">' + (Number(A.anzahl) || 0) + ' Bieter</span></div>';
+  if(A.gesperrt) h += '<p class="small" style="margin:8px 0 0">Du hattest den Kiosk ' + (P.max_folge || 2) + ' Wochen am Stück. Eine Woche Pause, dann darfst du wieder bieten.</p>';
+  else if(hoch && hoch.ich) h += '<p class="small" style="margin:8px 0 0">Du liegst vorn. Wirst du überboten, bekommst du dein Gebot nach dem Wochenwechsel automatisch zurück.</p>';
+  else h += '<div class="kpbiet"><input id="kpGebot" type="number" inputmode="numeric" min="' + min + '" step="' + (P.schritt || 50) + '" value="' + min + '" aria-label="Dein Gebot in Euro"><button class="btn" data-act="kpacht_bieten">Bieten</button></div>'
+    + '<p class="small muted" style="margin:6px 0 0">Mindestens ' + eur(min) + (mein ? '. Dein bisheriges Gebot: ' + eur(mein) + ', du zahlst nur die Erhöhung' : '') + '. Das Gebot wird sofort hinterlegt. Gewinnst du, geht es in den Haushalt der Truppe, sonst bekommst du es zurück.</p>';
+  h += '<p class="small muted kpreg">Der Pächter bekommt ' + anteil + ' % von jedem Kiosk-Verkauf an andere Spieler, der Rest geht in den Haushalt. Höchstens ' + (P.max_folge || 2) + ' Wochen am Stück.</p></div>';
+  const v = K.verlauf || [];
+  if(v.length) h += '<div class="panel"><div class="row"><b class="small">Frühere Pächter</b></div>' + v.map(x => '<div class="row"><div class="info"><div class="title">' + (x.name ? esc(kpRang(x) + x.name) : 'Der Bund') + '</div><div class="meta">' + new Date(x.ab).toLocaleDateString('de-DE') + ' bis ' + new Date(x.bis).toLocaleDateString('de-DE') + ' · ' + (Number(x.verkaeufe) || 0) + ' Verkäufe</div></div><span class="small muted">' + (x.name ? eur(Number(x.gebot) || 0) : '') + '</span></div>').join('') + '</div>';
+  return h;
+}
+{ const _rm2 = renderMarketenderei; renderMarketenderei = function(){
+    let h = _rm2(); const W = kpAktiv();
+    if(W && W.angebot && MK_I[W.angebot]){ const n = '<b>' + esc(MK_I[W.angebot].name) + '</b><span class="mkfx">'; h = h.replace(n, '<b>' + esc(MK_I[W.angebot].name) + '</b><span class="mkang">Angebot der Woche −20 %</span><span class="mkfx">'); }
+    if(W && W.paechter) h = h.replace('</p>', ' Diese Woche betreibt ihn <b>' + esc(kpRang(W.paechter) + W.paechter.name) + '</b>.</p>');
+    return h + kpHtml(); }; }
+{ const s = SUBS.zuhause.find(x => x.id === 'marketenderei'); if(s && !s.match.includes('Kioskpacht')) s.match.push('Kioskpacht'); }
+{ const _kt5 = kTiles; kTiles = function(){ const l = _kt5(); const t = l.find(x => x.go === 'zuhause:marketenderei'), K = ONLINE.kiosk;
+    if(t && K && !K.err && K.woche && !(typeof koOffen === 'function' && koOffen())) t.info = K.woche.ich ? 'Dein Kiosk diese Woche' : K.woche.paechter ? 'Pächter: ' + K.woche.paechter.name : 'Pacht für nächste Woche frei';
+    return l; }; }
+function kpAdminHtml(){
+  const P = ONLINE.kpParam;
+  let h = '<div class="panel pad adm"><h3>Kioskpacht</h3>';
+  if(!P) return h + '<p class="small muted">Anteil des Pächters, Mindestgebot und Wochenwechsel.</p><button class="btn ghost" data-act="adm_kp" data-id="laden">Einstellungen laden</button></div>';
+  return h + '<div class="koform"><label class="hhf">Anteil des Pächters in %<input id="admKpAnteil" type="number" min="0" max="80" value="' + Math.round(Number(P.anteil) * 100) + '"></label><label class="hhf">Mindestgebot €<input id="admKpMin" type="number" min="0" value="' + P.mindest + '"></label></div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn ghost" data-act="adm_kp" data-id="param">Speichern</button><button class="btn ghost" data-act="adm_kp" data-id="woche">Woche jetzt beenden</button></div>'
+    + '<p class="small muted" style="margin:8px 0 0">„Woche jetzt beenden“ wertet die Versteigerung sofort aus. Zum Testen.</p></div>';
+}
+{ const _ra8 = renderAdmin; renderAdmin = function(){ const h = _ra8(); return h ? h + kpAdminHtml() : h; }; }
+Object.assign(ACT, {
+  async kpacht_bieten(){
+    const K = ONLINE.kiosk; if(!K || K.err) return;
+    const v = Math.round(Number(((document.getElementById('kpGebot') || {}).value || '').replace(',', '.')));
+    if(!isFinite(v) || v <= 0){ toast('Bitte ein Gebot in Euro eingeben.'); return; }
+    const zahl = v - (Number(K.auktion.mein) || 0);
+    if(zahl > S.money){ toast('Dafür reicht dein Geld nicht. Du brauchst ' + eur(zahl) + '.'); return; }
+    const { data, error } = await sb.rpc('kiosk_bieten', {p_betrag:v});
+    if(error){ toast(error.message); await kpLoad(true); render(); return; }
+    const z = Math.max(0, Number(data) || 0);
+    mkBuchen('kioskpacht', () => { S.money -= z; }); save(); if(typeof cloudPush === 'function') cloudPush(true);
+    toast('Gebot über ' + eur(v) + ' abgegeben.' + (z ? ' ' + eur(z) + ' hinterlegt.' : '')); await kpLoad(true); render();
+  },
+  async kpacht_faktor(v){ const K = ONLINE.kiosk; if(!K || !K.woche) return; const { error } = await sb.rpc('kiosk_einstellen', {p_faktor:Number(v), p_angebot:K.woche.angebot || null}); if(error){ toast(error.message); return; } K.woche.faktor = Number(v); toast('Preise angepasst.'); render(); },
+  async kpacht_angebot(id){ const K = ONLINE.kiosk; if(!K || !K.woche) return; const { error } = await sb.rpc('kiosk_einstellen', {p_faktor:Number(K.woche.faktor) || 1, p_angebot:id || null}); if(error){ toast(error.message); return; } K.woche.angebot = id || null; toast(id ? 'Angebot der Woche: ' + MK_I[id].name : 'Kein Angebot mehr.'); render(); },
+  async adm_kp(k){
+    let a = {p_aktion:k, p_anteil:null, p_mindest:null};
+    if(k === 'param'){ a.p_anteil = Number((document.getElementById('admKpAnteil') || {}).value) / 100; a.p_mindest = Math.round(Number((document.getElementById('admKpMin') || {}).value)); }
+    const { data, error } = await sb.rpc('admin_kiosk', a);
+    if(error){ toast(/admin_kiosk|function/i.test(error.message) ? 'Bitte zuerst stillgestanden_kioskpacht.sql ausführen.' : error.message); return; }
+    ONLINE.kpParam = data; if(k === 'woche'){ toast('Woche beendet, Versteigerung ausgewertet.'); await kpLoad(true); } else if(k === 'param') toast('Gespeichert.'); render();
+  },
+});
+if(typeof WIRT_KAT !== 'undefined') WIRT_KAT.unshift([/^(kioskpacht|kpacht_)/, 'Kiosk-Pacht']);
 
 /* =========================================================
    START
