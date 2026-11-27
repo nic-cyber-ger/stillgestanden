@@ -8916,6 +8916,8 @@ function wirtBuchen(){
   if(!S || typeof S.money !== 'number' || !isFinite(S.money)) return;
   const heute = dateStr();
   let w = S.wirt;
+  // alter Name aus der ersten Kiosk-Version
+  try{ if(w && typeof w === 'object') for(const t of [w].concat(Array.isArray(w.hist) ? w.hist : [])) for(const r of ['ein', 'aus']){ const z = t && t[r]; if(z && z.Marketenderei){ z.Kasernenkiosk = (z.Kasernenkiosk || 0) + z.Marketenderei; delete z.Marketenderei; } } }catch(e){}
   if(!w || typeof w !== 'object' || typeof w.last !== 'number'){ S.wirt = {tag:heute, ein:{}, aus:{}, last:S.money, hist:[]}; return; }
   if(w.tag !== heute){ w.hist = (Array.isArray(w.hist) ? w.hist : []).concat([{tag:w.tag, ein:w.ein, aus:w.aus}]).slice(-14); w.tag = heute; w.ein = {}; w.aus = {}; }
   const d = Math.round(S.money - w.last); w.last = S.money;
@@ -8936,7 +8938,7 @@ function wirtAdminHtml(){
     + '<p class="small muted" style="margin:6px 0 0">Konten ' + eur(n(W.geld)) + ' · Sparkonten ' + eur(n(W.spar)) + ' · Kompaniekassen ' + eur(n(W.kassen)) + '</p>';
   // Geldfluss der letzten 7 Tage
   const ein = {}, aus = {};
-  for(const f of W.fluss || []) (f.r === 'ein' ? ein : aus)[f.kat] = ((f.r === 'ein' ? ein : aus)[f.kat] || 0) + n(f.summe);
+  for(const f of W.fluss || []){ const kat = f.kat === 'Marketenderei' ? 'Kasernenkiosk' : f.kat; (f.r === 'ein' ? ein : aus)[kat] = ((f.r === 'ein' ? ein : aus)[kat] || 0) + n(f.summe); }
   const sE = Object.values(ein).reduce((a, b) => a + b, 0), sA = Object.values(aus).reduce((a, b) => a + b, 0), max = Math.max(1, ...Object.values(ein), ...Object.values(aus));
   const liste = (o, cls) => Object.entries(o).sort((a, b) => b[1] - a[1]).map(([k, v]) => '<div class="wbar"><span>' + esc(k) + '</span><i class="' + cls + '" style="width:' + Math.max(2, v / max * 100) + '%"></i><b>' + eur(v) + '</b></div>').join('') || '<p class="small muted" style="margin:0">Noch keine Daten.</p>';
   h += '<h4>Geldfluss, letzte 7 Tage</h4>'
@@ -8973,7 +8975,7 @@ const HH_PHASE = {
   normal:     {name:'Normal', farbe:'#8FBF5A', band:'', txt:'Alles im Rahmen. Beschaffungsamt und Ausbildung zu Normalpreisen.', kosten:1},
   ueberschuss:{name:'Überschuss', farbe:'#6FA8DC', band:'Sondervermögen: Fahrzeuge 20 % günstiger, Großlagen +20 %', txt:'Sondervermögen! Der Haushalt ist gut gefüllt. Fahrzeuge beim Beschaffungsamt sind 20 % günstiger, Großlagen bringen 20 % mehr.', kosten:1},
 };
-const HH_KAT = {'Laufend (Dienstende, Aufträge, Zinsen)':'Sold, Dienstlohn und Aufträge'};
+const HH_KAT = {'Laufend (Dienstende, Aufträge, Zinsen)':'Sold, Dienstlohn und Aufträge', 'Marketenderei':'Kasernenkiosk'};
 function hhKat(k){ return HH_KAT[k] || k; }
 function hhPhase(){ const H = ONLINE.hh; return H && HH_PHASE[H.phase] ? H.phase : 'normal'; }
 function hhKosten(){ return HH_PHASE[hhPhase()].kosten; }
@@ -9011,7 +9013,8 @@ function renderHaushalt(){
   const H = ONLINE.hh;
   if(!H){ hhLoad(true); return '<h2>Haushalt der Truppe</h2><div class="panel pad"><p class="muted" style="margin:0">Wird geladen …</p></div>'; }
   if(H.err) return '<h2>Haushalt der Truppe</h2><div class="panel pad"><p style="margin:0">' + esc(H.err) + '</p></div>';
-  hhLoad();
+  // Beim Öffnen der Seite frisch laden: erst den eigenen Spielstand hochladen, damit eigene Ausgaben sofort mitzählen
+  if(Date.now() - (ONLINE.hhTs || 0) > 30000 && !ONLINE.hhL){ ONLINE.hhTs = Date.now(); Promise.resolve(typeof cloudPush === 'function' ? cloudPush(true) : null).catch(() => {}).then(() => hhLoad(true)); }
   const n = v => Math.round(Number(v) || 0), p = HH_PHASE[hhPhase()], soll = Math.max(1, n(H.soll)), kasse = n(H.kasse);
   const proz = Math.round(kasse / soll * 100), tageAus = (H.verlauf || []).length ? (H.verlauf.slice(-7).reduce((a, x) => a + n(x.aus), 0) / Math.min(7, H.verlauf.length)) : 0;
   let h = '<h2>Haushalt der Truppe</h2><div class="panel pad hh"><div class="hhkopf"><span class="small muted">Kassenstand</span><span class="hhph" style="background:' + p.farbe + '">Haushaltslage: ' + p.name + '</span></div>'
@@ -9030,7 +9033,7 @@ function renderHaushalt(){
   }
   h += '</div><div class="hhzahlen"><div><b class="plus">+' + eur(n(H.heute_ein)) + '</b><span>Einnahmen heute</span></div><div><b class="minus">−' + eur(n(H.heute_aus)) + '</b><span>Ausgaben heute</span></div><div><b style="color:#6FA8DC">+' + eur(n(H.zuschuss)) + '</b><span>Bundeszuschuss gestern</span></div></div>';
   // Woher und wohin, letzte 7 Tage (plus heute)
-  const sum = (a, b) => { const o = Object.assign({}, a); for(const k in b) o[k] = (o[k] || 0) + n(b[k]); return o; };
+  const sum = (a, b) => { const o = {}; for(const x of [a, b]) for(const k in x) o[hhKat(k)] = (o[hhKat(k)] || 0) + n(x[k]); return o; };
   const ein = sum((H.woche || {}).ein || {}, (H.heute_fluss || {}).ein || {}), aus = sum((H.woche || {}).aus || {}, (H.heute_fluss || {}).aus || {});
   const mx2 = Math.max(1, ...Object.values(ein), ...Object.values(aus));
   const liste = (o, cls) => Object.entries(o).filter(([, b]) => n(b) > 0).sort((a, b) => b[1] - a[1]).map(([k, b]) => '<div class="wbar"><span>' + esc(hhKat(k)) + '</span><i class="' + cls + '" style="width:' + Math.max(2, b / mx2 * 100) + '%"></i><b>' + eur(n(b)) + '</b></div>').join('') || '<p class="small muted" style="margin:0">Noch keine Daten.</p>';
@@ -10553,6 +10556,7 @@ Object.assign(ACT, {
     const w = MK_I[id], e = mkKaufen(id);
     if(e){ toast(e); render(); return; }
     save(); render(); toast(w.ic + ' ' + w.name + ': ' + w.fx);
+    if(typeof cloudPush === 'function') cloudPush(true);
   },
   ko_start(){
     if(!koOffen()){ toast('Gerade ist kein Stubendurchgang angekündigt.'); render(); return; }
