@@ -831,6 +831,21 @@ body.tippen .nav,body.tippen .chatfab,body.tippen .chatping{display:none!importa
 .mkf{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}
 .ukbox{display:flex;flex-direction:column;gap:3px;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--surface2);border:1px solid var(--line)}.ukbox b{font-size:17px}
 .koerg{text-align:center;margin:8px 0 4px}
+
+/* Verteidigungsministerium */
+.minban{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:8px 12px;border-radius:12px;border:1.5px solid color-mix(in srgb,var(--signal) 60%,transparent);background:color-mix(in srgb,var(--signal) 8%,var(--surface));color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.minban .mkbx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.minban .mkbx span{font-size:14px;color:var(--muted)}.minban .mkgo{font-size:22px;color:var(--muted)}
+.minban .minbb{flex:none;line-height:0}.minban .minbb svg{border-radius:8px}.minbild{flex:none}
+.minperson{display:flex;gap:14px;align-items:center}.minperson .minbild{border-radius:14px}.minname{font-weight:700;font-size:21px;line-height:1.15;margin:2px 0 6px}
+.minlinie{display:inline-block;padding:2px 10px;border-radius:999px;color:#111;font-size:13px;font-weight:700}
+.minmotto{margin:12px 0 0;font-style:italic;color:var(--muted)}
+.minpresse{margin-top:12px;padding:12px;border-radius:10px;background:var(--surface2);border-left:3px solid var(--signal)}.minpresse p{margin:6px 0 0;line-height:1.5}
+.minerlk{display:flex;gap:12px;align-items:center}.minstempel{flex:none;font-family:'Black Ops One',Impact,sans-serif;color:var(--stamp);border:2px solid var(--stamp);border-radius:6px;padding:4px 8px;transform:rotate(-6deg);font-size:14px;letter-spacing:1px}
+.minerln{font-weight:700;font-size:19px}.minerlw{color:var(--ok);font-size:15px;margin-top:2px}.minzitat{margin:10px 0 0;font-style:italic}
+.minbew{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px dashed var(--line)}.minbewb{display:flex;gap:6px}
+.minopt{display:flex;flex-direction:column;gap:4px;width:100%;text-align:left;margin:0 0 8px;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);font:inherit;cursor:pointer}
+.minopt.an{border-color:var(--signal);background:color-mix(in srgb,var(--signal) 12%,var(--surface2))}.minoptk{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.minfav{font-size:12px;padding:1px 8px;border-radius:999px;background:var(--line);color:var(--muted)}
+.minbar{display:block;height:6px;border-radius:3px;background:var(--line);overflow:hidden}.minbar i{display:block;height:100%;background:var(--signal)}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4477,6 +4492,12 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:36, d:'27.11.2026', o:1, t:'Das Verteidigungsministerium', p:[
+    'Neu unter Kaserne › Verteidigungsministerium: ein Bundesminister mit eigener Linie, vom Sparfuchs bis zum Aufrüster',
+    'Jeden Montag und Donnerstag um 6 Uhr tritt ein neuer Erlass in Kraft, der im Spiel wirkt: günstigere Fahrzeuge, teurerer Kiosk, mehr Punkte, Zulagen und manchmal auch nur eine Faxpflicht',
+    'Ihr stimmt ab, welcher Erlass als Nächstes kommt, und bewertet den laufenden. Ist die Truppe unzufrieden, gibt es ein Misstrauensvotum und einen neuen Minister',
+    'Jeden Tag eine neue Pressemitteilung, die auf das reagiert, was in der Truppe passiert'
+  ]},
   {v:35, d:'27.11.2026', t:'Kasernenkiosk, Unterhalt und Stubendurchgang', p:[
     'Neu in der Kaserne: der Kasernenkiosk. Kaffee und Bockwurst für Ausdauer, Energydrink, Fußpuder, EPa und Truppenzeitung für Wirkungen über mehrere Stunden. Jede Ware gibt es nur begrenzt pro Tag',
     'Fahrzeuge kosten jetzt täglich Unterhalt für Wartung und Stellplatz. Die Unimogs der Fahrbereitschaft zahlt der Bund, die Kfz-Werkstatt senkt die Kosten. Fahrzeuge, die du nicht brauchst, kannst du ausmustern',
@@ -6619,7 +6640,7 @@ function renderStube(){
   const prevN = note < 5 ? noteMin(note) : 0;
   const pct = nextN ? Math.min(100,(pts-prevN)/(nextN-prevN)*100) : 100;
   const gs = gsFortschritt();
-  let h = xcdBanner() + (typeof spendeBanner === 'function' ? spendeBanner() : '') + (typeof glBanner === 'function' ? glBanner() : '') + (typeof hhBanner === 'function' ? hhBanner() : '') + (typeof mkBanner === 'function' ? mkBanner() : '') + (typeof ltBanner === 'function' ? ltBanner() : '') + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
+  let h = xcdBanner() + (typeof spendeBanner === 'function' ? spendeBanner() : '') + (typeof glBanner === 'function' ? glBanner() : '') + (typeof hhBanner === 'function' ? hhBanner() : '') + (typeof mkBanner === 'function' ? mkBanner() : '') + (typeof minBanner === 'function' ? minBanner() : '') + (typeof ltBanner === 'function' ? ltBanner() : '') + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
     + '<div><div class="small muted">'+esc(GROUPS[r.g])+'</div><div class="rank">'+esc(r.name)+'</div>'
     + '<div class="name">'+esc(S.name)+(S.verw ? ' · '+esc(VERW[S.verw].name) : '')+'</div>'
     + '<div class="small muted">Tagessold '+eur(r.sold)+(S.standort ? ' · '+esc(S.standort.ort) : '')+'</div>'
@@ -10367,6 +10388,7 @@ const MK_I = Object.fromEntries(MK_WAREN.map(w => [w.id, w]));
 const UK_SATZ = .0008;       // Unterhalt je Tag in Anteil vom Neupreis
 const UK_TAGE_MAX = 7;       // höchstens so viele Tage werden nachberechnet
 const KO_CHANCE = .35;       // Chance je Tag auf einen Stubendurchgang
+function koChance(){ return KO_CHANCE; }
 
 function mkState(){
   if(!S.mk || typeof S.mk !== 'object') S.mk = {};
@@ -10449,7 +10471,7 @@ function koTick(events){
   }
   // Neuer Tag: vielleicht kündigt sich der Spieß an (zwischen 6 und 17 Uhr)
   if(koOk() && (!m.ko || m.ko.tag !== heute) && h >= 6){
-    if(h < 17 && Math.random() < KO_CHANCE){
+    if(h < 17 && Math.random() < koChance()){
       const rest = Math.max(0, new Date().setHours(21, 0, 0, 0) - Date.now());
       const frist = Math.min(rest, (3 + Math.random() * 3) * 36e5) / S.speed;
       m.ko = {tag:heute, ab:now(), bis:now() + frist};
@@ -10575,6 +10597,285 @@ SUBS.zuhause.push({id:'marketenderei', label:'Kasernenkiosk', src:'marketenderei
     if(i >= 0) l.splice(i + 1, 0, t); else l.push(t); return l; }; }
 { const fpSub = SUBS.dienst.find(x => x.id === 'fuhrpark'); if(fpSub && !fpSub.match.includes('Unterhalt')) fpSub.match.push('Unterhalt'); }
 if(typeof WIRT_KAT !== 'undefined') WIRT_KAT.unshift([/^mk_/, 'Kasernenkiosk'], [/^unterhalt$/, 'Fahrzeug-Unterhalt'], [/^buss_/, 'Disziplinarbußen'], [/^ko_lob$/, 'Belohnungen und Ereignisse']);
+
+
+/* =========================================================
+   VERTEIDIGUNGSMINISTERIUM
+   Ein fiktiver Minister erlässt zweimal pro Woche einen Erlass, der im Spiel wirkt.
+   Die Truppe stimmt über den nächsten ab und bewertet den laufenden.
+   Täglich eine neue Pressemitteilung aus einem Textbaukasten mit echten Zahlen.
+   ========================================================= */
+const MIN_TYP = {
+  sparfuchs:      {linie:'Sparkurs',    farbe:'#C9A227', motto:'Jeder Euro muss sich melden.'},
+  aufruester:     {linie:'Aufrüstung',  farbe:'#6B8E3A', motto:'Wer bremst, verliert.'},
+  reformer:       {linie:'Reform',      farbe:'#4F86C6', motto:'Wir denken die Truppe neu. Diesmal wirklich.'},
+  traditionalist: {linie:'Tradition',   farbe:'#8A5A3C', motto:'Was sich seit 1955 bewährt hat, bleibt.'},
+  populist:       {linie:'Volksnähe',   farbe:'#C0504D', motto:'Ich höre auf die Truppe. Meistens.'},
+};
+// Erlasse: Name, Wirkung, Begründungen. fx-Schlüssel siehe minFx()
+const MIN_ERL = {
+  kiosk_plus:     {n:'Kiosk-Abgabe', w:'Kasernenkiosk 15 % teurer', fx:{kiosk:1.15}, s:['Jede Bockwurst ist ein Beitrag zur Landesverteidigung.', 'Kaffee ist kein Grundrecht. Er ist ein Privileg mit Preisschild.', 'Wir verpflegen nicht weniger, wir verpflegen bewusster.']},
+  unterhalt_plus: {n:'Wartungsumlage', w:'Fahrzeug-Unterhalt 25 % höher', fx:{unterhalt:1.25}, s:['Wer Fahrzeuge hat, soll sie auch pflegen. Und bezahlen.', 'Ein Fahrzeug ist kein Deko-Objekt für den Parkplatz.', 'Die Stellplätze wurden neu bewertet. Sie sind jetzt wertvoller.']},
+  ausbildung_plus:{n:'Lehrgangsgebühr', w:'Ausbildung, Lehrgänge und Führerscheine 10 % teurer', fx:{ausbildung:1.1}, s:['Bildung ist wertvoll. Deshalb kostet sie jetzt mehr.', 'Der Hörsaal heizt sich nicht von selbst.', 'Wer lernt, investiert. Wir helfen beim Investieren.']},
+  sprit_plus:     {n:'Spritdeckel aufgehoben', w:'Sprit auf der Lagekarte 25 % teurer', fx:{sprit:1.25}, s:['Der Markt regelt das. Leider.', 'Wir fahren ab sofort mit Verantwortung. Und mit weniger Tank.', 'Kurze Wege sind die besten Wege.']},
+  reparatur_plus: {n:'Werkstattzuschlag', w:'Instandsetzung 20 % teurer', fx:{reparatur:1.2}, s:['Ersatzteile wachsen nicht auf Bäumen. Wir haben nachgesehen.', 'Wer vorsichtig fährt, spart. So einfach ist das.', 'Die Werkstatt hat neue Stundensätze. Ich auch.']},
+  ausbildung_minus:{n:'Bildungsoffensive', w:'Ausbildung, Lehrgänge und Führerscheine 15 % günstiger', fx:{ausbildung:.85}, s:['Eine gebildete Truppe ist eine starke Truppe.', 'Wir investieren in Köpfe, nicht in Kopierer.', 'Jeder Lehrgang ist ein Schritt nach vorn. Jetzt ein günstigerer.']},
+  kiosk_minus:    {n:'Kaffee für alle', w:'Kasernenkiosk 25 % günstiger', fx:{kiosk:.75}, s:['Eine Truppe marschiert mit ihrem Magen. Und mit Kaffee.', 'Ich war selbst im Kiosk. Die Preise waren eine Zumutung.', 'Moral beginnt beim Frühstück.']},
+  sold_zulage:    {n:'Einsatzbereitschaftszulage', w:'Täglich 10 % Zulage auf den Sold', fx:{sold:.1}, s:['Leistung muss sich lohnen. Ab heute tut sie das.', 'Ein Dankeschön an alle, die jeden Morgen antreten.', 'Wer bleibt, soll merken, dass es sich lohnt.']},
+  beschaffung:    {n:'Beschaffungsoffensive', w:'Fahrzeuge 15 % günstiger', fx:{beschaffung:.85}, s:['Wir beschaffen jetzt schneller, als das Amt Formulare drucken kann.', 'Ein voller Fuhrpark ist ein gutes Signal.', 'Die Halle soll nicht leer stehen.']},
+  unterhalt_minus:{n:'Wartungsoffensive', w:'Fahrzeug-Unterhalt halbiert', fx:{unterhalt:.5}, s:['Der Bund übernimmt die Hälfte der Wartung. Ausnahmsweise.', 'Gute Fahrzeuge brauchen gute Pflege. Die zahlen jetzt wir.', 'Wir lassen niemanden mit seinem Leopard allein.']},
+  reparatur_minus:{n:'Instandsetzungsprogramm', w:'Instandsetzung 30 % günstiger', fx:{reparatur:.7}, s:['Was kaputt ist, wird repariert. Und zwar jetzt.', 'Einsatzbereitschaft ist kein Zufall, sondern ein Programm.', 'Die Werkstätten bekommen endlich wieder Aufträge.']},
+  sprit_minus:    {n:'Tankrabatt', w:'Sprit auf der Lagekarte 30 % günstiger', fx:{sprit:.7}, s:['Der Diesel geht aufs Haus. Zumindest ein Teil davon.', 'Wer hilft, soll nicht an der Zapfsäule scheitern.', 'Volle Tanks für volle Einsatzbereitschaft.']},
+  lieferung:      {n:'Beschaffungsbeschleunigung', w:'Fahrzeuge werden doppelt so schnell geliefert', fx:{lieferung:.5}, s:['Lieferzeiten sind ein Relikt der Vergangenheit. Ab heute nur noch halb so sehr.', 'Das Beschaffungsamt hat einen zweiten Stempel bekommen.', 'Schneller liefern, schneller fahren, schneller helfen.']},
+  dienstlohn:     {n:'Dienstlohn-Plus', w:'Dienste bringen 10 % mehr Geld', fx:{dienstlohn:1.1}, s:['Wer Dienst schiebt, soll es auf dem Konto merken.', 'Fleiß ist die beste Währung. Ab heute zusätzlich zur echten.', 'Ein kleines Plus für den großen Einsatz.']},
+  leistung:       {n:'Leistungsprämie', w:'15 % mehr Beurteilungspunkte', fx:{bp:1.15}, s:['Gute Arbeit soll gesehen werden. Auch vom Spieß.', 'Ich will Bestnoten sehen. Viele davon.', 'Leistung ist kein Zufall, sondern Erlasslage.']},
+  erholung:       {n:'Ruhezeitenerlass', w:'Ausdauer lädt 15 % schneller', fx:{regen:1.15}, s:['Ein ausgeschlafener Soldat ist ein guter Soldat.', 'Auch die Truppe braucht mal eine Pause. Eine kurze.', 'Dennis hat mich überzeugt. Er hat dabei geschlafen.']},
+  lagekarte:      {n:'Amtshilfe-Offensive', w:'Lagekarte bringt 15 % mehr Verdienst', fx:{lk:1.15}, s:['Die Bevölkerung soll sehen, was die Truppe leistet.', 'Jeder Sandsack zählt. Ab heute etwas mehr.', 'Raus aus der Kaserne, rein in die Lage.']},
+  buerokratie:    {n:'Dokumentationspflicht', w:'Dienste dauern 10 % länger, bringen aber 10 % mehr Beurteilungspunkte', fx:{dienstzeit:1.1, bp:1.1}, s:['Was nicht dokumentiert ist, ist nicht passiert.', 'Jeder Dienst bekommt jetzt ein Formular. In dreifacher Ausfertigung.', 'Ordnung beginnt auf dem Papier.']},
+  grosslage:      {n:'Großlagen-Prämie', w:'Großlagen bringen 20 % mehr', fx:{gl:1.2}, s:['Wenn die Kompanie gemeinsam ausrückt, soll sich das lohnen.', 'Großlagen zeigen, was in uns steckt.', 'Teamgeist ist unbezahlbar. Fast.']},
+  kontrolle_plus: {n:'Ordnungsoffensive', w:'Stubendurchgänge doppelt so häufig', fx:{kontrolle:2}, s:['Ein ordentlicher Spind ist ein ordentlicher Charakter.', 'Brockmann bekommt mehr Zeit für Durchgänge. Er freut sich sehr.', 'Ordnung ist das halbe Leben. Die andere Hälfte ist Kontrolle.']},
+  kontrolle_pause:{n:'Kontrollmoratorium', w:'Keine Stubendurchgänge', fx:{kontrolle:0}, s:['Vertrauen ist gut. Diese Woche reicht es.', 'Brockmann ist auf Lehrgang. Wir nutzen die Gelegenheit.', 'Weniger Kontrolle, mehr Eigenverantwortung. Probeweise.']},
+  formaldienst:   {n:'Tradition verpflichtet', w:'Formaldienst, Innendienst und Wache bringen 50 % mehr Geld', fx:{formal:1.5}, s:['Die Grundlagen machen die Truppe aus.', 'Gleichschritt ist keine Nebensache.', 'Wer die Wache ehrt, ehrt die Truppe.']},
+  fax:            {n:'Faxpflicht', w:'Keine spürbare Wirkung: Anträge gehen ab sofort zusätzlich per Fax', fx:{}, s:['Das Fax hat uns nie im Stich gelassen.', 'Digitalisierung heißt auch, das Bewährte zu bewahren.', 'Die Leitung ist sicher. Meistens ist sie besetzt.']},
+  leitbild:       {n:'Neues Leitbild', w:'Keine spürbare Wirkung: neues Logo und 14 neue Kernwerte', fx:{}, s:['Unser neues Leitbild passt auf eine Folie. Eine große.', 'Die Kernwerte wurden in drei Workshops erarbeitet.', 'Wir sind jetzt agil. Das steht jetzt auch auf dem Briefpapier.']},
+  tassen:         {n:'Tassenordnung', w:'Keine spürbare Wirkung: Kaffeetassen müssen beschriftet werden', fx:{}, s:['Jede Tasse hat ab heute einen Verantwortlichen.', 'Die Spülmaschine war ein rechtsfreier Raum. Das ist vorbei.', 'Zuständigkeiten klar regeln. Auch beim Geschirr.']},
+};
+
+function minAktiv(){ const M = ONLINE.min; if(!M || M.err || !M.periode) return null; return now() < new Date(M.periode.bis).getTime() ? MIN_ERL[M.periode.erlass] || null : null; }
+function minFx(k){ const e = minAktiv(); if(!e || !e.fx || e.fx[k] == null) return k === 'sold' ? 0 : 1; return e.fx[k]; }
+// Wirkungen in das Spiel einhängen
+{ const _p = mkPreis; mkPreis = function(w){ return Math.max(2, Math.round(_p(w) * minFx('kiosk'))); }; }
+{ const _u = ukFz; ukFz = function(typ){ const v = _u(typ); return v ? Math.max(1, Math.round(v * minFx('unterhalt'))) : 0; }; }
+{ const _sc = G.statCost; G.statCost = function(id){ return Math.round(_sc.call(G, id) * minFx('ausbildung')); }; }
+{ const _lc = lgCost; lgCost = function(l){ return Math.round(_lc(l) * minFx('ausbildung')); }; }
+{ const _fc = fsCost; fsCost = function(x){ return Math.round(_fc(x) * minFx('ausbildung')); }; }
+{ const _ld = lkDauer; lkDauer = function(a, u){ const d = _ld(a, u); if(d && typeof d.sprit === 'number') d.sprit *= minFx('sprit'); return d; }; }
+{ const _rk = fpRepKosten; fpRepKosten = function(f){ return Math.max(20, Math.round(_rk(f) * minFx('reparatur'))); }; }
+{ const _fp = fpPreis; fpPreis = function(t){ return Math.round(_fp(t) * minFx('beschaffung')); }; }
+{ const _fl = fpLiefer; fpLiefer = function(t){ return _fl(t) * minFx('lieferung'); }; }
+{ const _dp = G.dienstPay; G.dienstPay = function(d){ return Math.round(_dp.call(G, d) * minFx('dienstlohn') * (d && ['formal', 'innen', 'wache'].includes(d.id) ? minFx('formal') : 1)); }; }
+{ const _bm = G.bpMult; G.bpMult = function(){ return _bm.call(G) * minFx('bp'); }; }
+{ const _rm = G.regenMs; G.regenMs = function(){ return _rm.call(G) / minFx('regen'); }; }
+{ const _dm = G.dienstMin; G.dienstMin = function(d){ return _dm.call(G, d) * minFx('dienstzeit'); }; }
+{ const _ll = lkLohn; lkLohn = function(a, t, r, s){ const l = _ll(a, t, r, s); if(l) l.pay = Math.round(l.pay * minFx('lk')); return l; }; }
+if(typeof glBelohnung === 'function'){ const _gb = glBelohnung; glBelohnung = function(e){ const r = _gb(e); const f = minFx('gl'); if(f !== 1){ r.money = Math.round(r.money * f * 10) / 10; r.bp = Math.round(r.bp * f); } return r; }; }
+{ const _kc = koChance; koChance = function(){ return _kc() * minFx('kontrolle'); }; }
+// Zulage auf den Sold: wird mit dem Sold ausgezahlt
+{ const _tk = G.tick; G.tick = function(){
+    const vor = S && S.lastPay, r = _tk.apply(G, arguments);
+    try{
+      const z = minFx('sold');
+      if(S && z > 0 && vor && S.lastPay !== vor){
+        const tage = Math.max(1, Math.min(7, daysBetween(vor, S.lastPay))), b = Math.round(G.rank().sold * tage * z);
+        mkBuchen('min_zulage', () => { S.money += b; });
+        r.events.push('Einsatzbereitschaftszulage vom Ministerium: +' + eur(b)); r.changed = true;
+      }
+    }catch(e){}
+    return r; }; }
+
+/* ---------- Laden und Abstimmen ---------- */
+async function minLoad(force){
+  if(!sb || !USER || ONLINE.minL) return;
+  if(!force && Date.now() - (ONLINE.minTs || 0) < 10 * 60000 && !(ONLINE.min && ONLINE.min.periode && Date.now() >= new Date(ONLINE.min.periode.bis).getTime())) return;
+  ONLINE.minL = true; ONLINE.minTs = Date.now();
+  const { data, error } = await sb.rpc('minister_status');
+  ONLINE.minL = false;
+  ONLINE.min = error ? {err:/minister_status|function/i.test(error.message) ? 'Das Ministerium ist noch nicht eingerichtet.' : error.message} : data;
+  if(tab === 'stube' || tab === 'kaserne' || (tab === 'truppe' && SUB.truppe === 'ministerium')) render();
+}
+setInterval(() => { if(USER && S && !document.hidden) minLoad(); }, 60000);
+{ const _nl4 = wbNachLogin; wbNachLogin = async function(){ await _nl4(); minLoad(true); }; }
+
+/* ---------- Texte: Pressemitteilung aus dem Baukasten ---------- */
+const MIN_AUF = {
+  sparfuchs:['Ich habe heute früh die Bilanzen gelesen. Zum Frühstück.', 'Sparen ist keine Strafe, sondern eine Haltung.', 'Mein Taschenrechner und ich haben uns beraten.', 'Ich komme direkt aus dem Haushaltsausschuss und bin noch etwas blass.', 'Bevor wir über Ausgaben reden: Nein.', 'Ich habe mir die Zahlen dreimal angesehen. Sie wurden nicht besser.'],
+  aufruester:['Die Lage ist ernst, aber die Truppe ist bereit.', 'Ich war heute beim Panzerbataillon. Beeindruckend. Und laut.', 'Wir müssen schneller werden. In allem.', 'Ich will volle Hallen sehen.', 'Bereitschaft ist keine Frage des Geldes. Aber es hilft.', 'Ich habe heute einen Leopard probegefahren. Ich will mehr davon.'],
+  reformer:['Wir haben heute ein neues Strategiepapier vorgestellt. Es hat 140 Seiten und ein schönes Deckblatt.', 'Veränderung beginnt im Kopf. Und im Intranet.', 'Ich habe einen Workshop zum Thema Workshops eingerichtet.', 'Die Bundeswehr wird digitaler. Das Fax bleibt trotzdem.', 'Wir denken neu. Die Formulare bleiben alt.', 'Ich habe heute eine Videokonferenz geleitet. Zwei von drei Teilnehmern hatten Ton.'],
+  traditionalist:['Ich beginne jeden Tag mit einem Blick auf die Truppenfahne.', 'Ordnung, Disziplin und ein gebügeltes Hemd: mehr braucht es nicht.', 'Früher war nicht alles besser. Aber vieles ordentlicher.', 'Ich habe heute einen Spind inspiziert. Ich bin noch erschüttert.', 'Der Gleichschritt ist das Fundament unserer Truppe.', 'Ich habe meinen Schreibtisch heute nach Vorschrift aufgeräumt.'],
+  populist:['Ich war heute an der Basis. Die Basis hat mich erkannt.', 'Liebe Kameradinnen und Kameraden, ich bin einer von euch.', 'Ich habe heute im Kasernenkiosk gefrühstückt. Mitten unter euch.', 'Die Truppe hat gesprochen, und ich habe zugehört. Fast bis zum Ende.', 'Ihr wollt Ergebnisse. Ich will Applaus. Wir haben gemeinsame Ziele.', 'Ich habe heute Selfies mit dem Wachbataillon gemacht. Für die Moral.'],
+};
+const MIN_ENDE = {
+  sparfuchs:['Und jetzt bitte das Licht ausmachen, wenn Sie gehen.', 'Fragen beantworte ich gern. Schriftlich und gebührenpflichtig.', 'Bleiben Sie sparsam.'],
+  aufruester:['Vorwärts!', 'Die Truppe hat meine volle Unterstützung. Und mein Budget.', 'Wir sehen uns im Gelände.'],
+  reformer:['Das Protokoll folgt in der Cloud. Sobald wir eine haben.', 'Feedback gerne über das neue Portal. Passwort folgt per Brief.', 'Gemeinsam gestalten wir den Wandel. Irgendwann.'],
+  traditionalist:['Weitermachen!', 'Mit kameradschaftlichem Gruß.', 'Ich erwarte gebügelte Uniformen.'],
+  populist:['Ihr seid die Besten! Wirklich alle!', 'Vergesst nicht, für mich abzustimmen.', 'Ich bin stolz auf euch. Und ein bisschen auf mich.'],
+};
+const MIN_ENDE_ALLG = ['Vielen Dank, keine weiteren Fragen.', 'Die Pressekonferenz ist beendet. Der Kaffee leider auch.', 'Weitere Informationen folgen auf dem Dienstweg.', 'Mein Sprecher beantwortet keine Fragen.', 'Die Lage wird weiter beobachtet.'];
+// Hauptteil: jeder Baustein prüft selbst, ob er heute passt (null = passt nicht)
+const MIN_KERN = [
+  c => c.kasse != null ? 'Der Haushalt der Truppe steht bei ' + eur(c.kasse) + '. ' + (c.phase === 'ueberschuss' ? 'Das ist viel. Ich bin misstrauisch.' : c.phase === 'knapp' ? 'Das ist zu wenig. Ich bin enttäuscht.' : c.phase === 'schulden' ? 'Das Minus ist nicht schön. Es ist rot.' : 'Das ist in Ordnung. Mehr sage ich dazu nicht.') : null,
+  c => c.kiosk > 0 ? 'Die Truppe hat in den letzten Tagen ' + eur(c.kiosk) + ' im Kasernenkiosk gelassen. Ich sehe darin ein starkes Signal der Einsatzbereitschaft. Und des Hungers.' : null,
+  c => c.kiosk > 0 ? eur(c.kiosk) + ' für Kaffee und Bockwurst. Das Ministerium prüft, ob man den Kiosk zur kritischen Infrastruktur erklären muss.' : null,
+  c => c.lehr > 0 ? 'Für Ausbildung und Lehrgänge wurden ' + eur(c.lehr) + ' ausgegeben. Bildung ist teuer. Unbildung auch, nur später.' : null,
+  c => c.uk > 0 ? 'Der Fahrzeug-Unterhalt hat ' + eur(c.uk) + ' eingebracht. Ich danke allen Fahrzeugen für ihren Dienst.' : null,
+  c => c.buss > 0 ? 'Brockmann hat Disziplinarbußen über ' + eur(c.buss) + ' verhängt. Er bittet mich, auszurichten: Er hat nichts gegen Sie persönlich.' : null,
+  c => c.buss > 0 ? eur(c.buss) + ' an Disziplinarbußen. Die Spinde dieser Truppe sind ein Fall für den Rechnungshof.' : null,
+  c => c.zus > 0 ? 'Der Bund hat gestern ' + eur(c.zus) + ' zugeschossen. Der Finanzminister lässt grüßen. Er lächelt nicht dabei.' : null,
+  c => c.zus === 0 && c.kasse != null ? 'Gestern gab es keinen Bundeszuschuss. Wir kommen alleine klar. Hoffe ich.' : null,
+  c => c.topE ? 'Größte Einnahmequelle der Woche: ' + c.topE + '. Ich habe gelernt, das nicht zu hinterfragen.' : null,
+  c => c.ja + c.nein >= 2 ? 'Mein aktueller Erlass hat ' + Math.round(c.ja / (c.ja + c.nein) * 100) + ' % Zustimmung. ' + (c.ja >= c.nein ? 'Ich nehme das als Auftrag.' : 'Ich nehme das als Missverständnis.') : null,
+  c => c.ja + c.nein >= 3 && c.ja / (c.ja + c.nein) < .4 ? 'Gerüchte über ein Misstrauensvotum weise ich zurück. Mein Büro packt nur zufällig gerade Kisten.' : null,
+  c => c.stimmen > 0 ? c.stimmen + (c.stimmen === 1 ? ' Soldat hat' : ' Soldaten haben') + ' schon über den nächsten Erlass abgestimmt. Demokratie in Uniform, ich bin gerührt.' : null,
+  c => c.stimmen === 0 ? 'Über den nächsten Erlass hat noch niemand abgestimmt. Dann entscheide eben ich. Gern sogar.' : null,
+  c => c.erlass ? 'Der Erlass „' + c.erlass + '“ gilt noch ' + c.rest + '. Danach sehen wir weiter.' : null,
+  c => c.erlass ? 'Mehrere Kameraden haben gefragt, ob der Erlass „' + c.erlass + '“ ernst gemeint ist. Ja.' : null,
+  c => c.vorg ? 'Mein Vorgänger ' + c.vorg + ' hat mir einen Zettel hinterlassen. Darauf steht nur: „Viel Glück.“' : null,
+  c => c.vorg ? 'Ich möchte meinem Vorgänger ' + c.vorg + ' danken. Ohne ihn wäre ich nicht hier. Wirklich nicht.' : null,
+  c => c.perioden >= 6 ? 'Ich bin jetzt seit ' + c.perioden + ' Amtsperioden im Amt. Länger als die meisten Kaffeemaschinen im Ministerium.' : null,
+  c => c.perioden <= 1 ? 'Ich bin neu im Amt und habe mir vorgenommen, alles anders zu machen. Was genau, sage ich später.' : null,
+  c => c.wt === 1 ? 'Ein neuer Montag, ein neuer Erlass. Ich liebe Montage. Als Einziger.' : null,
+  c => c.wt === 5 ? 'Es ist Freitag. Ich erinnere daran: Dienstschluss ist erst, wenn der Spieß es sagt.' : null,
+  c => c.wt === 6 || c.wt === 0 ? 'Auch am Wochenende arbeitet das Ministerium. Zumindest das Faxgerät.' : null,
+  c => c.wt === 4 ? 'Donnerstag ist Erlasstag. Die Druckerei weiß Bescheid.' : null,
+  c => 'Ich habe heute ' + (3 + c.z % 9) + ' Termine wahrgenommen und ' + (1 + c.z % 4) + ' davon verstanden.',
+  c => 'Das Ministerium hat eine Arbeitsgruppe zur Verkürzung von Arbeitsgruppen eingerichtet.',
+  c => 'Mir wurde berichtet, dass in einer Stube Musik nach dem Zapfenstreich lief. Ich verfolge das persönlich.',
+  c => 'Die Kantine meldet einen Engpass bei Senf. Ich habe einen Krisenstab einberufen.',
+  c => 'Das Beschaffungsamt hat einen Antrag aus dem Jahr 2019 bearbeitet. Ich gratuliere zu diesem Meilenstein.',
+  c => 'Ich wurde gefragt, ob die Truppe genug Ausdauer hat. Ich sage: Wer Kaffee hat, hat Ausdauer.',
+  c => 'Ein Rekrut hat mir heute erklärt, wie das Intranet funktioniert. Ich habe ihn sofort befördert. Gedanklich.',
+  c => 'Wir prüfen derzeit, ob man Marschgepäck digitalisieren kann.',
+  c => 'Die neue Dienstvorschrift zum Schuheputzen ist fertig. Sie hat 38 Seiten und ein Glossar.',
+  c => 'Brockmann hat mir einen Brief geschrieben. Handschriftlich. Ich traue mich nicht, ihn zu öffnen.',
+  c => 'Ich habe Kalle gefragt, wo er seine Sachen herbekommt. Er hat nur gelächelt. Das Ministerium ermittelt nicht.',
+  c => 'Die Hindernisbahn wurde neu vermessen. Sie ist genauso lang wie vorher, aber jetzt amtlich.',
+  c => 'Wir haben die Zahl der Formulare um zehn Prozent gesenkt. Dafür gibt es jetzt ein Formular für gesenkte Formulare.',
+  c => c.phase === 'ueberschuss' ? 'Die Kassen sind voll. Ich warne alle davor, jetzt übermütig zu werden. Außer mich.' : null,
+  c => c.phase === 'knapp' || c.phase === 'schulden' ? 'Die Kassen sind knapp. Ich habe heute selbst die Büroklammern gezählt.' : null,
+];
+
+function minHash(n){ n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n = n ^ (n >>> 4); n = Math.imul(n, 0x27d4eb2d); return (n ^ (n >>> 15)) >>> 0; }
+function minTagNr(){ return Math.floor((Date.now() + 36e5) / 864e5); }
+function minCtx(){
+  const H = ONLINE.hh && !ONLINE.hh.err ? ONLINE.hh : null, M = ONLINE.min, n = v => Math.round(Number(v) || 0);
+  const sum = k => { if(!H) return 0; let s = 0; for(const o of [(H.woche || {}).ein || {}, (H.heute_fluss || {}).ein || {}]) for(const key in o) if(k.test(key)) s += n(o[key]); return s; };
+  let topE = null;
+  if(H){ const e = {}; for(const o of [(H.woche || {}).ein || {}, (H.heute_fluss || {}).ein || {}]) for(const k in o){ const kk = typeof hhKat === 'function' ? hhKat(k) : k; e[kk] = (e[kk] || 0) + n(o[k]); } const t = Object.entries(e).sort((a, b) => b[1] - a[1])[0]; if(t && t[1] > 0) topE = t[0]; }
+  const P = M.periode, bis = new Date(P.bis).getTime();
+  return {kasse:H ? n(H.kasse) : null, phase:H ? H.phase : (M.phase || 'normal'), zus:H ? n(H.zuschuss) : null, topE,
+    kiosk:sum(/Kasernenkiosk|Marketenderei/), lehr:sum(/Ausbildung/), uk:sum(/Unterhalt/), buss:sum(/Disziplinar/),
+    ja:n(P.ja), nein:n(P.nein), stimmen:n(P.a) + n(P.b), erlass:MIN_ERL[P.erlass] ? MIN_ERL[P.erlass].n : '', rest:fmtRest(bis - Date.now()),
+    vorg:(M.vorgaenger || [])[0] ? M.vorgaenger[0].name : '', perioden:n(M.minister.perioden), wt:new Date().getDay(), z:minHash(minTagNr() + n(M.minister.seed))};
+}
+// Pressemitteilung des Tages: für alle gleich, wiederholt sich erst nach vielen Wochen
+function minPresse(){
+  const M = ONLINE.min; if(!M || M.err || !M.minister) return '';
+  const c = minCtx(), typ = M.minister.typ, seed = Number(M.minister.seed) || 1, t = minTagNr();
+  const auf = MIN_AUF[typ] || MIN_AUF.populist, ende = (MIN_ENDE[typ] || []).concat(MIN_ENDE_ALLG);
+  // zwei Kernsätze, reihum durch eine je Minister gemischte Reihenfolge
+  const ord = MIN_KERN.map((_, i) => i).sort((a, b) => minHash(a * 7919 + seed) - minHash(b * 7919 + seed));
+  const kern = []; let i = (t * 2) % ord.length, n = 0;
+  while(kern.length < 2 && n < ord.length){ const s = MIN_KERN[ord[i]](c); if(s && !kern.includes(s)) kern.push(s); i = (i + 1) % ord.length; n++; }
+  return [auf[minHash(t * 31 + seed) % auf.length]].concat(kern, [ende[minHash(t * 17 + seed * 3) % ende.length]]).join(' ');
+}
+
+/* ---------- Porträt ---------- */
+function minBild(m, gr){
+  const s = Number(m.seed) || 1, h = k => minHash(s * 131 + k);
+  const haut = ['#F1C9A5', '#E0AC86', '#C68863', '#F5D6BA', '#A86F4C'][h(1) % 5], haar = ['#2B2118', '#6B4A2B', '#A9A9A9', '#D9C27A', '#E8E8E8', '#8A3B1E'][h(2) % 6];
+  const anzug = ['#1F2A44', '#2E2E2E', '#3C4722', '#4A3B2E', '#283C5A'][h(3) % 5], kr = MIN_TYP[m.typ] ? MIN_TYP[m.typ].farbe : '#C0504D';
+  const frisur = h(4) % 5, brille = h(5) % 3 === 0, bart = h(6) % 4 === 0;
+  const haare = [
+    '<path d="M22 30c0-12 8-18 18-18s18 6 18 18c-4-6-10-8-18-8s-14 2-18 8z" fill="' + haar + '"/>',
+    '<path d="M22 32c-1-14 7-21 18-21s19 7 18 21c-2-4-4-6-6-7-6 3-17 3-24-2-3 2-5 5-6 9z" fill="' + haar + '"/>',
+    '<path d="M21 44c-3-20 5-32 19-32s22 12 19 32c-2-8-3-14-6-17-8 4-18 4-26 0-3 3-4 9-6 17z" fill="' + haar + '"/>',
+    '<path d="M24 26c2-8 9-12 16-12s14 4 16 12c-3-2-5-3-6-3l-10 2-10-2c-1 0-4 1-6 3z" fill="' + haar + '"/>',
+    '<path d="M23 30c1-3 2-5 4-6M57 30c-1-3-2-5-4-6" stroke="' + haar + '" stroke-width="4" stroke-linecap="round"/>'][frisur];
+  return '<svg class="minbild" width="' + gr + '" height="' + gr + '" viewBox="0 0 80 80" aria-hidden="true"><rect width="80" height="80" rx="14" fill="#1E2416"/>'
+    + '<rect x="0" y="0" width="80" height="8" fill="#000" opacity=".55"/><rect x="0" y="8" width="80" height="6" fill="#B22222" opacity=".55"/><rect x="0" y="14" width="80" height="6" fill="#E8B33A" opacity=".55"/>'
+    + '<path d="M12 80c2-16 13-24 28-24s26 8 28 24z" fill="' + anzug + '"/><path d="M33 57l7 9 7-9" fill="#F2F2F2"/><path d="M38 60h4l2 18h-8z" fill="' + kr + '"/>'
+    + '<rect x="35" y="48" width="10" height="10" fill="' + haut + '"/><ellipse cx="40" cy="36" rx="16" ry="19" fill="' + haut + '"/>'
+    + (bart ? '<path d="M27 42c2 10 7 14 13 14s11-4 13-14c-3 4-7 5-13 5s-10-1-13-5z" fill="' + haar + '" opacity=".85"/>' : '')
+    + haare + '<circle cx="34" cy="36" r="1.8" fill="#1C2217"/><circle cx="46" cy="36" r="1.8" fill="#1C2217"/>'
+    + (brille ? '<g fill="none" stroke="#1C2217" stroke-width="1.6"><circle cx="34" cy="36" r="5"/><circle cx="46" cy="36" r="5"/><path d="M39 36h2"/></g>' : '')
+    + '<path d="M35 46c3 2 7 2 10 0" stroke="#7A3B2E" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>';
+}
+
+/* ---------- Ansicht ---------- */
+function minBanner(){
+  const M = ONLINE.min; if(!M || M.err || !M.periode || !S || !S.gaDone) return '';
+  const P = M.periode, e = MIN_ERL[P.erlass], heute = dateStr();
+  let titel, text;
+  if(S.minSeen !== P.id && e){ titel = 'Neuer Erlass: ' + e.n; text = e.w; }
+  else if(S.minPresse !== heute){ titel = 'Pressemitteilung des Ministers'; const p = minPresse(); text = p.length > 90 ? p.slice(0, 88).replace(/\s+\S*$/, '') + ' …' : p; }
+  else if(!P.meine){ titel = 'Abstimmung im Ministerium'; text = 'Welcher Erlass kommt als Nächstes? Deine Stimme zählt.'; }
+  else return '';
+  return '<button class="minban" data-act="min_go"><span class="minbb">' + minBild(M.minister, 40) + '</span><span class="mkbx"><b>' + esc(titel) + '</b><span>' + esc(text) + '</span></span><span class="mkgo">›</span></button>';
+}
+function renderMinisterium(){
+  const M = ONLINE.min;
+  if(!M){ minLoad(true); return '<h2>Verteidigungsministerium</h2><div class="panel pad"><p class="muted" style="margin:0">Wird geladen …</p></div>'; }
+  if(M.err) return '<h2>Verteidigungsministerium</h2><div class="panel pad"><p style="margin:0">' + esc(M.err) + '</p></div>';
+  minLoad();
+  const m = M.minister, P = M.periode, T = MIN_TYP[m.typ] || MIN_TYP.populist, e = MIN_ERL[P.erlass], bis = new Date(P.bis).getTime();
+  // gesehen
+  if(S){ if(S.minSeen !== P.id || S.minPresse !== dateStr()){ S.minSeen = P.id; S.minPresse = dateStr(); setTimeout(() => { try{ save(); }catch(x){} }, 0); } }
+  const ja = Number(P.ja) || 0, nein = Number(P.nein) || 0, zp = ja + nein ? Math.round(ja / (ja + nein) * 100) : null;
+  let h = '<h2>Verteidigungsministerium</h2><div class="panel pad minkopf"><div class="minperson">' + minBild(m, 84) + '<div><div class="small muted">Bundesminister der Verteidigung</div><div class="minname">' + esc(m.name) + '</div>'
+    + '<span class="minlinie" style="background:' + T.farbe + '">Linie: ' + esc(T.linie) + '</span><div class="small muted" style="margin-top:4px">im Amt seit ' + new Date(m.ab).toLocaleDateString('de-DE') + ' · ' + (Number(m.perioden) + 1) + '. Amtsperiode</div></div></div>'
+    + '<p class="minmotto">„' + esc(T.motto) + '“</p>'
+    + '<div class="minpresse"><b>Pressemitteilung vom ' + new Date().toLocaleDateString('de-DE', {weekday:'long', day:'numeric', month:'long'}) + '</b><p>' + esc(minPresse()) + '</p></div></div>';
+  // Aktueller Erlass
+  h += '<h2>Aktueller Erlass</h2><div class="panel pad minerl">';
+  if(e){
+    h += '<div class="minerlk"><span class="minstempel">ERLASS</span><div><div class="minerln">' + esc(e.n) + '</div><div class="minerlw">' + esc(e.w) + '</div></div></div>'
+      + '<p class="minzitat">„' + esc(e.s[minHash(P.id * 7 + (Number(m.seed) || 1)) % e.s.length]) + '“</p>'
+      + '<p class="small muted" style="margin:6px 0 10px">' + (P.quelle === 'truppe' ? 'Von der Truppe gewählt.' : 'Vom Minister angeordnet.') + ' Gilt noch <span data-mkend="' + bis + '">' + fmtLeft(bis - Date.now()) + '</span>.</p>'
+      + '<div class="minbew"><span class="small">Wie findest du den Erlass?' + (zp != null ? ' Zustimmung bisher <b>' + zp + ' %</b> (' + (ja + nein) + ' Stimmen)' : '') + '</span>'
+      + '<div class="minbewb"><button class="btn mini' + (P.bewertet === 'ja' ? '' : ' ghost') + '" data-act="min_bew" data-id="ja">👍 Gut</button><button class="btn mini' + (P.bewertet === 'nein' ? '' : ' ghost') + '" data-act="min_bew" data-id="nein">👎 Schlecht</button></div></div>'
+      + '<p class="small muted" style="margin:8px 0 0">Liegt die Zustimmung am Ende der Amtsperiode unter 35 % (ab 3 Stimmen), stellt die Truppe die Vertrauensfrage, und ein neuer Minister übernimmt.</p>';
+  }
+  h += '</div>';
+  // Abstimmung
+  const A = MIN_ERL[P.opt_a], B = MIN_ERL[P.opt_b], na = Number(P.a) || 0, nb = Number(P.b) || 0, sum = Math.max(1, na + nb);
+  h += '<h2>Abstimmung über den nächsten Erlass</h2><div class="panel pad"><p class="small muted" style="margin:0 0 10px">Ab ' + new Date(bis).toLocaleDateString('de-DE', {weekday:'long'}) + ', ' + new Date(bis).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + ' Uhr gilt der Erlass mit den meisten Stimmen. Stimmt niemand ab oder steht es unentschieden, entscheidet der Minister.</p>'
+    + [['a', A, na], ['b', B, nb]].filter(x => x[1]).map(([k, X, n]) => '<button class="minopt' + (P.meine === k ? ' an' : '') + '" data-act="min_wahl" data-id="' + k + '"><span class="minoptk"><b>' + esc(X.n) + '</b>' + (k === 'a' ? '<span class="minfav">Empfehlung des Ministers</span>' : '') + '</span><span class="small">' + esc(X.w) + '</span>'
+      + '<span class="minbar"><i style="width:' + Math.round(n / sum * 100) + '%"></i></span><span class="small muted">' + n + ' Stimme' + (n === 1 ? '' : 'n') + (P.meine === k ? ' · deine Wahl' : '') + '</span></button>').join('')
+    + '<p class="small muted" style="margin:8px 0 0">' + (P.meine ? 'Du kannst deine Stimme bis zum Ende der Abstimmung ändern.' : 'Tippe auf einen Vorschlag, um abzustimmen.') + '</p></div>';
+  // Verlauf
+  const v = M.verlauf || [];
+  if(v.length) h += '<h2>Frühere Erlasse</h2><div class="panel">' + v.map(x => { const X = MIN_ERL[x.erlass]; const z = (Number(x.ja) || 0) + (Number(x.nein) || 0);
+      return '<div class="row"><div class="info"><div class="title">' + esc(X ? X.n : x.erlass) + '</div><div class="meta">' + new Date(x.ab).toLocaleDateString('de-DE') + ' bis ' + new Date(x.bis).toLocaleDateString('de-DE') + ' · ' + esc(x.minister) + (x.quelle === 'truppe' ? ' · von der Truppe gewählt' : '') + '</div></div><span class="small muted">' + (z ? Math.round(x.ja / z * 100) + ' % dafür' : '') + '</span></div>'; }).join('') + '</div>';
+  const vg = M.vorgaenger || [];
+  if(vg.length) h += '<h2>Ehemalige Minister</h2><div class="panel">' + vg.map(x => '<div class="row"><div style="display:flex;gap:10px;align-items:center">' + minBild(x, 36) + '<div class="info"><div class="title">' + esc(x.name) + '</div><div class="meta">Linie: ' + esc((MIN_TYP[x.typ] || {}).linie || '') + ' · ' + (Number(x.perioden) || 0) + ' Amtsperioden</div></div></div><span class="small muted">' + ({misstrauen:'Misstrauensvotum', umbildung:'Kabinettsumbildung', admin:'abberufen', start:''}[x.grund] || '') + '</span></div>').join('') + '</div>';
+  return h;
+}
+function minAdminHtml(){
+  return '<div class="panel pad adm"><h3>Verteidigungsministerium</h3><p class="small muted">Zum Testen: Amtsperiode sofort beenden (die Abstimmung wird ausgezählt) oder den Minister austauschen.</p>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" data-act="adm_min" data-id="periode">Amtsperiode beenden</button><button class="btn ghost" data-act="adm_min" data-id="minister">Minister austauschen</button></div></div>';
+}
+{ const _ra6 = renderAdmin; renderAdmin = function(){ const h = _ra6(); return h ? h + minAdminHtml() : h; }; }
+Object.assign(ACT, {
+  min_go(){ const mh = document.getElementById('modalHost'); if(mh) mh.innerHTML = ''; goPage('truppe'); SUB.truppe = 'ministerium'; render(); window.scrollTo(0, 0); },
+  async min_wahl(k){
+    const { error } = await sb.rpc('minister_abstimmen', {p_wahl:k});
+    if(error){ toast(error.message); return; }
+    if(ONLINE.min && ONLINE.min.periode){ const P = ONLINE.min.periode; if(P.meine && P.meine !== k) P[P.meine] = Math.max(0, (Number(P[P.meine]) || 0) - 1); if(P.meine !== k) P[k] = (Number(P[k]) || 0) + 1; P.meine = k; }
+    toast('Stimme abgegeben.'); render(); minLoad(true);
+  },
+  async min_bew(k){
+    const { error } = await sb.rpc('minister_bewerten', {p_ja:k === 'ja'});
+    if(error){ toast(error.message); return; }
+    if(ONLINE.min && ONLINE.min.periode){ const P = ONLINE.min.periode; if(P.bewertet && P.bewertet !== k) P[P.bewertet] = Math.max(0, (Number(P[P.bewertet]) || 0) - 1); if(P.bewertet !== k) P[k] = (Number(P[k]) || 0) + 1; P.bewertet = k; }
+    toast(k === 'ja' ? 'Der Minister bedankt sich.' : 'Der Minister hat es zur Kenntnis genommen.'); render(); minLoad(true);
+  },
+  async adm_min(k){
+    const { error } = await sb.rpc('admin_minister', {p_aktion:k});
+    if(error){ toast(/admin_minister|function/i.test(error.message) ? 'Bitte zuerst stillgestanden_ministerium.sql ausführen.' : error.message); return; }
+    toast(k === 'periode' ? 'Amtsperiode beendet.' : 'Neuer Minister vereidigt.'); await minLoad(true); render();
+  },
+});
+// Einbindung: Reiter, Kachel, Seite
+{ const i = SUBS.truppe.findIndex(x => x.id === 'haushalt'); SUBS.truppe.splice(i + 1, 0, {id:'ministerium', label:'Ministerium', src:'ministerium', match:['Verteidigungsministerium', 'Aktueller Erlass', 'Abstimmung über den nächsten Erlass', 'Frühere Erlasse', 'Ehemalige Minister']}); }
+{ const _ps2 = pageSrc; pageSrc = function(src){ return src === 'ministerium' ? (USER ? renderMinisterium() : '') : _ps2(src); }; }
+{ const _kt4 = kTiles; kTiles = function(){ const l = _kt4(); const M = ONLINE.min;
+    const i = l.findIndex(x => x.go === 'truppe:haushalt');
+    const offen = M && !M.err && M.periode && S && (!M.periode.meine || S.minSeen !== M.periode.id);
+    const t = {grp:'Kameraden', go:'truppe:ministerium', label:'Verteidigungsministerium', ok:!!USER, badge:offen ? 1 : 0, ic:'<path d="M12 3l8 4H4z"/><path d="M5 9v8M9.5 9v8M14.5 9v8M19 9v8M3 20h18"/><circle cx="12" cy="5.6" r=".6"/>',
+      info:M && !M.err && M.periode && MIN_ERL[M.periode.erlass] ? 'Erlass: ' + MIN_ERL[M.periode.erlass].n : 'Minister, Erlass, Abstimmung'};
+    if(i >= 0) l.splice(i + 1, 0, t); else l.push(t); return l; }; }
+if(typeof WIRT_KAT !== 'undefined') WIRT_KAT.unshift([/^min_/, 'Belohnungen und Ereignisse']);
 
 /* =========================================================
    START
