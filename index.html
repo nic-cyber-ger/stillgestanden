@@ -868,6 +868,8 @@ body.tippen .nav,body.tippen .chatfab,body.tippen .chatping{display:none!importa
 .fbk{display:flex;gap:10px;align-items:center;text-align:left;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
 .fbk.an{border-color:var(--signal);background:color-mix(in srgb,var(--signal) 10%,var(--surface))}.fbk[disabled]{opacity:.55;cursor:default}
 .fbk .fbic{font-size:28px;line-height:1}.fbk>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px}.fbk .mkgo{font-size:22px;color:var(--muted)}
+
+.mkregal{font:700 14px 'Barlow Condensed','Barlow',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:var(--signal);margin:14px 0 8px}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4514,6 +4516,10 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:40, d:'27.11.2026', t:'Größeres Sortiment im Kasernenkiosk', p:[
+    'Sieben neue Waren: Belegtes Brötchen, Proteinriegel (Ausbildung schneller), Lernkarteikarten (Ausbildung günstiger), Ersatzakkus (mehr Verdienst auf der Lagekarte), Kfz-Pflegeset (günstigere Instandsetzung), Stiefelfett (halbe Buße beim Stubendurchgang) und das Überraschungspaket von Kalle',
+    'Der Kiosk ist jetzt in drei Regale sortiert: Verpflegung, Dienst und Ausbildung, Kameradschaft und Überraschungen'
+  ]},
   {v:39, d:'27.11.2026', t:'Aufgeräumt: Feierabend und Kameraden', p:[
     'Leergut und Schrauberecke sind jetzt ein gemeinsamer Feierabend-Bereich mit Übersicht. Eine Kachel statt zwei',
     'Neue Seite „Kameraden“: Steckbrief, Personensuche und Ranglisten an einem Ort',
@@ -11301,6 +11307,59 @@ if(typeof renderSuche === 'function'){
 Object.assign(ACT, {
   fb_zu(t){ const h = [...document.querySelectorAll('main h2')].find(x => x.textContent.trim().startsWith(t)); if(h){ const y = h.getBoundingClientRect().top + scrollY - ((document.getElementById('top') || {}).offsetHeight || 0) - 12; window.scrollTo({top:y, behavior:'smooth'}); } },
 });
+
+
+/* =========================================================
+   KASERNENKIOSK: ERWEITERTES SORTIMENT
+   Neue Waren mit Wirkung auf Ausbildung, Lagekarte, Fuhrpark und Stubendurchgang,
+   dazu das Überraschungspaket. Sortiert in drei Regale.
+   ========================================================= */
+const MK_NEU = [
+  {id:'broetchen', name:'Belegtes Brötchen', ic:'🥪', p:.12, max:3, st:20, fx:'+20 Ausdauer', g:'verpflegung',
+   desc:'Käse oder Salami. Wer zu spät kommt, kriegt das mit dem Ei.'},
+  {id:'riegel', name:'Proteinriegel', ic:'💪', p:.28, max:1, dauer:240, fx:'4 Std.: Ausbildung 15 % schneller', g:'verpflegung',
+   desc:'Schmeckt nach Pappe mit Schokogeschmack. Lena schwört drauf.'},
+  {id:'karten', name:'Lernkarteikarten', ic:'🗂️', p:.35, max:1, dauer:240, fx:'4 Std.: Ausbildung 10 % günstiger', g:'dienst',
+   desc:'Handbeschriftet vom Jahrgang davor. Mit Kaffeeflecken und Randnotizen.'},
+  {id:'akkus', name:'Ersatzakkus fürs Funkgerät', ic:'🔋', p:.45, max:1, dauer:240, fx:'4 Std.: Lagekarte 10 % mehr Verdienst', g:'dienst',
+   desc:'Wer funkt, wird gehört. Wer nicht funkt, wird gesucht.'},
+  {id:'pflegeset', name:'Kfz-Pflegeset', ic:'🧽', p:.3, max:1, dauer:360, fx:'6 Std.: Instandsetzung 15 % günstiger', g:'dienst',
+   desc:'Politur, Mikrofasertuch und ein Duftbaum in Tarnfleck.'},
+  {id:'stiefelfett', name:'Stiefelfett und Bürste', ic:'🥾', p:.18, max:1, dauer:1440, fx:'24 Std.: Disziplinarbußen beim Stubendurchgang halbiert', g:'dienst',
+   desc:'Glänzende Stiefel lenken vom Rest des Spinds ab. Manchmal.'},
+  {id:'paket', name:'Überraschungspaket von Kalle', ic:'🎁', p:.55, max:1, paket:1, fx:'Ein Feldpost-Paket mit Inhalt fürs Sammelalbum', g:'kamerad',
+   desc:'Kalle sagt, es ist „was Gutes“. Mehr sagt er nicht.'},
+];
+for(const w of MK_NEU){ if(!MK_I[w.id]){ MK_WAREN.push(w); MK_I[w.id] = w; } }
+const MK_GRUPPE = {kaffee:'verpflegung', bockwurst:'verpflegung', energy:'verpflegung', epa:'verpflegung', puder:'dienst', zeitung:'dienst', runde:'kamerad'};
+for(const w of MK_WAREN) if(!w.g) w.g = MK_GRUPPE[w.id] || 'verpflegung';
+const MK_REGAL = [['verpflegung', 'Verpflegung'], ['dienst', 'Dienst und Ausbildung'], ['kamerad', 'Kameradschaft und Überraschungen']];
+// Waren nach Regal ordnen (gleiche Reihenfolge wie die Anzeige)
+{ const ord = MK_REGAL.map(r => r[0]); MK_WAREN.sort((a, b) => ord.indexOf(a.g) - ord.indexOf(b.g)); }
+
+// Wirkungen
+{ const _sm = G.statMin; G.statMin = function(id){ return _sm.call(G, id) * (mkAktiv('riegel') ? .85 : 1); }; }
+{ const _sc2 = G.statCost; G.statCost = function(id){ return Math.round(_sc2.call(G, id) * (mkAktiv('karten') ? .9 : 1)); }; }
+{ const _ll2 = lkLohn; lkLohn = function(a, t, r, s){ const l = _ll2(a, t, r, s); if(l && mkAktiv('akkus')) l.pay = Math.round(l.pay * 1.1); return l; }; }
+{ const _rk2 = fpRepKosten; fpRepKosten = function(f){ return Math.max(20, Math.round(_rk2(f) * (mkAktiv('pflegeset') ? .85 : 1))); }; }
+{ const _kb = koBusse; koBusse = function(v){ return Math.max(mkAktiv('stiefelfett') ? 0 : 5, Math.round(_kb(v) * (mkAktiv('stiefelfett') ? .5 : 1))); }; }
+// Überraschungspaket: Feldpost-Paket gutschreiben
+{ const _mkk = mkKaufen; mkKaufen = function(id){ const e = _mkk(id); if(!e && MK_I[id] && MK_I[id].paket){ S.pakete = Math.min(9, (S.pakete || 0) + MK_I[id].paket); } return e; }; }
+
+// Anzeige in Regalen
+{ const _rmR = renderMarketenderei; renderMarketenderei = function(){
+    let h = _rmR(); const a = h.indexOf('<div class="mkwaren">'); if(a < 0) return h;
+    let first = true;
+    for(const [g, name] of MK_REGAL){
+      const w = MK_WAREN.find(x => x.g === g); if(!w) continue;
+      const key = '<span class="mkic" aria-hidden="true">' + w.ic + '</span><span><b>' + esc(w.name) + '</b>';
+      const k = h.indexOf(key); if(k < 0) continue;
+      const card = h.lastIndexOf('<div class="panel pad mkw">', k); if(card < 0) continue;
+      const kopf = '<div class="mkregal">' + name + '</div>';
+      if(first){ const s = h.indexOf('<div class="mkwaren">'); h = h.slice(0, s) + kopf + h.slice(s); first = false; }
+      else h = h.slice(0, card) + '</div>' + kopf + '<div class="mkwaren">' + h.slice(card);
+    }
+    return h; }; }
 
 /* =========================================================
    START
