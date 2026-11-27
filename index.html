@@ -821,6 +821,16 @@ body.tippen .nav,body.tippen .chatfab,body.tippen .chatping{display:none!importa
 .hhst{display:flex;gap:4px}.hhst span{flex:1;text-align:center;padding:6px 2px;border-radius:8px;font:700 12px 'Barlow',sans-serif;background:var(--surface2,#1B2318);color:var(--muted,#A3AC97)}.hhst span.an{color:#14180E}
 .hhreg{margin:10px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:5px;line-height:1.4}
 .hhf{font-size:13px;color:var(--muted,#A3AC97)}.hhf input{display:block;width:100%;box-sizing:border-box;margin:3px 0 2px}
+
+/* Marketenderei, Unterhalt, Stubendurchgang */
+.mkban{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:10px 12px;border-radius:12px;border:1.5px solid var(--stamp);background:color-mix(in srgb,var(--stamp) 12%,var(--surface));color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.mkban .mkbi{font-size:22px;line-height:1}.mkban .mkbx{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.mkban .mkbx span{font-size:14px;color:var(--muted)}.mkban .mkgo{font-size:22px;color:var(--muted)}
+.mkakt{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}.mkakt>span{padding:6px 10px;border-radius:999px;background:color-mix(in srgb,var(--signal) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--signal) 45%,transparent);font-size:14px}
+.mkwaren{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-bottom:8px}.mkwaren .panel{margin:0}
+.mkw{display:flex;flex-direction:column}.mkh{display:flex;gap:10px;align-items:flex-start}.mkic{font-size:28px;line-height:1}.mkh b{display:block}.mkfx{display:block;font-size:14px;color:var(--ok);margin-top:2px}
+.mkf{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}
+.ukbox{display:flex;flex-direction:column;gap:3px;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:var(--surface2);border:1px solid var(--line)}.ukbox b{font-size:17px}
+.koerg{text-align:center;margin:8px 0 4px}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4467,6 +4477,12 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:35, d:'27.11.2026', t:'Kasernenkiosk, Unterhalt und Stubendurchgang', p:[
+    'Neu in der Kaserne: der Kasernenkiosk. Kaffee und Bockwurst für Ausdauer, Energydrink, Fußpuder, EPa und Truppenzeitung für Wirkungen über mehrere Stunden. Jede Ware gibt es nur begrenzt pro Tag',
+    'Fahrzeuge kosten jetzt täglich Unterhalt für Wartung und Stellplatz. Die Unimogs der Fahrbereitschaft zahlt der Bund, die Kfz-Werkstatt senkt die Kosten. Fahrzeuge, die du nicht brauchst, kannst du ausmustern',
+    'Stubendurchgang: An manchen Tagen kündigt Brockmann eine Kontrolle an. Bring deinen Spind rechtzeitig in Ordnung, sonst gibt es eine Disziplinarbuße',
+    'Alles, was du im Kasernenkiosk, für Unterhalt und Bußen zahlst, fließt in den Haushalt der Truppe'
+  ]},
   {v:34, d:'27.11.2026', t:'Strengere Beurteilung', p:[
     'Die Noten „sehr gut“ und „gut“ sind deutlich schwerer. Pro Tag zählen Punkte bis zum Tagessoll voll, alles darüber nur zu 20 %',
     'Für die Bestnote musst du die ganze Woche dranbleiben, ein langer Abend reicht nicht mehr. „Befriedigend“ und schlechter bleiben wie bisher',
@@ -5832,7 +5848,7 @@ function renderFuhrpark(){
   const typen = LK_FZ.filter(t => FP_PREIS[t.id] && zuTsk(t));
   const kann = typen.filter(t => !t.fs || fsHas(t.fs)), zu = typen.filter(t => t.fs && !fsHas(t.fs));
   h += '<h2>Beschaffung</h2><p class="small muted" style="margin-top:-4px">Anträge gehen an das Beschaffungsamt. Du zahlst den Eigenanteil, die Lieferzeit ist verbindlich. Sagen sie.' + (voll ? ' <b>Kein Stellplatz frei:</b> erst die Fahrzeughalle ausbauen.' : '') + '</p>'
-    + '<div class="fpkat">' + kann.map(t => '<div class="fpk"><span class="lkbig">' + t.ic + '</span><span class="fpi"><b>' + esc(t.name) + '</b><span class="small muted">' + t.cap.map(c => LK_CAP[c]).join(', ') + ' · ' + t.v + ' km/h · ' + (t.sp || .35).toFixed(2).replace('.', ',') + ' €/km · Lieferung ' + fmtMin(fpLiefer(t.id) / S.speed) + '</span></span>'
+    + '<div class="fpkat">' + kann.map(t => '<div class="fpk"><span class="lkbig">' + t.ic + '</span><span class="fpi"><b>' + esc(t.name) + '</b><span class="small muted">' + t.cap.map(c => LK_CAP[c]).join(', ') + ' · ' + t.v + ' km/h · ' + (t.sp || .35).toFixed(2).replace('.', ',') + ' €/km · Unterhalt ' + eur(ukFz(t.id)) + '/Tag · Lieferung ' + fmtMin(fpLiefer(t.id) / S.speed) + '</span></span>'
       + '<button class="btn mini" data-act="fp_kauf" data-id="' + t.id + '" ' + (voll || S.money < fpPreis(t.id) ? 'disabled' : '') + '>' + eur(fpPreis(t.id)) + '</button></div>').join('')
     + zu.map(t => { const fs = FS_I[t.fs]; return '<div class="fpk zu"><span class="lkbig">' + t.ic + '</span><span class="fpi"><b>' + esc(t.name) + '</b><span class="small muted">' + (fs && fs.off ? 'Kommt später ins Spiel' : 'Benötigt den Schein ' + esc(fs ? fs.name : t.fs)) + '</span></span><span class="small muted">' + eur(FP_PREIS[t.id]) + '</span></div>'; }).join('') + '</div>';
   return h;
@@ -5848,7 +5864,7 @@ function fpOpen(uid){
   } else akt = '<p class="small muted">' + s.txt + (s.end ? ', noch ' + fmtLeft(s.end - now()) : '') + '.</p>';
   host.innerHTML = '<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="fpt"><div class="sheet ev" style="text-align:left"><div class="lkhead"><span class="lkbig">' + t.ic + '</span><div><div class="evname" id="fpt">' + esc(t.name) + '</div><div class="small muted"><span class="fpkz">' + esc(f.kz) + '</span> ' + s.txt + '</div></div></div>'
     + (f.liefer ? '' : '<div class="fpz" style="margin:12px 0 4px">' + fpBalken(f.zust) + '<b>' + f.zust + ' %</b></div>')
-    + facts([['Fähigkeiten', t.cap.map(c => LK_CAP[c]).join(', ')], ['Tempo', t.v + ' km/h' + (f.zust < 50 ? ' (−15 % wegen Zustand)' : '')], ['Sprit', (t.sp || .35).toFixed(2).replace('.', ',') + ' € je km' + (f.zust < 50 ? ' (+10 % wegen Zustand)' : '')], ['Kilometer', Math.round(f.km || 0).toLocaleString('de-DE') + ' km'], ['Restwert', eur(fpWert(f))]])
+    + facts([['Fähigkeiten', t.cap.map(c => LK_CAP[c]).join(', ')], ['Tempo', t.v + ' km/h' + (f.zust < 50 ? ' (−15 % wegen Zustand)' : '')], ['Sprit', (t.sp || .35).toFixed(2).replace('.', ',') + ' € je km' + (f.zust < 50 ? ' (+10 % wegen Zustand)' : '')], ['Unterhalt', ukFz(f.typ) ? eur(ukFz(f.typ)) + ' pro Tag' : 'zahlt der Bund'], ['Kilometer', Math.round(f.km || 0).toLocaleString('de-DE') + ' km'], ['Restwert', eur(fpWert(f))]])
     + '<div style="margin-top:12px">' + akt + '</div><button class="btn ghost wide" data-act="close" style="margin-top:8px">Schließen</button></div></div>';
 }
 function fpUpdate(){
@@ -6603,7 +6619,7 @@ function renderStube(){
   const prevN = note < 5 ? noteMin(note) : 0;
   const pct = nextN ? Math.min(100,(pts-prevN)/(nextN-prevN)*100) : 100;
   const gs = gsFortschritt();
-  let h = xcdBanner() + (typeof spendeBanner === 'function' ? spendeBanner() : '') + (typeof glBanner === 'function' ? glBanner() : '') + (typeof hhBanner === 'function' ? hhBanner() : '') + (typeof ltBanner === 'function' ? ltBanner() : '') + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
+  let h = xcdBanner() + (typeof spendeBanner === 'function' ? spendeBanner() : '') + (typeof glBanner === 'function' ? glBanner() : '') + (typeof hhBanner === 'function' ? hhBanner() : '') + (typeof mkBanner === 'function' ? mkBanner() : '') + (typeof ltBanner === 'function' ? ltBanner() : '') + '<div class="ausweis tap" data-act="main" data-id="akte" role="button" tabindex="0" aria-label="Stammakte öffnen"><span class="akgo">Stammakte ›</span><span class="gsring">'+gsRing(gs.p)+insignia(S.rank,40)+'</span>'
     + '<div><div class="small muted">'+esc(GROUPS[r.g])+'</div><div class="rank">'+esc(r.name)+'</div>'
     + '<div class="name">'+esc(S.name)+(S.verw ? ' · '+esc(VERW[S.verw].name) : '')+'</div>'
     + '<div class="small muted">Tagessold '+eur(r.sold)+(S.standort ? ' · '+esc(S.standort.ort) : '')+'</div>'
@@ -10319,6 +10335,242 @@ async function slJpKnacken(){
 
 // Als App installierbar machen
 if('serviceWorker' in navigator && location.protocol === 'https:'){ window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {})); }
+
+
+/* =========================================================
+   MARKETENDEREI, FAHRZEUG-UNTERHALT UND STUBENDURCHGANG
+   Geld fließt aus dem Spiel zurück in den Haushalt:
+   - Marketenderei: kleine Waren mit kurzer Wirkung, Tageslimit je Ware
+   - Unterhalt: jedes Fahrzeug kostet täglich Wartung und Stellplatz
+   - Stubendurchgang: angekündigte Kontrolle durch den Spieß, sonst Disziplinarbuße
+   ========================================================= */
+const MK_WAREN = [
+  {id:'kaffee', name:'Kaffee, schwarz', ic:'☕', p:.08, max:4, st:15, fx:'+15 Ausdauer',
+   desc:'Filterkaffee aus der Thermoskanne. Seit 1987 dieselbe Kanne, seit 1987 derselbe Geschmack.'},
+  {id:'bockwurst', name:'Bockwurst mit Brötchen', ic:'🌭', p:.18, max:2, st:30, fx:'+30 Ausdauer',
+   desc:'Senf gibt es nur auf Nachfrage. Nachfragen kostet Überwindung.'},
+  {id:'energy', name:'Energydrink', ic:'⚡', p:.22, max:2, dauer:120, fx:'2 Std.: neue Dienste 15 % kürzer',
+   desc:'Dose mit Flügeln. Der Spieß sieht es nicht gern, die Uhr schon.'},
+  {id:'puder', name:'Fußpuder und Blasenpflaster', ic:'🩹', p:.16, max:1, dauer:240, fx:'4 Std.: Dienste kosten 15 % weniger Ausdauer',
+   desc:'Wer einmal mit Blasen marschiert ist, kauft das im Zehnerpack.'},
+  {id:'epa', name:'Einmannpackung (EPa)', ic:'🥫', p:.3, max:1, dauer:180, fx:'3 Std.: Ausdauer lädt 50 % schneller',
+   desc:'Gulasch mit Kartoffeln, Hartkeks, Schmelzkäse. Hält länger als jede Freundschaft.'},
+  {id:'zeitung', name:'Truppenzeitung', ic:'📰', p:.25, max:1, dauer:240, fx:'4 Std.: 10 % mehr Beurteilungspunkte',
+   desc:'Wer weiß, was in der Truppe los ist, kann in der Besprechung mitreden.'},
+  {id:'runde', name:'Eine Runde für die Stube', ic:'🍻', p:.5, max:1, rel:{kalle:3, lena:3, dennis:3}, fx:'Kalle, Lena und Dennis +3 Ansehen',
+   desc:'Alkoholfrei, versteht sich. Offiziell.'},
+];
+const MK_I = Object.fromEntries(MK_WAREN.map(w => [w.id, w]));
+const UK_SATZ = .0008;       // Unterhalt je Tag in Anteil vom Neupreis
+const UK_TAGE_MAX = 7;       // höchstens so viele Tage werden nachberechnet
+const KO_CHANCE = .35;       // Chance je Tag auf einen Stubendurchgang
+
+function mkState(){
+  if(!S.mk || typeof S.mk !== 'object') S.mk = {};
+  const m = S.mk, heute = dateStr();
+  if(m.tag !== heute){ m.tag = heute; m.kauf = {}; }
+  if(!m.kauf) m.kauf = {};
+  if(!m.buff) m.buff = {};
+  for(const k in m.buff) if(m.buff[k] <= now()) delete m.buff[k];
+  return m;
+}
+function mkAktiv(id){ return !!(S && S.mk && S.mk.buff && S.mk.buff[id] > now()); }
+// Preise wachsen mit dem Tagessold; in der Haushaltssperre wird es teurer
+function mkPreis(w){ const f = typeof hhKosten === 'function' ? hhKosten() : 1; return Math.max(2, Math.round(G.rank().sold * w.p * f)); }
+function mkRest(w){ return Math.max(0, w.max - (mkState().kauf[w.id] || 0)); }
+// Geldfluss sauber der richtigen Kategorie zuordnen (für Haushalt und Wirtschaftsstatistik)
+function mkBuchen(kat, fn){
+  try{ if(typeof wirtBuchen === 'function') wirtBuchen(); }catch(e){}
+  fn();
+  try{ if(typeof wirtBuchen === 'function'){ WIRT_ACT = {n:kat, t:Date.now()}; wirtBuchen(); WIRT_ACT = {n:'', t:0}; } }catch(e){}
+}
+function mkKaufen(id){
+  const w = MK_I[id]; if(!w) return 'Gibt es hier nicht.';
+  if(!S.gaDone) return 'Der Kasernenkiosk öffnet nach der Grundausbildung.';
+  if(!mkRest(w)) return 'Für heute ausverkauft. Morgen wieder.';
+  const p = mkPreis(w); if(S.money < p) return 'Dafür reicht dein Geld nicht.';
+  if(w.st){ G.normStamina(); if(S.stamina >= G.maxStamina()) return 'Deine Ausdauer ist schon voll.'; }
+  const m = mkState();
+  mkBuchen('mk_kauf', () => { S.money -= p; });
+  m.kauf[id] = (m.kauf[id] || 0) + 1;
+  if(w.st){ G.normStamina(); S.stamina = Math.min(G.maxStamina(), S.stamina + w.st); }
+  if(w.dauer) m.buff[id] = Math.max(now(), m.buff[id] || 0) + w.dauer * 60000 / S.speed;
+  if(w.rel) for(const [k, v] of Object.entries(w.rel)) S.rel[k] = Math.max(-100, Math.min(100, (S.rel[k] || 0) + v));
+  return null;
+}
+// Wirkungen
+{ const _bm = G.bpMult; G.bpMult = function(){ return _bm.call(G) * (mkAktiv('zeitung') ? 1.1 : 1); }; }
+{ const _dm = G.dienstMin; G.dienstMin = function(d){ return _dm.call(G, d) * (mkAktiv('energy') ? .85 : 1); }; }
+{ const _ds = G.dienstSt; G.dienstSt = function(d){ return Math.round(_ds.call(G, d) * (mkAktiv('puder') ? .85 : 1)); }; }
+{ const _rm = G.regenMs; G.regenMs = function(){ return _rm.call(G) / (mkAktiv('epa') ? 1.5 : 1); }; }
+
+/* ---------- Fahrzeug-Unterhalt ---------- */
+// Die Unimogs der Fahrbereitschaft zahlt der Bund, alles andere kostet Wartung und Stellplatz
+function ukFz(typ){ if(typ === 'unimog') return 0; return Math.max(1, Math.round((FP_PREIS[typ] || 1000) * UK_SATZ * (1 - .1 * (S && S.lk && S.lk.fp ? fpBau('werkstatt') : 0)))); }
+function ukListe(){ return S && S.lk && S.lk.fp ? S.lk.fp.liste.filter(f => !f.liefer) : []; }
+function ukTag(){ return ukListe().reduce((a, f) => a + ukFz(f.typ), 0); }
+function ukTick(events){
+  if(!S.lk || !S.lk.fp) return false;
+  const m = mkState(), heute = dateStr();
+  if(!m.ukTag){ m.ukTag = heute; return true; }          // Start: ab morgen wird abgerechnet
+  if(m.ukTag === heute) return false;
+  const tage = Math.max(1, Math.min(UK_TAGE_MAX, daysBetween(m.ukTag, heute))); m.ukTag = heute;
+  const summe = ukTag() * tage; if(!summe) return true;
+  const zahlt = Math.min(summe, Math.max(0, Math.floor(S.money)));
+  if(zahlt > 0) mkBuchen('unterhalt', () => { S.money -= zahlt; });
+  m.ukLetzt = {tag:heute, tage, summe, bezahlt:zahlt};
+  if(zahlt >= summe) events.push('Fahrzeug-Unterhalt abgebucht: ' + eur(summe) + (tage > 1 ? ' für ' + tage + ' Tage' : '') + '.');
+  else {
+    // Was nicht bezahlt ist, fehlt bei der Wartung: alle Fahrzeuge verlieren Zustand
+    const fehl = 1 - zahlt / summe, minus = Math.max(1, Math.round(8 * tage * fehl));
+    for(const f of ukListe()) if(!f.ws) f.zust = Math.max(5, f.zust - minus);
+    events.push('Unterhalt nicht gedeckt (' + eur(summe - zahlt) + ' fehlen). Die Wartung fällt aus: alle Fahrzeuge −' + minus + ' % Zustand.');
+  }
+  return true;
+}
+
+/* ---------- Stubendurchgang ---------- */
+function koOk(){ return S && S.gaDone && !(typeof rekrut === 'function' && rekrut()) && !S.einsatz; }
+function koBusse(voll){ return Math.max(5, Math.round(G.rank().sold * (voll ? 1 : .5) * (1 - .1 * ((S.stube && S.stube.spind) || 0)))); }
+function koOffen(){ const k = S && S.mk && S.mk.ko; return !!(k && k.bis && !k.erl && now() < k.bis); }
+function koTick(events){
+  const m = mkState(), heute = dateStr(), h = new Date().getHours();
+  let ch = false;
+  // Frist verpasst: Disziplinarbuße
+  if(m.ko && m.ko.bis && !m.ko.erl && now() >= m.ko.bis){
+    const b = Math.min(koBusse(true), Math.max(0, Math.floor(S.money)));
+    if(b > 0) mkBuchen('buss_ko', () => { S.money -= b; });
+    S.log.push({ts:now(), p:-4}); S.rel.spiess = Math.max(-100, (S.rel.spiess || 0) - 2);
+    m.ko.erl = 'verpasst'; m.ko.busse = b; ch = true;
+    events.push('Stubendurchgang verpasst! Brockmann: „Ihr Spind war ein Fall für den Katastrophenschutz.“ ' + (b > 0 ? 'Disziplinarbuße ' + eur(b) + ', ' : '') + '−4 Beurteilung.');
+  }
+  // Neuer Tag: vielleicht kündigt sich der Spieß an (zwischen 6 und 17 Uhr)
+  if(koOk() && (!m.ko || m.ko.tag !== heute) && h >= 6){
+    if(h < 17 && Math.random() < KO_CHANCE){
+      const rest = Math.max(0, new Date().setHours(21, 0, 0, 0) - Date.now());
+      const frist = Math.min(rest, (3 + Math.random() * 3) * 36e5) / S.speed;
+      m.ko = {tag:heute, ab:now(), bis:now() + frist};
+      events.push('Brockmann kündigt einen Stubendurchgang an. Spind bis ' + new Date(Date.now() + frist * S.speed).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + ' Uhr in Ordnung bringen!');
+    } else m.ko = {tag:heute};
+    ch = true;
+  }
+  return ch;
+}
+// Ergebnis der Kontrolle (Minispiel Spindkontrolle als Ernstfall)
+function koErgebnis(sc){
+  const m = mkState(); if(!m.ko || m.ko.erl) return '';
+  let t;
+  if(sc >= MG_GAMES.spind.tiers[2]){
+    const pr = Math.round(G.rank().sold * .5);
+    mkBuchen('ko_lob', () => { S.money += pr; }); G.addPoints(8); S.rel.spiess = Math.min(100, (S.rel.spiess || 0) + 3);
+    m.ko.erl = 'vorbildlich'; t = '<b>Vorbildlich!</b> Brockmann nickt. Einmal. Das ist sein höchstes Lob. +' + eur(pr) + ', +8 Beurteilung, Brockmann +3.';
+  } else if(sc >= MG_GAMES.spind.tiers[0]){
+    G.addPoints(4); S.rel.spiess = Math.min(100, (S.rel.spiess || 0) + 1);
+    m.ko.erl = 'bestanden'; t = '<b>Ohne Beanstandung.</b> „Geht doch.“ +4 Beurteilung, Brockmann +1.';
+  } else {
+    const b = Math.min(koBusse(false), Math.max(0, Math.floor(S.money)));
+    if(b > 0) mkBuchen('buss_ko', () => { S.money -= b; }); S.log.push({ts:now(), p:-2});
+    m.ko.erl = 'beanstandet'; m.ko.busse = b; t = '<b>Beanstandet.</b> „Das nennen Sie aufgeräumt?“ Disziplinarbuße ' + eur(b) + ', −2 Beurteilung.';
+  }
+  m.ko.sc = sc; save();
+  return t;
+}
+let KO_NEXT = false;
+{ const _mo = mgOpen; mgOpen = function(g, ranked){
+    const k = KO_NEXT && g === 'spind'; KO_NEXT = false;
+    _mo(g, k ? false : ranked);
+    if(!k || !MG) return;
+    MG.kontrolle = true;
+    const t = document.getElementById('mgt'); if(t) t.textContent = 'Stubendurchgang';
+    const msg = document.getElementById('mgMsg'), G0 = MG_GAMES.spind;
+    if(msg) msg.innerHTML = '<div class="mgcard"><p><b>Brockmann steht vor der Tür.</b> 30 Sekunden, dann öffnet er deinen Spind. Finde die 6 Fehler.</p><ul>' + G0.rules.map(r => '<li>' + esc(r) + '</li>').join('') + '</ul>'
+      + '<p class="small">Ab ' + G0.tiers[0] + ' Punkten ohne Beanstandung, ab ' + G0.tiers[2] + ' vorbildlich mit Prämie. Darunter gibt es eine Disziplinarbuße von ' + eur(koBusse(false)) + '. Nur ein Versuch, Abbrechen zählt als beanstandet.</p>'
+      + '<button class="btn gold wide" data-act="mg_go">Spind öffnen</button></div>';
+  }; }
+{ const _me = mgEnd; mgEnd = function(abort){
+    const k = MG && MG.kontrolle && MG.phase !== 'end' && MG.phase !== 'intro';
+    let sc = 0;
+    if(k && !abort){ try{ sc = Math.max(0, Math.min(MG_GAMES.spind.max, Math.round(MG_IMPL.spind.score(MG.s)))); }catch(e){} }
+    if(MG && MG.kontrolle && MG.phase === 'intro'){ MG.kontrolle = false; }   // vor dem Start geschlossen: Kontrolle bleibt offen
+    _me(abort);
+    if(!k) return;
+    const t = koErgebnis(sc), card = document.querySelector('#mgMsg .mgres');
+    if(card && t){ const p = document.createElement('p'); p.className = 'koerg'; p.innerHTML = t; const btns = card.querySelector('div[style*="display:flex"]'); card.insertBefore(p, btns); }
+    const tr = card && card.querySelector('[data-act="mg_again"]'); if(tr) tr.remove();
+    setTimeout(() => { try{ render(); }catch(e){} }, 0);
+  }; }
+
+// Tägliche Abläufe im Takt des Spiels
+function mkTagTick(events){
+  if(!S) return false;
+  let ch = false;
+  try{ ch = ukTick(events) || ch; }catch(e){}
+  try{ ch = koTick(events) || ch; }catch(e){}
+  return ch;
+}
+{ const _tk = G.tick; G.tick = function(){ const r = _tk.apply(G, arguments); try{ if(S && mkTagTick(r.events)){ r.changed = true; save(); } }catch(e){} return r; }; }
+
+/* ---------- Ansicht ---------- */
+function mkBanner(){
+  if(!S || !koOffen()) return '';
+  const k = S.mk.ko;
+  return '<button class="mkban" data-act="ko_start"><span class="mkbi" aria-hidden="true">🪖</span><span class="mkbx"><b>Stubendurchgang angekündigt</b><span>Spind bis ' + new Date(Date.now() + (k.bis - now()) * S.speed).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + ' Uhr in Ordnung bringen, sonst Disziplinarbuße</span></span><span class="mkgo">›</span></button>';
+}
+function renderMarketenderei(){
+  const m = mkState(), aktiv = MK_WAREN.filter(w => w.dauer && mkAktiv(w.id));
+  let h = '<h2>Kasernenkiosk</h2><p class="small muted" style="margin-top:-4px">Der Truppenladen im Keller von Block 3. Was du hier ausgibst, fließt in den Haushalt der Truppe. Jede Ware gibt es nur in begrenzter Menge pro Tag.</p>';
+  if(!S.gaDone) return h + '<div class="panel pad"><p style="margin:0">Der Kasernenkiosk öffnet nach der Grundausbildung.</p></div>';
+  if(aktiv.length) h += '<div class="mkakt">' + aktiv.map(w => '<span><b>' + w.ic + ' ' + esc(w.name) + '</b> noch <span data-mkend="' + m.buff[w.id] + '">' + fmtLeft(m.buff[w.id] - now()) + '</span></span>').join('') + '</div>';
+  h += '<div class="mkwaren">' + MK_WAREN.map(w => {
+    const rest = mkRest(w), p = mkPreis(w), voll = w.st && S.stamina >= G.maxStamina();
+    const dis = !rest || S.money < p || voll;
+    return '<div class="panel pad mkw"><div class="mkh"><span class="mkic" aria-hidden="true">' + w.ic + '</span><span><b>' + esc(w.name) + '</b><span class="mkfx">' + esc(w.fx) + '</span></span></div>'
+      + '<p class="small muted" style="margin:6px 0 10px">' + esc(w.desc) + '</p>'
+      + '<div class="mkf"><span class="small muted">' + (rest ? 'heute noch ' + rest + ' von ' + w.max : 'heute ausverkauft') + '</span>'
+      + '<button class="btn mini" data-act="mk_kauf" data-id="' + w.id + '" ' + (dis ? 'disabled' : '') + '>' + (voll && rest ? 'Ausdauer voll' : eur(p)) + '</button></div></div>';
+  }).join('') + '</div>';
+  // Stubendurchgang
+  const k = m.ko;
+  h += '<h2>Stubendurchgang</h2><div class="panel pad">';
+  if(koOffen()) h += '<p style="margin:0 0 8px"><b>Brockmann hat sich angekündigt.</b> Bring deinen Spind bis ' + new Date(Date.now() + (k.bis - now()) * S.speed).toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + ' Uhr in Ordnung (noch <span data-mkend="' + k.bis + '">' + fmtLeft(k.bis - now()) + '</span>).</p><button class="btn wide" data-act="ko_start">Spind in Ordnung bringen</button>';
+  else if(k && k.erl && k.tag === dateStr()) h += '<p style="margin:0">Heutiger Durchgang: <b>' + ({vorbildlich:'vorbildlich', bestanden:'ohne Beanstandung', beanstandet:'beanstandet', verpasst:'verpasst'}[k.erl] || k.erl) + '</b>' + (k.busse ? ', Disziplinarbuße ' + eur(k.busse) : '') + '.</p>';
+  else h += '<p style="margin:0">Heute ist nichts angekündigt. Brockmann kommt an manchen Tagen unangemeldet vorbei, meistens tagsüber.</p>';
+  h += '<p class="small muted" style="margin:10px 0 0">Ein angekündigter Durchgang muss vor Ablauf der Frist erledigt werden, sonst gibt es eine Disziplinarbuße von ' + eur(koBusse(true)) + ' und −4 Beurteilung. Ein besserer Spind in der Stube senkt die Buße um 10 % je Stufe.</p></div>';
+  return h;
+}
+function ukHtml(){
+  const fp = S.lk && S.lk.fp; if(!fp) return '';
+  const m = mkState(), l = m.ukLetzt, summe = ukTag();
+  return '<div class="ukbox"><span>Unterhalt <b>' + eur(summe) + '</b> pro Tag</span><span class="small muted">' + (l ? 'zuletzt ' + eur(l.bezahlt) + (l.bezahlt < l.summe ? ' von ' + eur(l.summe) + ' bezahlt' : '') : 'wird täglich mit dem Sold abgerechnet') + '</span>'
+    + '<span class="small muted">Wartung und Stellplatz je Fahrzeug, die Unimogs der Fahrbereitschaft zahlt der Bund. Die Kfz-Werkstatt senkt den Unterhalt um 10 % je Stufe. Reicht das Geld nicht, fällt die Wartung aus und alle Fahrzeuge verlieren Zustand.</span></div>';
+}
+{ const _rf = renderFuhrpark; renderFuhrpark = function(){ const h = _rf(); if(!S.standort) return h; const i = h.indexOf('<div class="fpsum">'); return i < 0 ? h : h.slice(0, i) + ukHtml() + h.slice(i); }; }
+function mkUpdate(){ document.querySelectorAll('[data-mkend]').forEach(e => { e.textContent = fmtLeft(Number(e.dataset.mkend) - now()); }); }
+setInterval(() => { if(S && document.querySelector('[data-mkend]')) mkUpdate(); }, 1000);
+
+Object.assign(ACT, {
+  mk_kauf(id){
+    const w = MK_I[id], e = mkKaufen(id);
+    if(e){ toast(e); render(); return; }
+    save(); render(); toast(w.ic + ' ' + w.name + ': ' + w.fx);
+  },
+  ko_start(){
+    if(!koOffen()){ toast('Gerade ist kein Stubendurchgang angekündigt.'); render(); return; }
+    const mh = document.getElementById('modalHost'); if(mh) mh.innerHTML = '';
+    KO_NEXT = true; mgOpen('spind', false);
+  },
+});
+// Einbindung: Seite, Kachel, Band auf „Heute“, Kategorien für den Haushalt
+SUBS.zuhause.push({id:'marketenderei', label:'Kasernenkiosk', src:'marketenderei', match:['Kasernenkiosk', 'Stubendurchgang']});
+{ const _ps = pageSrc; pageSrc = function(src){ return src === 'marketenderei' ? renderMarketenderei() : _ps(src); }; }
+{ const _kt3 = kTiles; kTiles = function(){ const l = _kt3();
+    if(!S || !S.gaDone) return l;
+    const i = l.findIndex(x => x.go === 'zuhause:stube'), akt = MK_WAREN.filter(w => w.dauer && mkAktiv(w.id)).length;
+    const t = {grp:'Zuhause', go:'zuhause:marketenderei', label:'Kasernenkiosk', ok:true, ic:'<path d="M4 9h16l-1.5 11h-13z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/>', badge:koOffen() ? 1 : 0,
+      info:koOffen() ? 'Stubendurchgang angekündigt!' : akt ? akt + ' Wirkung' + (akt > 1 ? 'en' : '') + ' aktiv' : 'Kaffee, Proviant und mehr'};
+    if(i >= 0) l.splice(i + 1, 0, t); else l.push(t); return l; }; }
+{ const fpSub = SUBS.dienst.find(x => x.id === 'fuhrpark'); if(fpSub && !fpSub.match.includes('Unterhalt')) fpSub.match.push('Unterhalt'); }
+if(typeof WIRT_KAT !== 'undefined') WIRT_KAT.unshift([/^mk_/, 'Kasernenkiosk'], [/^unterhalt$/, 'Fahrzeug-Unterhalt'], [/^buss_/, 'Disziplinarbußen'], [/^ko_lob$/, 'Belohnungen und Ereignisse']);
 
 /* =========================================================
    START
