@@ -872,6 +872,18 @@ body.tippen .nav,body.tippen .chatfab,body.tippen .chatping{display:none!importa
 .mkregal{font:700 14px 'Barlow Condensed','Barlow',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:var(--signal);margin:14px 0 8px}
 
 .fbk b{display:inline}.fbst{display:inline-block;align-self:flex-start;margin:2px 0 1px;padding:1px 8px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted)}
+
+/* Kiosk-Theke */
+.gsdock.gs5{grid-template-columns:repeat(5,minmax(0,1fr))}.gsdock.gs5 button{font-size:11.5px;padding:10px 2px}
+.theke{margin:12px 0;padding:10px 12px;border-radius:14px;border:1.5px solid color-mix(in srgb,var(--signal) 45%,var(--line));background:color-mix(in srgb,var(--signal) 6%,var(--surface))}
+.theke.knapp{border-color:var(--signal);background:color-mix(in srgb,var(--signal) 12%,var(--surface))}
+.theke .thk{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}.theke .thk span{font-size:14px;color:var(--muted)}
+.theke .thb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}
+.thw{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 4px 6px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;text-align:center}
+.thw .thi{font-size:22px;line-height:1.1}.thw .thn{font-size:12.5px;font-weight:700;line-height:1.15}.thw .thp{font:700 15px 'Barlow Condensed','Barlow',sans-serif;color:var(--signal)}.thw .thf{font-size:11px;color:var(--muted);line-height:1.2}
+.thw.ang{border-color:var(--stamp)}.thw.ang::after{content:'−20 %';position:absolute;top:-7px;right:-4px;background:var(--stamp);color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:999px}
+.thw[disabled]{opacity:.5;cursor:default}
+.thgo{display:block;margin:8px 0 0 auto;background:none;border:0;color:var(--signal);font:600 14px 'Barlow',sans-serif;cursor:pointer;padding:2px 0}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4518,6 +4530,11 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:42, d:'28.11.2026', t:'Kasernenkiosk immer zur Hand', p:[
+    'Neuer Kiosk-Knopf in der Schnellleiste auf „Heute“',
+    'Die Kiosk-Theke zeigt auf Heute, im Dienstplan, in der Ausbildung und auf der Lagekarte passende Waren zum direkten Kauf mit einem Tipp. Bei knapper Ausdauer gibt es Kaffee und Brötchen',
+    'Der Kasernenkiosk steht jetzt ganz oben in der Kaserne'
+  ]},
   {v:41, d:'28.11.2026', t:'Ausbaustufen im Feierabend', p:[
     'Leergut und Schrauberecke zeigen jetzt bei jedem Ausbau die Stufe an, zum Beispiel „Stufe 2 von 5“',
     'In der Feierabend-Übersicht steht der Gesamtausbau je Bereich'
@@ -11393,6 +11410,55 @@ function fbStufen(){
     if(frei('schrauben')) h = h.replace(/(<button class="fbk[^"]*" data-act="fb_zu" data-id="Schrauben"[^>]*>[\s\S]*?<b>Schrauberecke<\/b>)/, '$1<span class="fbst">Ausbau ' + st.gr + ' von ' + st.grMax + '</span>');
     return h;
   }; }
+
+
+/* =========================================================
+   KASERNENKIOSK SICHTBARER MACHEN
+   - „Theke“: kleine Kaufleiste mit passenden Waren dort, wo man sie braucht
+     (Heute, Dienstplan, Ausbildung, Lagekarte), Kauf mit einem Tipp
+   - Kiosk-Knopf in der Schnellleiste auf „Heute“
+   - Kiosk-Kachel ganz oben in der Kaserne
+   ========================================================= */
+function thekeWaren(ort){
+  if(!S || !S.gaDone || S.einsatz) return {txt:'', ids:[]};
+  G.normStamina();
+  const max = G.maxStamina(), knapp = S.stamina < max * .5, W = typeof kpAktiv === 'function' ? kpAktiv() : null;
+  let ids = [], txt = '';
+  if(knapp && ort !== 'ausb'){ ids = ['kaffee', 'broetchen', 'bockwurst']; txt = 'Ausdauer knapp? Schnell nachtanken.'; }
+  else if(ort === 'ausb'){ ids = ['riegel', 'karten', 'kaffee']; txt = 'Für deine Ausbildung'; }
+  else if(ort === 'lage'){ ids = ['akkus', 'pflegeset', 'energy']; txt = 'Für den Einsatz'; }
+  else if(ort === 'dienst'){ ids = ['energy', 'puder', 'zeitung']; txt = 'Für den Dienst'; }
+  else { ids = ['zeitung', 'energy', 'paket']; txt = 'Frisch aus dem Kasernenkiosk'; }
+  if(W && W.angebot && MK_I[W.angebot] && !ids.includes(W.angebot)){ ids = [W.angebot].concat(ids); txt = 'Angebot der Woche: ' + MK_I[W.angebot].name + ' −20 %'; }
+  const ok = ids.filter(id => { const w = MK_I[id]; if(!w || !mkRest(w)) return false; if(w.dauer && mkAktiv(id)) return false; if(w.st && S.stamina >= max) return false; return true; });
+  return {txt, ids:ok.slice(0, 3), knapp};
+}
+function thekeHtml(ort){
+  const T = thekeWaren(ort); if(!T.ids.length) return '';
+  const W = typeof kpAktiv === 'function' ? kpAktiv() : null;
+  return '<div class="theke' + (T.knapp ? ' knapp' : '') + '"><div class="thk"><b>🏪 Kasernenkiosk</b><span>' + esc(T.txt) + '</span></div><div class="thb">'
+    + T.ids.map(id => { const w = MK_I[id], p = mkPreis(w), ang = W && W.angebot === id;
+        return '<button class="thw' + (ang ? ' ang' : '') + '" data-act="mk_kauf" data-id="' + id + '"' + (S.money < p ? ' disabled' : '') + '><span class="thi" aria-hidden="true">' + w.ic + '</span><span class="thn">' + esc(w.name.replace(/,.*$| (mit|und|fürs|von) .*$/, '')) + '</span><span class="thp">' + eur(p) + '</span><span class="thf">' + esc(w.fx) + '</span></button>'; }).join('')
+    + '</div><button class="thgo" data-act="kiosk_go">Alle Waren im Kiosk ›</button></div>';
+}
+// Heute: unter der Schnellleiste
+{ const _gd = gsDock; gsDock = function(){
+    let h = _gd.apply(this, arguments);
+    if(S && S.gaDone){
+      const ic = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><path d="M4 9h16l-1.5 11h-13z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg>';
+      const dot = thekeWaren('heute').knapp || !!(typeof kpAktiv === 'function' && kpAktiv() && kpAktiv().angebot);
+      h = h.replace('<div class="gsdock">', '<div class="gsdock gs5">').replace(/<\/div>$/, '<button data-act="kiosk_go">' + ic + 'Kiosk' + (dot ? '<span class="gsdot" aria-label="Angebot"></span>' : '') + '</button></div>');
+    }
+    return h + thekeHtml('heute');
+  }; }
+// Dienstplan, Ausbildung, Lagekarte: direkt unter der Überschrift
+{ const _rd = renderDienst; renderDienst = function(){ const h = _rd.apply(this, arguments); return h.replace('<h2>Dienstplan</h2>', '<h2>Dienstplan</h2>' + thekeHtml('dienst')); }; }
+{ const _ra9 = renderAusb; renderAusb = function(){ const h = _ra9.apply(this, arguments); const i = h.indexOf('</h2>'); return i < 0 ? h : h.slice(0, i + 5) + thekeHtml('ausb') + h.slice(i + 5); }; }
+{ const _rl3 = renderLage; renderLage = function(){ const h = _rl3.apply(this, arguments); const i = h.indexOf('</h2>'); return i < 0 || !S.standort ? h : h.slice(0, i + 5) + thekeHtml('lage') + h.slice(i + 5); }; }
+// Kaserne: Kiosk ganz oben
+{ const _ktK = kTiles; kTiles = function(){ const l = _ktK(); const i = l.findIndex(x => x.go === 'zuhause:marketenderei');
+    if(i > 0){ const t = l.splice(i, 1)[0]; t.grp = 'Versorgung'; l.unshift(t); } return l; }; }
+Object.assign(ACT, { kiosk_go(){ const m = document.getElementById('modalHost'); if(m) m.innerHTML = ''; ACT.ktile('zuhause:marketenderei'); } });
 
 /* =========================================================
    START
