@@ -870,6 +870,8 @@ body.tippen .nav,body.tippen .chatfab,body.tippen .chatping{display:none!importa
 .fbk .fbic{font-size:28px;line-height:1}.fbk>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px}.fbk .mkgo{font-size:22px;color:var(--muted)}
 
 .mkregal{font:700 14px 'Barlow Condensed','Barlow',sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:var(--signal);margin:14px 0 8px}
+
+.fbk b{display:inline}.fbst{display:inline-block;align-self:flex-start;margin:2px 0 1px;padding:1px 8px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted)}
 </style>
 <link rel="stylesheet" href="leaflet.css">
 <link rel="manifest" href="manifest.webmanifest">
@@ -4516,6 +4518,10 @@ function stripLeer(){
    Neuen Eintrag immer OBEN einfügen. o:1 = nur in der Online-Version.
    ========================================================= */
 const CHANGELOG = [
+  {v:41, d:'28.11.2026', t:'Ausbaustufen im Feierabend', p:[
+    'Leergut und Schrauberecke zeigen jetzt bei jedem Ausbau die Stufe an, zum Beispiel „Stufe 2 von 5“',
+    'In der Feierabend-Übersicht steht der Gesamtausbau je Bereich'
+  ]},
   {v:40, d:'27.11.2026', t:'Größeres Sortiment im Kasernenkiosk', p:[
     'Sieben neue Waren: Belegtes Brötchen, Proteinriegel (Ausbildung schneller), Lernkarteikarten (Ausbildung günstiger), Ersatzakkus (mehr Verdienst auf der Lagekarte), Kfz-Pflegeset (günstigere Instandsetzung), Stiefelfett (halbe Buße beim Stubendurchgang) und das Überraschungspaket von Kalle',
     'Der Kiosk ist jetzt in drei Regale sortiert: Verpflegung, Dienst und Ausbildung, Kameradschaft und Überraschungen'
@@ -11360,6 +11366,33 @@ const MK_REGAL = [['verpflegung', 'Verpflegung'], ['dienst', 'Dienst und Ausbild
       else h = h.slice(0, card) + '</div>' + kopf + '<div class="mkwaren">' + h.slice(card);
     }
     return h; }; }
+
+
+/* ---------- Feierabend: Ausbaustufen anzeigen ---------- */
+function fbStufen(){
+  const p = S.pfand || {trans:0, lager:0}, g = (S.garage && S.garage.up) || {};
+  const pf = (p.trans || 0) + (p.lager || 0), pfMax = (PF_TRANS.length - 1) + (PF_LAGER.length - 1);
+  let gr = 0, grMax = 0; for(const [k, u] of Object.entries(GAR_UP)){ gr += g[k] || 0; grMax += u.lv.length - 1; }
+  return {pf, pfMax, gr, grMax};
+}
+{ const _rfS = renderFeier; renderFeier = function(){
+    let h = _rfS.apply(this, arguments);
+    const tag = (a, b) => ' <span class="tag">Stufe ' + a + ' von ' + b + '</span>';
+    if(S.pfand){
+      const t = PF_TRANS[S.pfand.trans], l = PF_LAGER[S.pfand.lager];
+      if(t) h = h.replace('<div class="title">Transport: ' + esc(t.name) + '</div>', '<div class="title">Transport: ' + esc(t.name) + tag(S.pfand.trans, PF_TRANS.length - 1) + '</div>');
+      if(l) h = h.replace('<div class="title">Lager: ' + esc(l.name) + '</div>', '<div class="title">Lager: ' + esc(l.name) + tag(S.pfand.lager, PF_LAGER.length - 1) + '</div>');
+    }
+    if(S.garage && S.garage.up) for(const [k, u] of Object.entries(GAR_UP)){
+      const lv = S.garage.up[k] || 0, s = '<div class="title">' + esc(u.name) + ': ' + esc(u.lv[lv]) + '</div>';
+      h = h.replace(s, '<div class="title">' + esc(u.name) + ': ' + esc(u.lv[lv]) + tag(lv, u.lv.length - 1) + '</div>');
+    }
+    // Übersicht: Gesamtausbau je Bereich
+    const st = fbStufen();
+    h = h.replace(/(<button class="fbk[^"]*" data-act="fb_zu" data-id="Leergut"[^>]*>[\s\S]*?<b>Leergut<\/b>)/, '$1<span class="fbst">Ausbau ' + st.pf + ' von ' + st.pfMax + '</span>');
+    if(frei('schrauben')) h = h.replace(/(<button class="fbk[^"]*" data-act="fb_zu" data-id="Schrauben"[^>]*>[\s\S]*?<b>Schrauberecke<\/b>)/, '$1<span class="fbst">Ausbau ' + st.gr + ' von ' + st.grMax + '</span>');
+    return h;
+  }; }
 
 /* =========================================================
    START
